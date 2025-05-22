@@ -1,0 +1,730 @@
+.status-container {
+  display: flex;
+  gap: 10px;
+  overflow-x: scroll;
+  white-space: nowrap;
+  padding: 10px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.status-container::-webkit-scrollbar {
+  display: none;
+}
+
+.status-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.status {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #ff4500;
+  padding: 2px;
+}
+
+.status-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.status-name {
+  margin-top: 5px;
+  font-size: 14px;
+  color: #333;
+  text-align: center;
+}
+
+/* Status Modal Styling */
+.status-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.status-content {
+  position: relative;
+  width: 80%;
+  max-width: 400px;
+  text-align: center;
+}
+
+/* Progress Bar */
+.progress-bar {
+  width: 100%;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 5px;
+  position: absolute;
+  top: 10px;
+  left: 0;
+}
+
+.progress {
+  height: 100%;
+  background: white;
+  border-radius: 5px;
+  transition: width 0.1s linear;
+}
+
+/* Full-screen status image */
+.full-status-image {
+  width: 100%;
+  border-radius: 10px;
+}
+
+/* Username inside modal */
+.status-username {
+  color: white;
+  font-size: 18px;
+  margin-top: 10px;
+}
+
+/* Navigation Buttons */
+.prev-btn,
+.next-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  padding: 10px;
+  font-size: 20px;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.prev-btn {
+  left: 10px;
+}
+
+.next-btn {
+  right: 10px;
+}
+
+.prev-btn:hover,
+.next-btn:hover {
+  background: rgba(255, 255, 255, 0.8);
+  color: black;
+}
+/* Status Bar */
+.status-bar {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 10px;
+}
+
+/* Circular Profile Pic */
+.status-profile {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  border: 3px solid #007bff;
+  position: relative;
+}
+
+.profile-pic {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Circular Status Post Button */
+.my-status {
+  border: 3px dashed #007bff;
+}
+
+.plus-icon {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #007bff;
+  font-size: 14px;
+  font-weight: bold;
+  border: 1px solid #007bff;
+}
+
+/* Status Full-Screen Modal */
+.status-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.status-content {
+  position: relative;
+  max-width: 400px;
+  width: 100%;
+}
+
+.status-media {
+  width: 100%;
+  height: 600px;
+  object-fit: contain;
+}
+/* Base Styles */
+:root {
+  --primary-color: #0095f6;
+  --secondary-color: #ff4500;
+  --text-color: #262626;
+  --text-light: #8e8e8e;
+  --bg-dark: #121212;
+  --bg-light: #ffffff;
+  --border-radius: 12px;
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --transition: all 0.3s ease;
+}
+
+/* Status Container - Modern Scrollable Feed */
+.status-container {
+  display: flex;
+  gap: 16px;
+  padding: 12px 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  background: var(--bg-light);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  margin: 12px;
+}
+
+.status-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Status Items - Modern Card Style */
+.status-item {
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+  transition: var(--transition);
+}
+
+.status-item:hover {
+  transform: translateY(-4px);
+}
+
+/* Status Bubble with Gradient Border */
+.status {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+  padding: 2px;
+  margin-bottom: 6px;
+}
+
+.status-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.status-name {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-color);
+  max-width: 74px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* My Status Special Styling */
+.my-status {
+  background: white;
+  border: 2px dashed var(--text-light);
+}
+
+.my-status .status-image {
+  border: none;
+}
+
+.plus-icon {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+  border: 2px solid white;
+}
+
+/* Status Modal - Full Screen Viewer */
+.status-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-dark);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  opacity: 0;
+  animation: fadeIn 0.3s forwards;
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+.status-content {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Progress Bar Container */
+.progress-container {
+  display: flex;
+  gap: 4px;
+  padding: 12px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(100% - 24px);
+  z-index: 2;
+}
+
+.progress-track {
+  flex: 1;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: white;
+  border-radius: 3px;
+  transform-origin: left;
+  transition: transform 0.1s linear;
+}
+
+.progress-bar.active {
+  background: var(--primary-color);
+}
+
+/* Status Header */
+.status-header {
+  position: absolute;
+  top: 24px;
+  left: 0;
+  width: 100%;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 2;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  font-weight: 600;
+}
+
+.user-info img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.time-ago {
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.7);
+  margin-left: 8px;
+}
+
+.close-btn {
+  background: rgba(0, 0, 0, 0.3);
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Media Container */
+.media-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.status-media {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+video.status-media {
+  background: black;
+}
+
+/* Status Footer */
+.status-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.5));
+  z-index: 2;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.action-buttons button {
+  background: transparent;
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.action-buttons button:hover {
+  transform: scale(1.1);
+}
+
+.action-buttons button.active {
+  color: var(--secondary-color);
+}
+
+.status-caption {
+  color: white;
+  font-size: 14px;
+  margin-bottom: 8px;
+  text-align: left;
+  line-height: 1.4;
+}
+
+.status-caption strong {
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+.status-meta {
+  display: flex;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+}
+
+.dot-separator {
+  margin: 0 4px;
+}
+
+/* Navigation Buttons */
+.nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.3);
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  z-index: 2;
+  opacity: 0;
+  transition: var(--transition);
+}
+
+.status-content:hover .nav-btn {
+  opacity: 1;
+}
+
+.prev-btn {
+  left: 16px;
+}
+
+.next-btn {
+  right: 16px;
+}
+
+.nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.nav-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Post Status Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1001;
+  backdrop-filter: blur(5px);
+}
+
+.post-status-modal {
+  background: var(--bg-light);
+  border-radius: var(--border-radius);
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: modalSlideUp 0.3s ease-out;
+}
+
+@keyframes modalSlideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  padding: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.media-preview {
+  height: 300px;
+  background: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.empty-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--text-light);
+}
+
+.empty-preview svg {
+  margin-bottom: 12px;
+}
+
+.preview-media {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.form-group {
+  padding: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+.form-group textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  resize: none;
+  font-family: inherit;
+}
+
+.file-upload {
+  padding: 0 16px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.upload-btn {
+  background: var(--primary-color);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.upload-btn:hover {
+  background: #0080e6;
+}
+
+.upload-btn input {
+  display: none;
+}
+
+.file-info {
+  font-size: 12px;
+  color: var(--text-light);
+}
+
+.modal-actions {
+  padding: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn.primary {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+}
+
+.btn.primary:hover {
+  background: #0080e6;
+}
+
+.btn.secondary {
+  background: transparent;
+  color: var(--text-color);
+  border: 1px solid #ddd;
+}
+
+.btn.secondary:hover {
+  background: #f5f5f5;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 480px) {
+  .status {
+    width: 64px;
+    height: 64px;
+  }
+  
+  .status-name {
+    font-size: 11px;
+  }
+  
+  .status-content {
+    height: 100vh;
+  }
+  
+  .post-status-modal {
+    width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+}
+
+/* Unseen Status Indicator */
+.unseen-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  background: var(--secondary-color);
+  border-radius: 50%;
+  border: 2px solid white;
+}

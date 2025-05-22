@@ -1,0 +1,201 @@
+.education-section {
+ 
+    overflow: hidden;
+    width: 100%;
+    height: auto;
+}
+
+.container {
+    display: inline;
+    width: 100%;
+    height: fit-content;
+}
+
+.section-title {
+    font-weight: 700;
+    color: #2c3e50;
+    position: relative;
+    display: block;
+    /* Changed from inline-block */
+ 
+}
+/* .section-title:after {
+    content: '';
+    position: absolute;
+    width: 50%;
+    height: 3px;
+    background: linear-gradient(90deg, #3498db, #9b59b6);
+    bottom: -10px;
+    left: 25%;
+} */
+
+.education-card {
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background-color: white;
+}
+
+.education-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.education-logo-container {
+    padding: 15px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 50%;
+    width: 150px;
+    height: 150px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.education-logo {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.institution-name {
+    color: #2c3e50;
+    font-weight: 700;
+}
+
+.degree-field .badge {
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 20px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    color: #7f8c8d;
+}
+
+.skills-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.skill-badge {
+    background-color: #e0f7fa;
+    color: #00838f;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+.empty-state {
+    background-color: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+/* Timeline styling */
+/* .education-timeline {
+    position: relative;
+    padding: 0;
+    list-style: none;
+} */
+
+/* .education-timeline:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, #3498db, #9b59b6);
+    left: 50%;
+    margin-left: -1px;
+} */
+/* 
+.timeline-item {
+    position: relative;
+    margin-bottom: 50px;
+}
+
+.timeline-item:last-child {
+    margin-bottom: 0;
+}
+
+.timeline-item.left {
+    padding-right: 50%;
+}
+
+.timeline-item.right {
+    padding-left: 50%;
+}
+
+@media (max-width: 768px) {
+    .education-timeline:before {
+        left: 40px;
+    }
+
+    .timeline-item.left,
+    .timeline-item.right {
+        padding-left: 70px;
+        padding-right: 0;
+    } } */
+
+        /* Add to your Education.css */
+        .add-button {
+            transition: all 0.3s ease;
+        }
+    
+        .add-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+    
+        .search-results {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+        }
+    
+        .search-result-item:hover {
+            background-color: #f8f9fa;
+        }
+    
+        .cursor-pointer {
+            cursor: pointer; }
+
+
+                        /* Skill Badges */
+                        .skill-badge {
+                            display: inline-flex;
+                            align-items: center;
+                            padding: 0.35rem 0.75rem;
+                            margin: 0.25rem;
+                            border-radius: 20px;
+                            background-color: #e9f7fe;
+                            color: #0d6efd;
+                            font-size: 0.85rem;
+                            transition: all 0.2s;
+                        }
+            
+                        .skill-badge:hover {
+                            background-color: #d1ecfa;
+                        }
+            
+                        .skill-badge .close-btn {
+                            margin-left: 0.5rem;
+                            opacity: 0.7;
+                            transition: opacity 0.2s;
+                        }
+            
+                        .skill-badge .close-btn:hover {
+                            opacity: 1; }
+
+
+
+                            

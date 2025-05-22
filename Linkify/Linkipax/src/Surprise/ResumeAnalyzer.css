@@ -1,0 +1,87 @@
+/* ResumeAnalyzer.css */
+/* ResumeAnalyzer.css */
+
+
+.resume-analyzer {
+  font-family: Arial, sans-serif;
+  color: #333;
+  background-color: #f9f9f9;
+  padding: 1rem;
+  border-radius: 5px;
+  padding-top: 80px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Other styles remain unchanged */
+.title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #007bff;
+}
+
+.upload-section {
+  background-color: #f9f9f9;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.file-input {
+  margin-top: 0.5rem;
+}
+
+.file-name {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.job-description-section {
+  margin-top: 1.5rem;
+}
+
+.job-description-textarea {
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.analyze-button {
+  background-color: #007bff;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  color: white;
+  transition: background-color 0.3s ease;
+}
+
+.analyze-button:hover {
+  background-color: #0056b3;
+}
+
+.analyze-button:disabled {
+  background-color: #c0c0c0;
+  cursor: not-allowed;
+}
+
+.results-section {
+  background-color: #fff;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.results-title {
+  font-size: 1.5rem;
+  color: #28a745;
+  margin-bottom: 0.5rem;
+  
+}
+
+.results-placeholder {
+  font-size: 1rem;
+  color: #555;
+}
+.p{
+  color: black;
+}

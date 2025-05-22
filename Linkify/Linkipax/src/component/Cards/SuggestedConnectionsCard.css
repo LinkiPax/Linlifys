@@ -1,0 +1,126 @@
+.connections-card {
+  border-radius: 12px;
+  border: none;
+  overflow: hidden;
+}
+
+.suggestions-list {
+  max-height: 500px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #dee2e6 transparent;
+}
+
+.suggestions-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.suggestions-list::-webkit-scrollbar-thumb {
+  background-color: #dee2e6;
+  border-radius: 3px;
+}
+
+.suggestion-item {
+  transition: background-color 0.2s;
+}
+
+.suggestion-item:hover {
+  background-color: #f8f9fa;
+}
+
+.profile-avatar {
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.profile-avatar img {
+  object-fit: cover;
+  transition: transform 0.2s;
+}
+
+.profile-avatar:hover img {
+  transform: scale(1.05);
+}
+
+.user-name {
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.user-name:hover {
+  color: #0d6efd;
+  text-decoration: none;
+}
+
+.verified-badge {
+  color: #0d6efd;
+  font-size: 0.85em;
+}
+
+.user-meta {
+  color: #6c757d;
+  font-size: 0.85rem;
+}
+
+.mutual-connections .badge {
+  background-color: #f0f4f8;
+  font-weight: 400;
+}
+
+.connect-btn {
+  min-width: 100px;
+  transition: all 0.2s;
+}
+
+.more-btn {
+  width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dropdown-menu {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: none;
+}
+
+.dropdown-item {
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .user-details {
+    width: 100%;
+  }
+
+  .suggestion-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .profile-avatar {
+    margin-bottom: 12px;
+  }
+}

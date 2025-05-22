@@ -1,0 +1,175 @@
+/* General Styling */
+body {
+  overflow-x: hidden; /* Prevent unwanted horizontal scrolling */
+  background-color: #f3f2ef; /* LinkedIn-like background */
+}
+
+.main-content {
+  padding-top: 1rem;
+  display: flex;
+  justify-content: center;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Sticky Columns */
+.sticky-column {
+  position: sticky;
+  top: 1rem;
+}
+
+/* Left and Right Columns
+.suggested-connections-card,
+.trending-topics-card,
+.events-card,
+.advertisement-card,
+.my-network-card {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+} */
+
+/* Middle Column */
+.scrollable-postcards {
+  max-height: 80vh;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+/* Cards */
+.card {
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+}
+
+.card-header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 1rem;
+}
+
+.card-body {
+  padding: 1rem;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: #0a66c2; /* LinkedIn's primary blue */
+  border: none;
+  border-radius: 25px;
+  padding: 0.5rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #004182; /* Darker shade for hover */
+}
+
+.btn-outline-primary {
+  border-color: #0a66c2;
+  color: #0a66c2;
+  border-radius: 25px;
+  padding: 0.5rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+  background-color: #0a66c2;
+  color: #ffffff;
+}
+
+/* Profile Image */
+.profile-image {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+}
+
+.profile-image:hover {
+  transform: scale(1.1);
+}
+
+/* Text Styling */
+.text-muted {
+  color: #666666 !important;
+}
+
+/* Hover Effects */
+.suggestion-item:hover,
+.topic-item:hover {
+  background-color: #f5f5f5;
+  cursor: pointer;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .sticky-column {
+    position: static;
+  }
+
+  .scrollable-postcards {
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  .col-md-3 {
+    display: none; /* Hide left and right columns */
+  }
+
+  .col-md-6 {
+    width: 100%;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+
+/* Show left and middle columns on medium screens */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .col-md-3:last-child {
+    display: none; /* Hide right column */
+  }
+
+  .col-md-3:first-child {
+    display: block; /* Show left column */
+  }
+
+  .col-md-6 {
+    width: 75%; /* Middle column takes 75% */
+  }
+
+  .sticky-column {
+    position: relative;
+    top: 0;
+  }
+}
+
+/* Show all three columns on large screens */
+@media (min-width: 1025px) {
+  .col-md-3 {
+    display: block;
+  }
+
+  .col-md-6 {
+    width: 50%;
+  }
+}
+
+/* Ensure content doesn’t stretch too much on ultra-wide screens */
+@media (min-width: 1400px) {
+  .container {
+    max-width: 1200px;
+    margin: auto;
+  }
+}

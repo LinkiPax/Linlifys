@@ -1,0 +1,100 @@
+/* Create Post Card Styling */
+.create-post-card {
+  border: none;
+  border-radius: 10px; /* LinkedIn uses slightly rounded corners */
+  background-color: #ffffff; /* LinkedIn's card background color */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Subtle shadow like LinkedIn */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+  margin-bottom: 1rem; /* Consistent spacing */
+}
+
+.create-post-card:hover {
+  transform: translateY(-2px); /* Slight lift on hover */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Stronger shadow on hover */
+}
+
+/* Post Input */
+.post-input {
+  border: none;
+  border-radius: 10px;
+  background-color: #f3f2ef; /* LinkedIn's input background color */
+  padding: 1rem;
+  font-size: 0.9rem;
+  resize: none; /* Disable resizing */
+}
+
+.post-input:focus {
+  box-shadow: none;
+  background-color: #eef3f8; /* Slightly lighter background on focus */
+}
+
+/* Media Preview */
+.media-preview img,
+.media-preview video {
+  max-height: 300px;
+  object-fit: cover;
+  border-radius: 8px; /* Rounded corners for media */
+  margin-top: 1rem; /* Spacing between text and media */
+}
+
+/* Buttons */
+.btn-outline-primary {
+  border-color: #0a66c2; /* LinkedIn's primary blue */
+  color: #0a66c2; /* LinkedIn's primary blue */
+  border-radius: 25px; /* Rounded corners like LinkedIn */
+  padding: 0.5rem 1.5rem; /* LinkedIn-like button padding */
+  font-size: 0.9rem; /* LinkedIn's font size for buttons */
+  font-weight: 600; /* Semi-bold for emphasis */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+  background-color: #0a66c2; /* LinkedIn's primary blue */
+  color: #ffffff; /* White text on hover */
+}
+
+.post-button {
+  background-color: #0a66c2; /* LinkedIn's primary blue */
+  border: none;
+  border-radius: 25px; /* Rounded corners like LinkedIn */
+  padding: 0.5rem 1.5rem; /* LinkedIn-like button padding */
+  font-size: 0.9rem; /* LinkedIn's font size for buttons */
+  font-weight: 600; /* Semi-bold for emphasis */
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.post-button:hover {
+  background-color: #004182; /* Darker shade for hover */
+  transform: scale(1.05); /* Slight scale on hover */
+}
+
+.post-button:active {
+  transform: scale(0.95); /* Slight scale on click */
+}
+
+/* Error Message */
+.alert-danger {
+  background-color: #f8d7da; /* Light red background */
+  border-color: #f5c6cb; /* Light red border */
+  color: #721c24; /* Dark red text */
+  border-radius: 8px; /* Rounded corners */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .create-post-card {
+    margin-bottom: 0.75rem; /* Smaller margin on mobile */
+  }
+
+  .media-preview img,
+  .media-preview video {
+    max-height: 200px; /* Smaller height on mobile */
+  }
+
+  .btn-outline-primary,
+  .post-button {
+    padding: 0.5rem 1rem; /* Smaller padding on mobile */
+    font-size: 0.8rem; /* Smaller font size on mobile */
+  }
+}

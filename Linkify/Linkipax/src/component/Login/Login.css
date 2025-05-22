@@ -1,0 +1,29 @@
+.login-form{
+    display: flex;
+    flex-direction: column;
+    width: 350px;
+    margin: 0 auto;
+    border: 1px solid #ccc; /* Border for visual distinction */
+    padding: 25px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    background-color: #fff; /* Add background to ensure readability */
+    height: auto; /* Let height adjust dynamically based on content */
+}
+.container {
+    height: 100vh; /* Full viewport height */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center content horizontally */
+    justify-content: center; /* Center content vertically */
+    position: relative; /* Make it a positioning context for the logo */
+    overflow: hidden; /* Disable scrolling */
+}
+.logo {
+    color: rgb(21, 129, 224);
+    position: absolute; /* Position the logo independently of the rest of the layout */
+    top: 20px; /* Distance from the top */
+    left: 20px; /* Distance from the left */
+    font-size: 2rem;
+    font-weight: bold;
+}

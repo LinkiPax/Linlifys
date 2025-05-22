@@ -1,0 +1,56 @@
+.career-website {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.hero-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid #dee2e6;
+}
+
+.main-content {
+    flex: 1;
+}
+
+.career-card {
+    transition: all 0.3s ease;
+    background-color: white;
+}
+
+.career-card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.features-section .card {
+    transition: all 0.3s ease;
+}
+
+.features-section .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+}
+
+.empty-state {
+    opacity: 0.7;
+}
+
+footer a {
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+footer a:hover {
+    color: white !important;
+}
+
+@media (max-width: 768px) {
+    .hero-section .display-4 {
+        font-size: 2.5rem;
+    } }

@@ -1,0 +1,54 @@
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'; // Import Routes and Route
+import './index.css';
+import { Provider } from 'react-redux';  // Import Provider
+import store from './store';  // Assuming you have a 'store.js' where you configure the store
+
+// Import your components
+import Signup from './component/Signup/Signup';
+import Login from './component/Login/Login';
+import PersonalDetails from './component/PersonalDetailForm/PersonalDetail';
+import HomePage from './component/Home/HomePage';
+import ProfilePage from './component/Profile/Profile';
+import MyNetwork from './component/MyNetwork/Mynewwork';
+import MessagesList from './component/messages/Message';
+import NotificationPage from './component/notification/NotificationPage';
+import Resume from './Surprise/Resume';
+import PeopleProfile from './component/Profile/PeopleProfile';
+import ChatPage from './component/messages/ChatPage';
+import MeetingApp from './component/meeting/Meetingroom';
+import StatusEditorPage from './component/Status/StatusEditor';
+import Short from './component/Shorts/Short';
+import ShortUpload from './component/Shorts/ShortsUpload';
+import Setting from './component/Setting/Setting'
+// You can enable the navbar component if needed
+// import NavbarComponent from './component/navbar/navbar';
+// import 'bootstrap/dist/css/bootstrap.min.css';
+
+createRoot(document.getElementById('root')).render(
+  // <StrictMode>
+    <Provider store={store}>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Login />} /> {/* Login page as default */}
+          <Route path="/Signup" element={<Signup />} />
+          <Route path="/personal-details/:userId" element={<PersonalDetails />} />
+          <Route path="/home/:userId" element={<HomePage />} />
+          <Route path="/profile/:userId" element={<ProfilePage />} />
+          <Route path="/network" element={<MyNetwork />} />
+          <Route path="/messages" element={<MessagesList />} />
+          <Route path="/messages/chat/:targetUserId" element={<ChatPage />} />
+          <Route path="/notifications" element={<NotificationPage />} />
+          <Route path="/resume" element={<Resume />} />
+          <Route path="/profile-view/:userId" element={<PeopleProfile />} />
+          <Route path="/meeting" element={<MeetingApp />} />
+          <Route path="/status-editor" element={<StatusEditorPage />} />
+          <Route path="/shorts" element={<Short />} />
+          <Route path="/uploadshorts" element={<ShortUpload />} />
+          <Route path="/settings" element={<Setting />} />
+        </Routes>
+      </Router>
+    </Provider>
+  // </StrictMode>
+);

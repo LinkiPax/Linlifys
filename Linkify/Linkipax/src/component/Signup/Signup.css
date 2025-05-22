@@ -1,0 +1,57 @@
+.logo {
+    color: rgb(21, 129, 224);
+    position: absolute; /* Position the logo independently of the rest of the layout */
+    top: 20px; /* Distance from the top */
+    left: 20px; /* Distance from the left */
+    font-size: 2rem;
+    font-weight: bold;
+}
+body {
+    overflow: hidden; /* Disables scrolling */
+    height: 100vh; /* Ensures full viewport height */
+}
+.signup-form {
+    display: flex;
+    flex-direction: column;
+    width: 350px;
+    margin: 0 auto;
+    border: 1px solid #ccc; /* Border for visual distinction */
+    padding: 25px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    background-color: #fff; /* Add background to ensure readability */
+    height: auto; /* Let height adjust dynamically based on content */
+}
+
+.container {
+    height: 100vh; /* Full viewport height */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center content horizontally */
+    justify-content: center; /* Center content vertically */
+    position: relative; /* Make it a positioning context for the logo */
+    overflow: hidden; /* Disable scrolling */
+}
+
+.button {
+    background-color: rgb(21, 129, 224);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: rgb(15, 100, 200); /* Slightly darker shade on hover */
+}
+
+.inpu {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin-bottom: 15px; /* Spacing between input fields */
+}

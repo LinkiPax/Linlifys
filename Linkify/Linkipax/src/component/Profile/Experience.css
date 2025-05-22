@@ -1,0 +1,93 @@
+/* Experience.css */
+
+/* Container Styling */
+.experience-section.cont {
+    display: inline;
+    padding: 2rem 1rem;
+}
+
+/* Section Title */
+.section-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.section-title .highlight {
+    color: #007bff;
+}
+
+/* Add Button */
+.add-btn {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    gap: 0.5rem;
+}
+
+/* Experience List Styling */
+.experience-list {
+    margin-top: 1rem;
+}
+
+/* Card Styling */
+.experience-card {
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    transition: box-shadow 0.2s ease-in-out;
+}
+
+.experience-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Card Header */
+.experience-card .card-header {
+    background-color: #f8f9fa;
+    cursor: pointer;
+    padding: 1rem;
+    border-bottom: none;
+}
+
+.experience-card h5 {
+    margin-bottom: 0.2rem;
+    font-weight: 600;
+}
+
+.experience-card .badge {
+    font-size: 0.75rem;
+}
+
+/* Card Body */
+.experience-card .card-body {
+    padding: 1rem 1.25rem;
+    background-color: #ffffff;
+}
+
+/* Buttons */
+.experience-card .btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+/* Modal Form Styles */
+.modal .form-control,
+.modal .form-select {
+    border-radius: 0.375rem;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    color: #6c757d;
+}
+
+.empty-state h4 {
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}

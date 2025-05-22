@@ -1,0 +1,44 @@
+.filter-editor {
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .filter-preview {
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .preview-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .filter-buttons {
+    margin-bottom: 20px;
+  }
+  
+  .filter-buttons .btn {
+    width: 100%;
+    margin: 5px 0;
+  }
+  
+  .slider-controls {
+    margin-bottom: 20px;
+  }
+  
+  .slider-controls .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .slider-controls .form-range {
+    width: 100%;
+  }
+  
+  .reset-button {
+    width: 100%;
+    margin-top: 10px;
+  }

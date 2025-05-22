@@ -1,0 +1,5 @@
+{
+    "Programming": ["Python", "JavaScript", "Java", "C++", "React", "Node.js"],
+    "Data Science": ["Machine Learning", "Deep Learning", "NLP", "Data Analysis", "Pandas", "NumPy"],
+    "DevOps": ["Docker", "Kubernetes", "CI/CD", "AWS", "Azure"]
+}
