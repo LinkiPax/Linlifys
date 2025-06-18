@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faHouse,
@@ -13,7 +13,7 @@ import {
   faSearch,
   faTimes,
   faPlus,
-  faTv
+  faTv,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   Navbar,
@@ -31,10 +31,11 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./Navbar.css";
 import Cookies from "js-cookie";
+import { useNotificationContext } from "../../context/NotificationContext";
 
 const NavbarComponent = () => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loadingUser, setLoadingUser] = useState(true);
   const navigate = useNavigate();
   const [clickCount, setClickCount] = useState(0);
   const [expanded, setExpanded] = useState(false);
@@ -43,19 +44,33 @@ const NavbarComponent = () => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [notifications, setNotifications] = useState([]);
-  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const searchRef = useRef(null);
+  const userId = localStorage.getItem("userId");
+  // Notification context
+  const {
+    notifications = [],
+    unreadCount = 0,
+    loading: loadingNotifications,
+    error: notificationError,
+    markAsRead,
+    fetchNotifications,
+    isSupported: pushSupported,
+    permission: pushPermission,
+    isSubscribed,
+    requestPermission: requestPushPermission,
+    subscribe: subscribeToPush,
+    unsubscribe: unsubscribeFromPush,
+  } = useNotificationContext();
 
   // Navigation items data
   const navItems = [
-    { name: "Home", icon: faHouse, path: "/home" },
+    { name: "Home", icon: faHouse, path: `/home/${userId}` },
     { name: "Network", icon: faNetworkWired, path: "/network" },
     { name: "Jobs", icon: faBriefcase, path: "/jobs" },
     { name: "Messages", icon: faCommentDots, path: "/messages" },
     { name: "Notifications", icon: faBell, path: "/notifications" },
     { name: "Shorts", icon: faFilm, path: "/shorts" },
-    {name:"meeting", icon:faTv , path:"/meeting"},
+    { name: "Meeting", icon: faTv, path: "/meeting" },
   ];
 
   // Close suggestions when clicking outside
@@ -71,7 +86,7 @@ const NavbarComponent = () => {
     };
   }, []);
 
-  // Fetch user data and notifications
+  // Fetch user data
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -86,29 +101,17 @@ const NavbarComponent = () => {
 
         // Fetch user data
         const userResponse = await axios.get(
-          `http://localhost:5000/user/me/${userId}`,
+          `${import.meta.env.VITE_API_URL}/user/me/${userId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
         setUser(userResponse.data);
-
-        // Fetch notifications
-        const notificationsResponse = await axios.get(
-          `http://localhost:5000/notifications/${userId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        setNotifications(notificationsResponse.data);
-        setUnreadNotifications(
-          notificationsResponse.data.filter((n) => !n.read).length
-        );
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching user data:", error);
         if (error.response?.status === 401) navigate("/");
       } finally {
-        setLoading(false);
+        setLoadingUser(false);
       }
     };
     fetchData();
@@ -145,7 +148,9 @@ const NavbarComponent = () => {
       const debounceTimer = setTimeout(async () => {
         try {
           const response = await axios.get(
-            `http://localhost:5000/search/suggestions?q=${searchQuery}`
+            `${
+              import.meta.env.VITE_API_URL
+            }/search/suggestions?q=${searchQuery}`
           );
           setSearchSuggestions(response.data);
           setShowSuggestions(true);
@@ -157,28 +162,16 @@ const NavbarComponent = () => {
     }
   }, [searchQuery, isSearchFocused]);
 
-  // Mark notifications as read
-  const markAsRead = async (id) => {
-    try {
-      await axios.patch(
-        `http://localhost:5000/notifications/${id}/read`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-          },
-        }
-      );
-      setUnreadNotifications((prev) => prev - 1);
-    } catch (error) {
-      console.error("Error marking notification as read:", error);
-    }
+  // Notification dropdown item click handler
+  const handleNotificationClick = (notificationId) => {
+    markAsRead(notificationId);
+    setExpanded(false);
   };
 
   return (
     <Navbar
       expand="lg"
-      className={`professional-navbar ${darkMode ? "dark-mode" : ""}`}
+      className={`professional-navbar ${darkMode ? "dark-mode" : ""} `}
       variant={darkMode ? "dark" : "light"}
       sticky="top"
       expanded={expanded}
@@ -273,21 +266,101 @@ const NavbarComponent = () => {
           <Nav className="main-navigation">
             {navItems.map((item, index) => (
               <Nav.Item key={index} className="nav-item-wrapper">
-                {item.name === "Notifications" && unreadNotifications > 0 ? (
-                  <Nav.Link
-                    as={Link}
-                    to={item.path}
-                    className="nav-link"
-                    onClick={() => setExpanded(false)}
-                  >
-                    <div className="nav-icon-container">
-                      <FontAwesomeIcon icon={item.icon} />
-                      <Badge pill bg="danger" className="notification-badge">
-                        {unreadNotifications}
-                      </Badge>
-                    </div>
-                    <span className="nav-label">{item.name}</span>
-                  </Nav.Link>
+                {item.name === "Notifications" ? (
+                  <Dropdown className="notification-dropdown">
+                    <Dropdown.Toggle
+                      as={Nav.Link}
+                      className="nav-link"
+                      id="notification-dropdown"
+                    >
+                      <div className="nav-icon-container">
+                        <FontAwesomeIcon icon={item.icon} />
+                        {unreadCount > 0 && (
+                          <Badge
+                            pill
+                            bg="danger"
+                            className="notification-badge"
+                          >
+                            {unreadCount}
+                          </Badge>
+                        )}
+                      </div>
+                      <span className="nav-label">{item.name}</span>
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu className="notification-menu">
+                      <Dropdown.Header>
+                        Notifications{" "}
+                        {unreadCount > 0 && `(${unreadCount} new)`}
+                      </Dropdown.Header>
+
+                      {loadingNotifications ? (
+                        <Dropdown.Item className="text-center">
+                          <Spinner animation="border" size="sm" />
+                        </Dropdown.Item>
+                      ) : notificationError ? (
+                        <Dropdown.Item className="text-danger">
+                          <small>Error loading notifications</small>
+                        </Dropdown.Item>
+                      ) : notifications.length === 0 ? (
+                        <Dropdown.Item className="text-muted">
+                          No notifications
+                        </Dropdown.Item>
+                      ) : (
+                        notifications.slice(0, 5).map((notification) => (
+                          <Dropdown.Item
+                            key={notification._id}
+                            as={Link}
+                            to={notification.actionUrl || "/notifications"}
+                            className={`notification-item ${
+                              notification.status === "unread" ? "unread" : ""
+                            }`}
+                            onClick={() =>
+                              handleNotificationClick(notification._id)
+                            }
+                          >
+                            <div className="notification-content">
+                              <div className="notification-icon">
+                                <FontAwesomeIcon
+                                  icon={
+                                    notification.type === "message"
+                                      ? faCommentDots
+                                      : notification.type === "alert"
+                                      ? faBell
+                                      : faBell
+                                  }
+                                />
+                              </div>
+                              <div>
+                                <div className="notification-title">
+                                  {notification.title}
+                                </div>
+                                <div className="notification-message">
+                                  {notification.message}
+                                </div>
+                                <div className="notification-time">
+                                  {new Date(
+                                    notification.createdAt
+                                  ).toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
+                                </div>
+                              </div>
+                            </div>
+                          </Dropdown.Item>
+                        ))
+                      )}
+
+                      <Dropdown.Divider />
+                      <Dropdown.Item
+                        as={Link}
+                        to="/notifications"
+                        className="text-center view-all"
+                      >
+                        View all notifications
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
                 ) : (
                   <Nav.Link
                     as={Link}
@@ -327,7 +400,7 @@ const NavbarComponent = () => {
                 <Dropdown.Item as={Link} to="/create/post">
                   Post
                 </Dropdown.Item>
-                <Dropdown.Item as={Link} to="/create/short">
+                <Dropdown.Item as={Link} to="/uploadshorts">
                   Short
                 </Dropdown.Item>
                 <Dropdown.Item as={Link} to="/create/event">
@@ -337,7 +410,7 @@ const NavbarComponent = () => {
             </Dropdown>
 
             {/* User Dropdown */}
-            {loading ? (
+            {loadingUser ? (
               <Spinner animation="border" size="sm" className="user-spinner" />
             ) : user ? (
               <Dropdown className="user-dropdown" align="end">
@@ -374,6 +447,31 @@ const NavbarComponent = () => {
                   <Dropdown.Item as={Link} to={`/profile/${user._id}`}>
                     View Profile
                   </Dropdown.Item>
+
+                  {/* Push Notification Settings */}
+                  {pushSupported && (
+                    <>
+                      <Dropdown.Item
+                        onClick={() => {
+                          if (pushPermission === "granted") {
+                            isSubscribed
+                              ? unsubscribeFromPush()
+                              : subscribeToPush();
+                          } else {
+                            requestPushPermission();
+                          }
+                        }}
+                      >
+                        {pushPermission === "granted"
+                          ? isSubscribed
+                            ? "Disable Push Notifications"
+                            : "Enable Push Notifications"
+                          : "Allow Push Notifications"}
+                      </Dropdown.Item>
+                      <Dropdown.Divider />
+                    </>
+                  )}
+
                   <Dropdown.Item as={Link} to="/settings">
                     Settings & Privacy
                   </Dropdown.Item>

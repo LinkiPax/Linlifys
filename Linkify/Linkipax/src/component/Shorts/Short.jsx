@@ -16,7 +16,7 @@
 
 //   useEffect(() => {
 //     const fetchShorts = async () => {
-//       const res = await axios.get("http://localhost:5000/api/short/shorts");
+//       const res = await axios.get("${import.meta.env.VITE_API_URL}/api/short/shorts");
 //       setShorts(res.data);
 //     };
 //     fetchShorts();
@@ -24,24 +24,24 @@
 
 //   const handleLike = async (shortId) => {
 //     const userId = "123";
-//     await axios.put(`http://localhost:5000/api/short/shorts/${shortId}/like`, { userId });
+//     await axios.put(`${import.meta.env.VITE_API_URL}/api/short/shorts/${shortId}/like`, { userId });
 //     refreshShorts();
 //   };
 
 //   const handleDislike = async (shortId) => {
 //     const userId = "123";
-//     await axios.put(`http://localhost:5000/api/short/shorts/${shortId}/dislike`, { userId });
+//     await axios.put(`${import.meta.env.VITE_API_URL}/api/short/shorts/${shortId}/dislike`, { userId });
 //     refreshShorts();
 //   };
 
 //   const handleShare = async (shortId) => {
-//     await axios.post(`http://localhost:5000/api/short/shorts/${shortId}/share`);
+//     await axios.post(`${import.meta.env.VITE_API_URL}/api/short/shorts/${shortId}/share`);
 //     refreshShorts();
 //   };
 
 //   const handleComment = async (shortId) => {
 //     const userId = "123";
-//     await axios.post(`http://localhost:5000/api/short/shorts/${shortId}/comment`, {
+//     await axios.post(`${import.meta.env.VITE_API_URL}/api/short/shorts/${shortId}/comment`, {
 //       userId,
 //       text: newComment
 //     });
@@ -50,7 +50,7 @@
 //   };
 
 //   const refreshShorts = async () => {
-//     const res = await axios.get("http://localhost:5000/api/short/shorts");
+//     const res = await axios.get("${import.meta.env.VITE_API_URL}/api/short/shorts");
 //     setShorts(res.data);
 //   };
 
@@ -104,9 +104,9 @@
 
 //         <div className="video-info">
 //           <div className="user-info">
-//             <img 
-//               src={shorts[activeShort].user?.avatar || "https://i.pravatar.cc/300"} 
-//               alt={shorts[activeShort].user?.username || "User"} 
+//             <img
+//               src={shorts[activeShort].user?.avatar || "https://i.pravatar.cc/300"}
+//               alt={shorts[activeShort].user?.username || "User"}
 //               className="user-avatar"
 //             />
 //             <span className="username">@{shorts[activeShort].user?.username || "user123"}</span>
@@ -158,9 +158,9 @@
 //             {shorts[activeShort].comments?.length > 0 ? (
 //               shorts[activeShort].comments?.map((comment, index) => (
 //                 <div key={index} className="comment">
-//                   <img 
-//                     src={comment.user?.avatar || "https://i.pravatar.cc/150?img=3"} 
-//                     alt={comment.user?.username || "User"} 
+//                   <img
+//                     src={comment.user?.avatar || "https://i.pravatar.cc/150?img=3"}
+//                     alt={comment.user?.username || "User"}
 //                     className="comment-avatar"
 //                   />
 //                   <div className="comment-content">
@@ -182,7 +182,7 @@
 //               onChange={(e) => setNewComment(e.target.value)}
 //               onKeyPress={(e) => e.key === 'Enter' && handleComment(shorts[activeShort]._id)}
 //             />
-//             <button 
+//             <button
 //               className="comment-submit"
 //               onClick={() => handleComment(shorts[activeShort]._id)}
 //               disabled={!newComment.trim()}
@@ -198,12 +198,19 @@
 
 // export default Short;
 
-
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import axios from "axios";
-import { FaHeart, FaRegHeart, FaComment, FaShare, FaEllipsisH, FaMusic, FaTimes } from "react-icons/fa";
+import {
+  FaHeart,
+  FaRegHeart,
+  FaComment,
+  FaShare,
+  FaEllipsisH,
+  FaMusic,
+  FaTimes,
+} from "react-icons/fa";
 import { BiSolidDislike, BiDislike } from "react-icons/bi";
-import './Shorts.css';
+import "./Shorts.css";
 
 const Short = () => {
   const [shorts, setShorts] = useState([]);
@@ -243,8 +250,10 @@ const Short = () => {
   const fetchShorts = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`http://localhost:5000/api/short/shorts?page=${page}&limit=5`);
-      setShorts(prev => [...prev, ...res.data]);
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/short/shorts?page=${page}&limit=5`
+      );
+      setShorts((prev) => [...prev, ...res.data]);
       setHasMore(res.data.length > 0);
       setLoading(false);
     } catch (err) {
@@ -259,7 +268,7 @@ const Short = () => {
 
     const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
     if (scrollHeight - (scrollTop + clientHeight) < 50) {
-      setPage(prev => prev + 1);
+      setPage((prev) => prev + 1);
     }
   }, [loading, hasMore]);
 
@@ -274,16 +283,16 @@ const Short = () => {
   useEffect(() => {
     const container = containerRef.current;
     if (container) {
-      container.addEventListener('scroll', handleScroll);
-      return () => container.removeEventListener('scroll', handleScroll);
+      container.addEventListener("scroll", handleScroll);
+      return () => container.removeEventListener("scroll", handleScroll);
     }
   }, [handleScroll]);
 
   // Handle short navigation
   const navigateShort = (direction) => {
-    if (direction === 'next' && activeShort < shorts.length - 1) {
+    if (direction === "next" && activeShort < shorts.length - 1) {
       setActiveShort(activeShort + 1);
-    } else if (direction === 'prev' && activeShort > 0) {
+    } else if (direction === "prev" && activeShort > 0) {
       setActiveShort(activeShort - 1);
     }
     setIsPlaying(false);
@@ -294,15 +303,15 @@ const Short = () => {
   // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'ArrowDown') {
-        navigateShort('next');
-      } else if (e.key === 'ArrowUp') {
-        navigateShort('prev');
+      if (e.key === "ArrowDown") {
+        navigateShort("next");
+      } else if (e.key === "ArrowUp") {
+        navigateShort("prev");
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [activeShort, shorts.length]);
 
   // Handle playback rate change
@@ -315,33 +324,48 @@ const Short = () => {
 
   const handleLike = async (shortId) => {
     const userId = "123";
-    await axios.put(`http://localhost:5000/api/short/shorts/${shortId}/like`, { userId });
+    await axios.put(
+      `${import.meta.env.VITE_API_URL}/api/short/shorts/${shortId}/like`,
+      { userId }
+    );
     refreshShorts();
   };
 
   const handleDislike = async (shortId) => {
     const userId = "123";
-    await axios.put(`http://localhost:5000/api/short/shorts/${shortId}/dislike`, { userId });
+    await axios.put(
+      `${import.meta.env.VITE_API_URL}/api/short/shorts/${shortId}/dislike`,
+      { userId }
+    );
     refreshShorts();
   };
 
   const handleShare = async (shortId) => {
-    await axios.post(`http://localhost:5000/api/short/shorts/${shortId}/share`);
+    await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/short/shorts/${shortId}/share`
+    );
     refreshShorts();
   };
 
   const handleComment = async (shortId) => {
     const userId = "123";
-    await axios.post(`http://localhost:5000/api/short/shorts/${shortId}/comment`, {
-      userId,
-      text: newComment
-    });
+    await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/short/shorts/${shortId}/comment`,
+      {
+        userId,
+        text: newComment,
+      }
+    );
     setNewComment("");
     refreshShorts();
   };
 
   const refreshShorts = async () => {
-    const res = await axios.get(`http://localhost:5000/api/short/shorts?page=1&limit=${shorts.length}`);
+    const res = await axios.get(
+      `${import.meta.env.VITE_API_URL}/api/short/shorts?page=1&limit=${
+        shorts.length
+      }`
+    );
     setShorts(res.data);
   };
 
@@ -405,12 +429,17 @@ const Short = () => {
 
           <div className="video-info">
             <div className="user-info">
-              <img 
-                src={shorts[activeShort].user?.avatar || "https://i.pravatar.cc/300"} 
-                alt={shorts[activeShort].user?.username || "User"} 
+              <img
+                src={
+                  shorts[activeShort].user?.avatar ||
+                  "https://i.pravatar.cc/300"
+                }
+                alt={shorts[activeShort].user?.username || "User"}
                 className="user-avatar"
               />
-              <span className="username">@{shorts[activeShort].user?.username || "user123"}</span>
+              <span className="username">
+                @{shorts[activeShort].user?.username || "user123"}
+              </span>
             </div>
             <p className="caption">{shorts[activeShort].caption}</p>
             <div className="music-tag">
@@ -419,7 +448,10 @@ const Short = () => {
           </div>
 
           <div className="action-buttons">
-            <div className="action-button" onClick={() => handleLike(shorts[activeShort]._id)}>
+            <div
+              className="action-button"
+              onClick={() => handleLike(shorts[activeShort]._id)}
+            >
               {shorts[activeShort].likes?.includes("123") ? (
                 <FaHeart className="liked" />
               ) : (
@@ -427,7 +459,10 @@ const Short = () => {
               )}
               <span>{shorts[activeShort].likes?.length || 0}</span>
             </div>
-            <div className="action-button" onClick={() => handleDislike(shorts[activeShort]._id)}>
+            <div
+              className="action-button"
+              onClick={() => handleDislike(shorts[activeShort]._id)}
+            >
               {shorts[activeShort].dislikes?.includes("123") ? (
                 <BiSolidDislike className="disliked" />
               ) : (
@@ -439,19 +474,28 @@ const Short = () => {
               <FaComment />
               <span>{shorts[activeShort].comments?.length || 0}</span>
             </div>
-            <div className="action-button" onClick={() => handleShare(shorts[activeShort]._id)}>
+            <div
+              className="action-button"
+              onClick={() => handleShare(shorts[activeShort]._id)}
+            >
               <FaShare />
               <span>{shorts[activeShort].shareCount || 0}</span>
             </div>
-            <div className="action-button" onClick={toggleDropdown} ref={dropdownRef}>
+            <div
+              className="action-button"
+              onClick={toggleDropdown}
+              ref={dropdownRef}
+            >
               <FaEllipsisH />
               {showDropdown && (
                 <div className="dropdown-menu">
                   <div className="dropdown-header">Playback Speed</div>
-                  {[0.5, 0.75, 1, 1.25, 1.5, 2].map(rate => (
-                    <div 
-                      key={rate} 
-                      className={`dropdown-item ${playbackRate === rate ? 'active' : ''}`}
+                  {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
+                    <div
+                      key={rate}
+                      className={`dropdown-item ${
+                        playbackRate === rate ? "active" : ""
+                      }`}
                       onClick={() => handlePlaybackRateChange(rate)}
                     >
                       {rate}x
@@ -466,7 +510,7 @@ const Short = () => {
             </div>
           </div>
 
-          <div className={`comment-section ${showComments ? 'visible' : ''}`}>
+          <div className={`comment-section ${showComments ? "visible" : ""}`}>
             <div className="comment-header">
               <h3>Comments ({shorts[activeShort].comments?.length || 0})</h3>
               <button className="close-comments" onClick={toggleComments}>
@@ -477,13 +521,18 @@ const Short = () => {
               {shorts[activeShort].comments?.length > 0 ? (
                 shorts[activeShort].comments?.map((comment, index) => (
                   <div key={index} className="comment">
-                    <img 
-                      src={comment.user?.avatar || "https://i.pravatar.cc/150?img=3"} 
-                      alt={comment.user?.username || "User"} 
+                    <img
+                      src={
+                        comment.user?.avatar ||
+                        "https://i.pravatar.cc/150?img=3"
+                      }
+                      alt={comment.user?.username || "User"}
                       className="comment-avatar"
                     />
                     <div className="comment-content">
-                      <span className="comment-username">@{comment.user?.username || "user" + index}</span>
+                      <span className="comment-username">
+                        @{comment.user?.username || "user" + index}
+                      </span>
                       <p className="comment-text">{comment.text}</p>
                     </div>
                   </div>
@@ -499,9 +548,11 @@ const Short = () => {
                 placeholder="Add a comment..."
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleComment(shorts[activeShort]._id)}
+                onKeyPress={(e) =>
+                  e.key === "Enter" && handleComment(shorts[activeShort]._id)
+                }
               />
-              <button 
+              <button
                 className="comment-submit"
                 onClick={() => handleComment(shorts[activeShort]._id)}
                 disabled={!newComment.trim()}
@@ -513,11 +564,7 @@ const Short = () => {
         </div>
       )}
 
-      {loading && (
-        <div className="loading-more">
-          Loading more shorts...
-        </div>
-      )}
+      {loading && <div className="loading-more">Loading more shorts...</div>}
     </div>
   );
 };

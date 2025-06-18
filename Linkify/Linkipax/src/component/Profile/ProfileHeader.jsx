@@ -208,7 +208,9 @@ const ProfileHeader = ({ userId }) => {
     const fetchProfile = async () => {
       try {
         const { data } = await axios.get(
-          `http://localhost:5000/profile/merged-user-details/${userId}`
+          `${
+            import.meta.env.VITE_API_URL
+          }/profile/merged-user-details/${userId}`
         );
         setProfile(data);
         setBackgroundImage(
@@ -234,13 +236,19 @@ const ProfileHeader = ({ userId }) => {
     formData.append("userId", userId);
 
     try {
-      await axios.post(`http://localhost:5000/profile/user-details`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      const { data } = await axios.get(
-        `http://localhost:5000/profile/merged-user-details/${userId}`
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/profile/user-details`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
       );
-      setBackgroundImage(`http://localhost:5000/${data.backgroundImage}`);
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_API_URL}/profile/merged-user-details/${userId}`
+      );
+      setBackgroundImage(
+        `${import.meta.env.VITE_API_URL}/${data.backgroundImage}`
+      );
     } catch (error) {
       console.error("Error updating background:", error);
     }
@@ -290,7 +298,7 @@ const ProfileHeader = ({ userId }) => {
   if (!profile) return null;
 
   return (
-    <ProfileHeaderContainer >
+    <ProfileHeaderContainer>
       <BackgroundImage backgroundimage={backgroundImage}>
         <Tooltip title="Change cover photo">
           <CoverPhotoEditButton>

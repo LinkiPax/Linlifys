@@ -1,243 +1,130 @@
+
 require('dotenv').config();
 const express = require('express');
-const mongoose = require('mongoose');//for database
-const cors = require('cors');//for security
-const helmet = require('helmet');//for security
-const morgan = require('morgan');// for easy debugging 
+const mongoose = require('mongoose');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
-const http = require('http');
-const { Server } = require('socket.io');// it is used for real time communication for clients
+const https = require('https');
 const { ApolloServer } = require("apollo-server-express");
 const { typeDefs, resolvers } = require("./GraphQL/messageschema");
-const Message = require('./model/messagemodel');
-// Import Routes
-const userRoutes = require('./routes/userroutes');
-const postRoutes = require('./routes/Postroutes');
-const commentRoutes = require('./routes/Commentroutes');
-const usersRoutes = require('./routes/UsersRoutes');
-const suggest = require('./routes/suggestroute');
-const trendingTopicRoutes = require('./routes/Trendingroute');
-const userDetailsRoutes = require('./routes/userDetails');
-const educationRoutes = require('./routes/educationRoutes');
-const openAISuggestionRoutes = require('./routes/openaisuggestroutes');
-const trendingRoutes = require('./routes/externalapitrendingRoutes');
-const experienceRoutes = require('./routes/experienceRoutes');
-const profileViewRoutes = require('./routes/Profileviewroute');
-const postImpressionRoutes = require('./routes/PostImpressionroutes');
-const skillRoutes = require('./routes/skillroute');
-const messageRoutes = require('./routes/messageroute');
-const notificationRoutes = require('./routes/notificationroute');
-const { exec } = require('child_process');
-const resumeRoutes = require('./routes/Resumeroute'); 
 const path = require('path');
-const {initializeSocket} = require('./socket/socketnadle');
-const rooms=require('./routes/roomRoute')
-const status=require('./routes/statusroutes') 
-const statusedit=require('./routes/statusedit')
-const short = require('./routes/shortRoutes') 
-const connection = require('./routes/connectionroute')
-const eventRoutes = require('./routes/Eventroute');
-// Initialize App and HTTP Server    
+const { initializeSocket } = require('./socket/socketnadle'); // New socket handler
+const fs = require('fs');
+const hackathon= require('./routes/hackathonRoutes');
+const options = {
+  key: fs.readFileSync('./localhost+1-key.pem'),
+  cert: fs.readFileSync('./localhost+1.pem'),
+  requestCert: false,
+  rejectUnauthorized: false // For development only!
+};
+// Initialize Express app and HTTP server 
 const app = express();
+const server = https.createServer(options,app);
 
-const server = http.createServer(app); 
-
-const io = new Server(server, {
-  cors: {
-    origin: 'http://localhost:5173', // Allow requests from frontend
-    methods: ['GET', 'POST','PATCH', 'DELETE', 'OPTIONS'],
-    credentials: true, // Allow cookies and credentials
-  },
-}); 
-
- 
-// Middleware for CORS
+// Middleware Setup
 app.use(cors({
-  origin: 'http://localhost:5173', // Allow requests from frontend
-  methods: ['GET', 'POST', 'PUT', 'DELETE','PATCH', 'OPTIONS'],
-  credentials: true // Allow cookies and credentials
+  origin: ['https://localhost:5173', 'https://192.168.165.51:5173', 'https://192.168.234.51:5173'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  credentials: true
 }));
-
-// Handle Preflight Requests
 app.options('*', cors());
-// Other Middleware
-app.use(express.json());
-// app.use(helmet());
+
+app.use(express.json()); 
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 app.use(morgan('tiny'));
 app.use(cookieParser());
-app.use(
-  "/uploads",
-  express.static("uploads", {
-    setHeaders: (res, path, stat) => {
-      res.set("Access-Control-Allow-Origin", "*");
-      res.set("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
-      res.set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    },
-  })
-);
+app.use("/uploads", express.static("uploads", {
+  setHeaders: (res) => {
+    res.set("Access-Control-Allow-Origin", "*");
+    res.set("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+    res.set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  }
+}));
 
-//  
 // MongoDB Connection
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/Linkipax', {
-      // useNewUrlParser: true,
-      // useUnifiedTopology: true,
-    });
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/Linkipax');
     console.log('Connected to MongoDB');
   } catch (err) {
-    console.error('Failed to connect to MongoDB:', err);
-    process.exit(1); // Exit process on connection failure
-  } 
+    console.error('MongoDB connection error:', err);
+    process.exit(1);
+  }
 };
-
 connectDB();
 
-// Socket.IO Configuration
-let users = {};
+// Initialize Socket.IO 
+initializeSocket(server);
 
-io.on('connection', (socket) => {
-  console.log('New client connected:', socket.id);
-   
-    // Handle user joining a meeting room
-    socket.on('join-meeting', ({ meetingId, username, userId }) => {
-      socket.join(meetingId);
-      console.log(`${username} joined meeting ${meetingId}`);
-      io.to(meetingId).emit('user-joined', { id: socket.id, username, userId });
-    });
-    // Handle user leaving the room
-  socket.on('leave-meeting', ({ meetingId }) => { 
-    socket.leave(meetingId);
-    io.to(meetingId).emit('user-left', { id: socket.id });
-  });
-  // Handle meeting chat messages
-  socket.on('send-message', ({ meetingId, username, message }) => {
-    io.to(meetingId).emit('receive-message', { username, message });
-  });
-  // Map userId to socket.id
-  socket.on('join', (userId) => {
-    users[userId] = socket.id;
-    console.log(`User ${userId} connected with socket ID ${socket.id}`);
-  });
-// Handle incoming messages
-  socket.on('send_message', async (data) => {
-    console.log("Incoming message data:", data);
-    const { senderId, receiverId, content,location,
-      messageType, poll,event,deletedFor,contacts} = data;
-    try {
-      const newMessage = new Message({ sender: senderId, receiver: receiverId, content,location ,messageType, poll,event,deletedFor,contacts});
-      await newMessage.save();
-
-      // Acknowledge the sender
-      socket.emit('message_sent', newMessage);
-
-      // Deliver the message to the receiver if connected
-      if (users[receiverId]) {
-        io.to(users[receiverId]).emit('new_message', newMessage);
-      } else {
-        console.log(`User ${receiverId} is offline. Message will be delivered later.`);
-      }
-    } catch (error) {
-      console.error('Error saving message:', error);
-      socket.emit('message_error', { error: 'Failed to send message' });
-    }
-  });
- // Notification System
- socket.on('send_notification', async (data) => {
-  const { senderId, receiverId, type, message } = data;
-  try {
-    const newNotification = new Notification({ sender: senderId, receiver: receiverId, type, message });
-    await newNotification.save();
-
-    // Send notification to the receiver if connected
-    if (users[receiverId]) {
-      io.to(users[receiverId]).emit('new_notification', newNotification);
-    } else {
-      console.log(`User ${receiverId} is offline. Notification will be delivered later.`);
-    }
-  } catch (error) {
-    console.error('Error saving notification:', error);
-    socket.emit('notification_error', { error: 'Failed to send notification' });
-  }
-});
-  socket.on('disconnect', () => {
-    console.log(`Client with socket ID ${socket.id} disconnected`);
-    for (const userId in users) {
-      if (users[userId] === socket.id) {
-        delete users[userId];
-        console.log(`User ${userId} disconnected`);
-        break;
-      }
-    }
-  });
-});
-
-
-// GraphQL Setup
+// Apollo GraphQL Setup
 const apolloServer = new ApolloServer({ typeDefs, resolvers });
 const startApolloServer = async () => {
   await apolloServer.start();
   apolloServer.applyMiddleware({ app });
 };
 startApolloServer();
-// Export io to be used in other parts of your app (like routes)
-module.exports = { io };
 
-app.use('/user', userRoutes);
-app.use('/api/posts', postRoutes);
-app.use('/api/comments', commentRoutes);
-app.use('/api/users', usersRoutes);
-app.use('/api/user/suggestions', suggest);
-app.use('/api/trending-topics', trendingTopicRoutes);
-app.use('/api/events', eventRoutes);
-app.use('/profile', userDetailsRoutes);
-app.use('/openai', openAISuggestionRoutes);
-app.use('/external', trendingRoutes);
-app.use('/experience', experienceRoutes);
-app.use('/education', educationRoutes); 
-app.use('/profile-view', profileViewRoutes);
-app.use('/post-impression', postImpressionRoutes);//PostImpression
-app.use('/skill', skillRoutes);
-app.use('/', messageRoutes);//message
-app.use('/notification', notificationRoutes);
-app.use('/upload', resumeRoutes);
-app.use('/room',rooms);
-app.use('/',status)
-app.use('/api/status',statusedit) 
-app.use('/api/short', short)
-app.use("/connections", connection); //connection
-app.use('/api/groups', require('./routes/grouproute'));//group
-// Health Check Route
+// Routes
+app.use('/user', require('./routes/userroutes'));
+app.use('/api/posts', require('./routes/Postroutes'));
+app.use('/api/comments', require('./routes/Commentroutes'));
+app.use('/api/users', require('./routes/UsersRoutes'));
+app.use('/api/user/suggestions', require('./routes/suggestroute'));
+app.use('/api/trending-topics', require('./routes/Trendingroute'));
+app.use('/api/events', require('./routes/Eventroute'));
+app.use('/profile', require('./routes/userDetails'));
+app.use('/experience', require('./routes/experienceRoutes'));
+app.use('/education', require('./routes/educationRoutes'));
+app.use('/openai', require('./routes/openaisuggestroutes'));
+app.use('/external', require('./routes/externalapitrendingRoutes'));
+app.use('/profile-view', require('./routes/Profileviewroute'));
+app.use('/post-impression', require('./routes/PostImpressionroutes'));
+app.use('/skill', require('./routes/skillroute'));
+app.use('/', require('./routes/messageroute'));
+app.use('/api/notifications', require('./routes/notificationroute'));
+app.use('/upload', require('./routes/Resumeroute'));
+app.use('/api/room', require('./routes/roomRoute'));
+app.use('/', require('./routes/statusroutes'));
+app.use('/api/status', require('./routes/statusedit'));
+app.use('/api/short', require('./routes/shortRoutes'));
+app.use("/connections", require('./routes/connectionroute'));
+app.use('/api/groups', require('./routes/grouproute'));
+
+// Health Check
 app.get('/health', (req, res) => {
-  res.status(200).send('Server is healthy');       
+  res.status(200).send('Server is healthy');
 });
-app.set('io', io);
-// 404 Handler for Undefined Routes
+
+// 404 Handler
 app.use((req, res) => {
-  res.status(404).json({ message: `Route ${req.originalUrl} not found` }); 
+  res.status(404).json({ message: `Route ${req.originalUrl} not found` });
 });
 
 // Global Error Handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send({ message: 'Something went wrong!', error: err.message });
-}); 
+});
 
 // Graceful Shutdown
 process.on('SIGINT', async () => {
-  console.log('Server is shutting down...');
+  console.log('Graceful shutdown initiated...');
   server.close(async () => {
     await mongoose.connection.close();
     console.log('MongoDB connection closed.');
     process.exit(0);
   });
 });
-initializeSocket(io);
+ 
+
 // Start Server
 const port = process.env.PORT || 5000;
-server.listen(port, () => { 
-  console.log(`Server running on http://localhost:${port}`);
+
+server.listen(port, '0.0.0.0', () => {
+  console.log(`Server running at https://0.0.0.0:${port}`);
 });
+  

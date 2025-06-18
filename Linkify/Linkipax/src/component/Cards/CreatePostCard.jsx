@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   Button,
@@ -8,6 +8,7 @@ import {
   Alert,
 } from "react-bootstrap";
 import axios from "axios";
+import notificationService from "../../services/notificationService"; // Adjust path as needed
 import "./CreatePostCard.css";
 
 const CreatePostCard = ({ userId }) => {
@@ -20,6 +21,89 @@ const CreatePostCard = ({ userId }) => {
   const [isPublic, setIsPublic] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Push notification states
+  const [pushPermission, setPushPermission] = useState(Notification.permission);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+
+  // On mount, check existing subscription
+  useEffect(() => {
+    async function checkSubscription() {
+      if (notificationService.isSupported) {
+        const subscribed = await notificationService.checkAndRenewSubscription();
+        setIsSubscribed(subscribed);
+      }
+    }
+    checkSubscription();
+  }, []);
+
+  // Request permission and subscribe to push notifications
+  const subscribeToPush = async () => {
+    try {
+      if (!notificationService.isSupported) {
+        alert("Push notifications are not supported in this browser.");
+        return false;
+      }
+
+      if (pushPermission !== "granted") {
+        const permission = await Notification.requestPermission();
+        setPushPermission(permission);
+        if (permission !== "granted") {
+          alert("Push notification permission denied.");
+          return false;
+        }
+      }
+
+      const subscription = await notificationService.subscribe(userId);
+      if (subscription) {
+        setIsSubscribed(true);
+        // Optionally send subscription object to backend here if not done inside subscribe()
+        await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/notifications/push-subscriptions`,
+          {
+            userId,
+            subscription,
+          }
+        );
+        return true;
+      }
+    } catch (err) {
+      console.error("Push subscription error:", err);
+      setError("Failed to subscribe to push notifications.");
+      return false;
+    }
+  };
+
+  // Function to send notification (existing backend API)
+  const sendPostNotification = async (postId) => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL;
+
+      const notificationTitle = title
+        ? `New Post: ${title}`
+        : "New Post Created";
+      const notificationMessage = content
+        ? `You created: "${content.substring(0, 30)}${
+            content.length > 30 ? "..." : ""
+          }"`
+        : "You created a new post";
+
+      await axios.post(`${apiUrl}/api/notifications`, {
+        userId,
+        title: notificationTitle,
+        message: notificationMessage,
+        type: "post",
+        status: "unread",
+        actionUrl: `/posts/${postId}`,
+        createdBy: userId,
+      });
+
+      // Optionally trigger push notification from backend here
+      // e.g., your backend might send push notifications to all user subscriptions
+    } catch (error) {
+      console.error("Failed to send notification:", error);
+    }
+  };
 
   const handleMediaUpload = async (file) => {
     try {
@@ -88,6 +172,14 @@ const CreatePostCard = ({ userId }) => {
       const response = await axios.post(`${apiUrl}/api/posts`, newPost);
 
       if (response.status === 200 || response.status === 201) {
+        // After post creation, send notification in app
+        await sendPostNotification(response.data._id);
+
+        // Try to subscribe to push notifications (only if not subscribed)
+        if (!isSubscribed) {
+          await subscribeToPush();
+        }
+
         alert("Post created successfully!");
         setTitle("");
         setContent("");

@@ -1,0 +1,519 @@
+/* Navbar container with transparent glossy effect */
+.navbars {
+    background-color: rgba(0, 0, 0, 0); /* semi-transparent white */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px); /* for Safari */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 1rem 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3); /* optional soft border */
+  }
+  
+  .navbar-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+  
+  /* Logo */
+  .navbar-logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    text-decoration: none;
+  }
+  
+  /* Right side elements */
+  .navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    color: whitesmoke;
+  }
+  
+  /* Language toggle */
+  .language-toggle {
+    background: none;
+    border: none;
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0.5rem;
+  }
+  
+  /* Mobile menu button */
+  .navbar-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+  }
+  
+  .hamburger {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background-color: #4b5563;
+    position: relative;
+    transition: all 0.3s ease;
+  }
+  
+  .hamburger.open {
+    background-color: transparent;
+  }
+  
+  .hamburger.open::before {
+    transform: rotate(45deg);
+    top: 0;
+  }
+  
+  .hamburger.open::after {
+    transform: rotate(-45deg);
+    top: 0;
+  }
+  
+  .hamburger::before,
+  .hamburger::after {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 2px;
+    background-color: #4b5563;
+    transition: all 0.3s ease;
+  }
+  
+  .hamburger::before {
+    top: -6px;
+  }
+  
+  .hamburger::after {
+    top: 6px;
+  }
+  
+  /* Navigation menu */
+  .navbar-menu {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .navbar-item {
+    display: flex;
+    align-items: center;
+  }
+  
+  .navbar-link {
+    color: whitesmoke;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem 0;
+    transition: color 0.3s ease;
+  }
+  
+  .navbar-link:hover {
+    color: #2563eb;
+  }
+  
+  .login-btn {
+    color: ;
+  }
+  
+  .signup-btn {
+    background-color: #238636;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+  }
+  
+  .signup-btn:hover {
+    background-color: #1d64bf;
+    color: white;
+  }
+  
+  /* Responsive styles */
+  @media (max-width: 768px) {
+    .navbar-toggle {
+      display: flex;
+    }
+  
+    .navbar-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      background-color: white;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem 0;
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+  
+    .navbar-menu.active {
+      max-height: 500px;
+    }
+  
+    .navbar-item {
+      width: 100%;
+      justify-content: center;
+    }
+  
+    .navbar-link {
+      width: 100%;
+      text-align: center;
+      padding: 1rem;
+    }
+  }
+  /* Add these styles to your existing MainNavbar.css */
+  .language-toggle-container {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .language-toggle {
+    background: none;
+    border: none;
+    color: whitesmoke;
+    cursor: pointer;
+    padding: 8px 12px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.3s ease;
+  }
+  
+  .language-toggle:hover {
+    color: #2563eb;
+  }
+  
+  .language-arrow {
+    font-size: 10px;
+    margin-left: 4px;
+    transition: transform 0.3s ease;
+  }
+  
+  .language-toggle-container:hover .language-arrow {
+    transform: rotate(180deg);
+  }
+  
+  .language-modal {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: rgba(15, 15, 15, 0.9);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 1000;
+    min-width: 220px;
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    transform: translateY(10px);
+  }
+  
+  .language-toggle-container:hover .language-modal,
+  .language-toggle-container:focus-within .language-modal {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  
+  .language-modal-content {
+    padding: 12px 0;
+  }
+  
+  .language-modal h4 {
+    margin: 0 0 8px 0;
+    padding: 0 16px 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+  }
+  
+  .language-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  
+  .language-option {
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  .language-option:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+  }
+  
+  .language-option.selected {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    font-weight: bold;
+  }
+  
+  .language-flag {
+    width: 24px;
+    text-align: center;
+    margin-right: 12px;
+    font-weight: bold;
+  }
+  
+  .language-name {
+    flex: 1;
+    margin-right: 12px;
+  }
+  
+  .language-country {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 12px;
+  }
+  
+  /* Scrollbar styling */
+  .language-list::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .language-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  .language-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+  }
+  
+  /* For mobile responsiveness */
+  @media (max-width: 768px) {
+    .language-modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -40%);
+      width: 80%;
+      max-width: 300px;
+      background: rgba(20, 20, 20, 0.95);
+    }
+    
+    .language-toggle-container:focus-within .language-modal {
+      transform: translate(-50%, -50%);
+    }
+    
+    .language-list {
+      max-height: 60vh;
+    }
+  }
+  /* Enhanced Navbar with Glossy Hover Effects */
+/* .navbar {
+    background-color: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: .5rem .4rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  } */
+  
+  /* Enhanced Navbar Links with Glossy Effect */
+  .navbar-link {
+    color: whitesmoke;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    position: relative;
+    transition: all 0.4s ease;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .navbar-link::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      to bottom right,
+      rgba(255, 255, 255, 0.3) 0%,
+      rgba(255, 255, 255, 0) 60%
+    );
+    transform: rotate(30deg);
+    transition: all 0.5s ease;
+    opacity: 0;
+  }
+  
+  .navbar-link:hover {
+    color: #e9ecf2;
+    text-shadow: 0 0 8px rgba(37, 99, 235, 0.3);
+  }
+  
+  .navbar-link:hover::before {
+    opacity: 1;
+    top: -20%;
+    left: -20%;
+  }
+  
+  /* Enhanced Buttons with Glossy Effect */
+  .login-btn {
+    color: whitesmoke;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .login-btn::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      to bottom right,
+      rgba(255, 255, 255, 0.4) 0%,
+      rgba(255, 255, 255, 0) 60%
+    );
+    transform: rotate(30deg);
+    transition: all 0.5s ease;
+    opacity: 0;
+  }
+  
+  .login-btn:hover {
+    color: #eaedf5;
+    text-shadow: 0 0 8px rgba(37, 99, 235, 0.3);
+  }
+  
+  .login-btn:hover::before {
+    opacity: 1;
+    top: -20%;
+    left: -20%;
+  }
+  
+  .signup-btn {
+    background-color: #238636;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+    font-weight: 500;
+  }
+  
+  .signup-btn::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      to bottom right,
+      rgba(255, 255, 255, 0.4) 0%,
+      rgba(255, 255, 255, 0) 60%
+    );
+    transform: rotate(30deg);
+    transition: all 0.5s ease;
+    opacity: 0;
+  }
+  
+  .signup-btn:hover {
+    background-color: #2ea043;
+    box-shadow: 0 0 15px rgba(46, 160, 67, 0.4);
+  }
+  
+  .signup-btn:hover::before {
+    opacity: 1;
+    top: -20%;
+    left: -20%;
+  }
+  
+  /* Enhanced Language Toggle */
+  .language-toggle {
+    background: none;
+    border: none;
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .language-toggle::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      to bottom right,
+      rgba(255, 255, 255, 0.3) 0%,
+      rgba(255, 255, 255, 0) 60%
+    );
+    transform: rotate(30deg);
+    transition: all 0.5s ease;
+    opacity: 0;
+  }
+  
+  .language-toggle:hover {
+    color: whitesmoke;
+    text-shadow: 0 0 8px rgba(37, 99, 235, 0.3);
+  }
+  
+  .language-toggle:hover::before {
+    opacity: 1;
+    top: -20%;
+    left: -20%;
+  }
+  
+  /* Mobile menu adjustments */
+  @media (max-width: 768px) {
+    .navbar-link,
+    .login-btn,
+    .signup-btn,
+    .language-toggle {
+      width: 100%;
+      text-align: center;
+      padding: 1rem;
+      border-radius: 0;
+    }
+    
+    .navbar-link:hover::before,
+    .login-btn:hover::before,
+    .signup-btn:hover::before,
+    .language-toggle:hover::before {
+      display: none;
+    }
+  }

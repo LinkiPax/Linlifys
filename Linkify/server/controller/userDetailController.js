@@ -2,6 +2,7 @@ const { connections } = require("mongoose");
 const UserDetails = require("../model/adddatamodel");
 const User = require("../model/userModel"); // Assuming this is your User model from API 1
 const multer = require("multer");
+require('dotenv').config();
 
 // Multer Setup for File Uploads
 const storage = multer.diskStorage({
@@ -19,7 +20,7 @@ const upload = multer({ storage });
 const addUserDetails = async (req, res) => {
   const { userId,  socialLinks, interests, location, occupation, achievements, hobbies } = req.body;
   console.log(req.file);
-  const backgroundImage =`http://localhost:5000/${req.file.path}`;
+  const backgroundImage =`${process.env.SERVER_BASE_URL}/${req.file.path}`;
   try {
     const userDetails = new UserDetails({
       userId,

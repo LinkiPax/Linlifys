@@ -16,9 +16,10 @@ const getMutualConnections = async (userId, targetUserId) => {
   return user.connections.filter(connId => 
     targetUser.connections.some(targetConnId => 
       targetConnId.equals(connId)
-  ).length);
+    )
+  ).length;
 };
-
+// Get connection suggestions
 // Get connection suggestions
 router.get('/suggestions', async (req, res) => {
   try {
@@ -34,35 +35,51 @@ router.get('/suggestions', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Exclude existing connections, pending requests, and blocked users
+    // Convert userId to ObjectId for proper comparison
+    const userIdObj = new mongoose.Types.ObjectId(userId);
+
+    // Exclude existing connections, pending requests, blocked users, and self
     const excludedIds = [
       ...user.connections,
       ...user.pendingRequests,
       ...user.blockedUsers,
-      userId
+      userIdObj  // Make sure this is an ObjectId
     ];
 
     // Find users with similar industry or skills
     const suggestions = await User.aggregate([
-      { $match: { _id: { $nin: excludedIds } } },
-      { $addFields: { 
-        score: {
-          $add: [
-            { $cond: [{ $in: ["$industry", [user.industry]] }, 5, 0] },
-            {
-              $size: {
-                $setIntersection: [
-                  { $ifNull: ["$skills", []] }, // <-- fix here
-                  user.skills || []
-                ]
+      { 
+        $match: { 
+          _id: { $nin: excludedIds } 
+        } 
+      },
+      { 
+        $addFields: { 
+          score: {
+            $add: [
+              { $cond: [{ $in: ["$industry", [user.industry]] }, 5, 0] },
+              {
+                $size: {
+                  $setIntersection: [
+                    { $ifNull: ["$skills", []] },
+                    user.skills || []
+                  ]
+                }
               }
-            }
-          ]
+            ]
+          }
         }
-      }},
+      },
       { $sort: { score: -1, createdAt: -1 } },
       { $limit: 10 },
-      { $project: { name: 1, profilePicture: 1, jobTitle: 1, company: 1 } }
+      { 
+        $project: { 
+          name: 1, 
+          profilePicture: 1, 
+          jobTitle: 1, 
+          company: 1 
+        } 
+      }
     ]);
     
     // Add mutual connection count
@@ -79,7 +96,6 @@ router.get('/suggestions', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
-
 // Connection request
 router.post('/request', async (req, res) => {
   try {
@@ -198,6 +214,8 @@ router.post('/decline', async (req, res) => {
 });
 
 // Block user
+// Block user
+// Block user
 router.post('/block', async (req, res) => {
   try {
     const { userId, targetUserId } = req.body;
@@ -206,14 +224,27 @@ router.post('/block', async (req, res) => {
       return res.status(400).json({ message: 'Invalid user IDs' });
     }
 
-    await User.findByIdAndUpdate(userId, {
-      $addToSet: { blockedUsers: targetUserId },
-      $pull: { 
-        connections: targetUserId,
-        connectionRequests: targetUserId,
-        pendingRequests: targetUserId
-      }
-    });
+    // Update both users
+    await Promise.all([
+      // For the blocking user (A)
+      User.findByIdAndUpdate(userId, {
+        $addToSet: { blockedUsers: targetUserId },
+        $pull: { 
+          connections: targetUserId,
+          connectionRequests: targetUserId,
+          pendingRequests: targetUserId
+        }
+      }),
+      // For the blocked user (B)
+      User.findByIdAndUpdate(targetUserId, {
+        $addToSet: { blockedUsers: userId }, // Add A to B's blockedUsers
+        $pull: {
+          connections: userId, // Remove A from B's connections
+          connectionRequests: userId,
+          pendingRequests: userId
+        }
+      })
+    ]);
 
     res.json({ message: 'User blocked' });
   } catch (error) {
@@ -221,7 +252,6 @@ router.post('/block', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
-
 // Get network
 router.get('/network', async (req, res) => {
   try {
@@ -252,6 +282,32 @@ router.get('/network', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+// Unblock user
+// Unblock user
+// Unblock user
+router.post('/unblock', async (req, res) => {
+  try {
+    const { userId, targetUserId } = req.body;
+    
+    if (!isValidObjectId(userId) || !isValidObjectId(targetUserId)) {
+      return res.status(400).json({ message: 'Invalid user IDs' });
+    }
 
+    // Remove mutual blocking
+    await Promise.all([
+      User.findByIdAndUpdate(userId, {
+        $pull: { blockedUsers: targetUserId }
+      }),
+      User.findByIdAndUpdate(targetUserId, {
+        $pull: { blockedUsers: userId }
+      })
+    ]);
+
+    res.json({ message: 'User unblocked' });
+  } catch (error) {
+    console.error('Error unblocking user:', error);
+    res.status(500).json({ message: 'Server error' });
+  } 
+});
 
 module.exports = router;

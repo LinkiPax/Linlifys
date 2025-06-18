@@ -6,7 +6,6 @@ import {
   Button,
   Tab,
   Tabs,
-  ListGroup,
   Badge,
   Spinner,
   Modal,
@@ -16,18 +15,20 @@ import {
   Form,
   OverlayTrigger,
   Tooltip,
+  Pagination,
 } from "react-bootstrap";
 import {
   IoMdNotificationsOutline,
   IoMdCheckmarkCircleOutline,
-  IoMdTrash,
   IoMdRefresh,
   IoMdSettings,
   IoMdTime,
   IoMdCheckmark,
   IoMdClose,
+  IoMdArrowDropleft,
+  IoMdArrowDropright,
 } from "react-icons/io";
-import { BsThreeDotsVertical, BsFilter } from "react-icons/bs";
+import { BsFilter } from "react-icons/bs";
 import io from "socket.io-client";
 import axios from "axios";
 import "./NotificationPage.css";
@@ -47,50 +48,246 @@ const NotificationPage = () => {
   });
   const [filterDate, setFilterDate] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    pages: 1,
+  });
+  const [pushSupported, setPushSupported] = useState(false);
+  const [pushPermission, setPushPermission] = useState("default");
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [subscription, setSubscription] = useState(null);
 
-  // Fetch Notifications with filters
+  // Check for push notification support
+  useEffect(() => {
+    if ("serviceWorker" in navigator && "PushManager" in window) {
+      setPushSupported(true);
+      checkPushPermission();
+      checkSubscription();
+    }
+  }, []);
+
+  const checkPushPermission = () => {
+    navigator.permissions
+      .query({ name: "notifications" })
+      .then((permissionStatus) => {
+        setPushPermission(permissionStatus.state);
+        permissionStatus.onchange = () => {
+          setPushPermission(permissionStatus.state);
+        };
+      });
+  };
+
+  const checkSubscription = async () => {
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      setIsSubscribed(!!sub);
+      setSubscription(sub);
+    } catch (error) {
+      console.error("Error checking subscription:", error);
+    }
+  };
+
+  const registerServiceWorker = async () => {
+    try {
+      const registration = await navigator.serviceWorker.register(
+        "/sw-notifications.js"
+      );
+      console.log("Service Worker registered:", registration);
+      return registration;
+    } catch (error) {
+      console.error("Service Worker registration failed:", error);
+      throw error;
+    }
+  };
+
+  const urlBase64ToUint8Array = (base64String) => {
+    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding)
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
+
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  };
+
+  const subscribeToPush = async () => {
+    try {
+      const registration = await registerServiceWorker();
+      const existingSubscription =
+        await registration.pushManager.getSubscription();
+
+      if (existingSubscription) {
+        console.log("Already subscribed:", existingSubscription);
+        return existingSubscription;
+      }
+
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/notifications/vapid-public-key`
+      );
+      const vapidPublicKey = response.data.publicKey;
+      const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+
+      const newSubscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: convertedVapidKey,
+      });
+
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/notifications/subscribe`,
+        {
+          subscription: newSubscription,
+          userId: localStorage.getItem("userId"),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+          },
+        }
+      );
+
+      setSubscription(newSubscription);
+      setIsSubscribed(true);
+      return newSubscription;
+    } catch (error) {
+      console.error("Failed to subscribe:", error);
+      throw error;
+    }
+  };
+
+  const unsubscribeFromPush = async () => {
+    try {
+      if (!subscription) return;
+
+      await subscription.unsubscribe();
+
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/notifications/unsubscribe`,
+        {
+          subscription,
+          userId: localStorage.getItem("userId"),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+          },
+        }
+      );
+
+      setSubscription(null);
+      setIsSubscribed(false);
+    } catch (error) {
+      console.error("Failed to unsubscribe:", error);
+      throw error;
+    }
+  };
+
+  const requestPushPermission = async () => {
+    try {
+      const permission = await Notification.requestPermission();
+      setPushPermission(permission);
+      if (permission === "granted") {
+        await subscribeToPush();
+      }
+      return permission;
+    } catch (error) {
+      console.error("Permission request failed:", error);
+      throw error;
+    }
+  };
+
   const fetchNotifications = useCallback(
-    async (filter = "all", dateFilter = "all", search = "") => {
+    async (filter = "all", dateFilter = "all", search = "", page = 1) => {
       setLoading(true);
       setError(null);
 
       try {
+        const userId = localStorage.getItem("userId");
+        if (!userId) {
+          throw new Error("User ID not found");
+        }
+
+        const params = {
+          userId,
+          status: filter === "all" ? undefined : filter,
+          search,
+          page,
+          limit: pagination.limit,
+          sort: "newest",
+        };
+
+        if (dateFilter !== "all") {
+          const now = new Date();
+          let startDate = new Date();
+
+          if (dateFilter === "today") {
+            startDate.setHours(0, 0, 0, 0);
+          } else if (dateFilter === "week") {
+            startDate.setDate(startDate.getDate() - 7);
+          } else if (dateFilter === "month") {
+            startDate.setMonth(startDate.getMonth() - 1);
+          }
+
+          params.createdAt = JSON.stringify({
+            $gte: startDate.toISOString(),
+            $lte: now.toISOString(),
+          });
+        }
+
         const response = await axios.get(
-          `http://localhost:5000/notification/filter`,
+          `${import.meta.env.VITE_API_URL}/api/notifications`,
           {
-            params: {
-              status: filter,
-              date: dateFilter,
-              search,
-            },
+            params,
             headers: {
               Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
             },
-            withCredentials: true,
           }
         );
+
         setNotifications(response.data.notifications || []);
+        setPagination({
+          page: response.data.pagination.page,
+          limit: response.data.pagination.limit,
+          total: response.data.pagination.total,
+          pages: response.data.pagination.pages,
+        });
       } catch (err) {
-        setError("Failed to fetch notifications. Please try again.");
+        setError(
+          err.response?.data?.error ||
+            err.message ||
+            "Failed to fetch notifications. Please try again."
+        );
         console.error("Error fetching notifications:", err);
       } finally {
         setLoading(false);
       }
     },
-    []
+    [pagination.limit]
   );
 
-  // Mark Notification as Read
   const markAsRead = async (notificationId) => {
     try {
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        throw new Error("User ID not found");
+      }
+
       await axios.patch(
-        `http://localhost:5000/notification/mark-as-read/${notificationId}`,
-        {},
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/notifications/${notificationId}/read`,
+        { userId },
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
           },
-          withCredentials: true,
         }
       );
       setNotifications((prev) =>
@@ -99,17 +296,24 @@ const NotificationPage = () => {
         )
       );
     } catch (err) {
-      setError("Failed to mark notification as read.");
-      console.error("Error marking notification as read:", err);
+      setError(
+        err.response?.data?.error ||
+          err.message ||
+          "Failed to mark notification as read."
+      );
     }
   };
 
-  // Mark All Notifications as Read
   const markAllAsRead = async () => {
     try {
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        throw new Error("User ID not found");
+      }
+
       await axios.patch(
-        "http://localhost:5000/notification/mark-all-as-read",
-        {},
+        `${import.meta.env.VITE_API_URL}/api/notifications/read-all`,
+        { userId },
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
@@ -118,51 +322,78 @@ const NotificationPage = () => {
       );
       setNotifications((prev) => prev.map((n) => ({ ...n, status: "read" })));
     } catch (err) {
-      setError("Failed to mark all notifications as read.");
-      console.error("Error marking all notifications as read:", err);
+      setError(
+        err.response?.data?.error ||
+          err.message ||
+          "Failed to mark all notifications as read."
+      );
     }
   };
 
-  // Clear All Notifications
   const clearAllNotifications = async () => {
     try {
-      await axios.delete("http://localhost:5000/notification/clear-all", {
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        throw new Error("User ID not found");
+      }
+
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/notifications`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
         },
+        data: { userId },
       });
       setNotifications([]);
+      setPagination((prev) => ({ ...prev, total: 0, pages: 1, page: 1 }));
       setShowClearModal(false);
     } catch (err) {
-      setError("Failed to clear notifications.");
-      console.error("Error clearing notifications:", err);
+      setError(
+        err.response?.data?.error ||
+          err.message ||
+          "Failed to clear notifications."
+      );
     }
   };
 
-  // Delete single notification
   const deleteNotification = async (notificationId) => {
     try {
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        throw new Error("User ID not found");
+      }
+
       await axios.delete(
-        `http://localhost:5000/notification/${notificationId}`,
+        `${import.meta.env.VITE_API_URL}/api/notifications/${notificationId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
           },
+          data: { userId },
         }
       );
       setNotifications((prev) => prev.filter((n) => n._id !== notificationId));
+      setPagination((prev) => ({
+        ...prev,
+        total: prev.total - 1,
+        pages: Math.ceil((prev.total - 1) / prev.limit),
+      }));
     } catch (err) {
-      setError("Failed to delete notification.");
-      console.error("Error deleting notification:", err);
+      setError(
+        err.response?.data?.error ||
+          err.message ||
+          "Failed to delete notification."
+      );
     }
   };
 
-  // Handle real-time notifications
   useEffect(() => {
-    const socketConnection = io("http://localhost:5000", {
-      withCredentials: true,
-      transports: ["websocket"],
-    });
+    const socketConnection = io(
+      import.meta.env.VITE_API_URL || "${import.meta.env.VITE_API_URL}",
+      {
+        withCredentials: true,
+        transports: ["websocket"],
+      }
+    );
 
     setSocket(socketConnection);
 
@@ -174,8 +405,12 @@ const NotificationPage = () => {
         },
         ...prev,
       ]);
+      setPagination((prev) => ({
+        ...prev,
+        total: prev.total + 1,
+        pages: Math.ceil((prev.total + 1) / prev.limit),
+      }));
 
-      // Remove the new indicator after 3 seconds
       setTimeout(() => {
         setNotifications((prev) =>
           prev.map((n) =>
@@ -190,17 +425,105 @@ const NotificationPage = () => {
     };
   }, []);
 
-  // Fetch notifications when filters change
   useEffect(() => {
-    fetchNotifications(activeTab, filterDate, searchQuery);
-  }, [activeTab, filterDate, searchQuery, fetchNotifications]);
+    fetchNotifications(activeTab, filterDate, searchQuery, pagination.page);
+  }, [activeTab, filterDate, searchQuery, pagination.page, fetchNotifications]);
 
-  // Count unread notifications
   const unreadCount = notifications.filter((n) => n.status === "unread").length;
   const filteredNotifications = notifications.filter((n) => {
     if (activeTab === "all") return true;
     return n.status === activeTab;
   });
+
+  const handlePageChange = (page) => {
+    setPagination((prev) => ({ ...prev, page }));
+  };
+
+  const renderSettingsModal = () => (
+    <Modal show={showSettings} onHide={() => setShowSettings(false)} centered>
+      <Modal.Header closeButton>
+        <Modal.Title>Notification Settings</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Form>
+          <Form.Group className="mb-3">
+            <Form.Check
+              type="switch"
+              id="email-alerts"
+              label="Email notifications"
+              checked={notificationSettings.emailAlerts}
+              onChange={(e) =>
+                setNotificationSettings({
+                  ...notificationSettings,
+                  emailAlerts: e.target.checked,
+                })
+              }
+            />
+          </Form.Group>
+
+          {pushSupported && (
+            <Form.Group className="mb-3">
+              <Form.Label>Push Notifications</Form.Label>
+              <div className="d-flex align-items-center">
+                {pushPermission === "granted" ? (
+                  <Button
+                    variant={isSubscribed ? "danger" : "success"}
+                    size="sm"
+                    onClick={
+                      isSubscribed ? unsubscribeFromPush : subscribeToPush
+                    }
+                    disabled={loading}
+                  >
+                    {isSubscribed ? "Disable Push" : "Enable Push"}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={requestPushPermission}
+                    disabled={loading || pushPermission === "denied"}
+                  >
+                    {pushPermission === "denied"
+                      ? "Permission Denied"
+                      : "Allow Push Notifications"}
+                  </Button>
+                )}
+                <span className="ms-2 text-muted small">
+                  {pushPermission === "granted"
+                    ? isSubscribed
+                      ? "Active"
+                      : "Inactive"
+                    : pushPermission === "denied"
+                    ? "Blocked in browser"
+                    : "Not configured"}
+                </span>
+              </div>
+            </Form.Group>
+          )}
+
+          <Form.Group className="mb-3">
+            <Form.Check
+              type="switch"
+              id="sound-enabled"
+              label="Notification sound"
+              checked={notificationSettings.soundEnabled}
+              onChange={(e) =>
+                setNotificationSettings({
+                  ...notificationSettings,
+                  soundEnabled: e.target.checked,
+                })
+              }
+            />
+          </Form.Group>
+        </Form>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="primary" onClick={() => setShowSettings(false)}>
+          Save Settings
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  );
 
   return (
     <Container fluid className="notification-container px-lg-4 py-4">
@@ -222,9 +545,15 @@ const NotificationPage = () => {
               <Button
                 variant="outline-secondary"
                 onClick={() =>
-                  fetchNotifications(activeTab, filterDate, searchQuery)
+                  fetchNotifications(
+                    activeTab,
+                    filterDate,
+                    searchQuery,
+                    pagination.page
+                  )
                 }
                 className="me-2"
+                disabled={loading}
               >
                 <IoMdRefresh size={18} />
               </Button>
@@ -233,6 +562,7 @@ const NotificationPage = () => {
                 <Dropdown.Toggle
                   variant="outline-primary"
                   id="dropdown-settings"
+                  disabled={loading}
                 >
                   <IoMdSettings size={18} />
                 </Dropdown.Toggle>
@@ -253,7 +583,6 @@ const NotificationPage = () => {
         </Col>
       </Row>
 
-      {/* Error Message */}
       {error && (
         <Row className="mb-3">
           <Col>
@@ -264,7 +593,6 @@ const NotificationPage = () => {
         </Row>
       )}
 
-      {/* Filters and Search */}
       <Row className="mb-4">
         <Col md={8}>
           <div className="d-flex align-items-center">
@@ -274,12 +602,14 @@ const NotificationPage = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="me-3"
+              disabled={loading}
             />
 
             <Dropdown>
               <Dropdown.Toggle
                 variant="outline-secondary"
                 id="dropdown-date-filter"
+                disabled={loading}
               >
                 <BsFilter size={16} className="me-1" />
                 {filterDate === "all"
@@ -309,7 +639,6 @@ const NotificationPage = () => {
         </Col>
       </Row>
 
-      {/* Notification Tabs */}
       <Row>
         <Col>
           <Tabs
@@ -323,7 +652,7 @@ const NotificationPage = () => {
                 <span>
                   All{" "}
                   <Badge bg="secondary" className="ms-1">
-                    {notifications.length}
+                    {pagination.total}
                   </Badge>
                 </span>
               }
@@ -359,7 +688,7 @@ const NotificationPage = () => {
                 <span>
                   Read{" "}
                   <Badge bg="success" className="ms-1">
-                    {notifications.length - unreadCount}
+                    {pagination.total - unreadCount}
                   </Badge>
                 </span>
               }
@@ -372,10 +701,40 @@ const NotificationPage = () => {
               />
             </Tab>
           </Tabs>
+
+          {pagination.pages > 1 && (
+            <div className="d-flex justify-content-center mt-4">
+              <Pagination>
+                <Pagination.Prev
+                  onClick={() => handlePageChange(pagination.page - 1)}
+                  disabled={pagination.page === 1 || loading}
+                >
+                  <IoMdArrowDropleft />
+                </Pagination.Prev>
+                {Array.from({ length: pagination.pages }, (_, i) => i + 1).map(
+                  (number) => (
+                    <Pagination.Item
+                      key={number}
+                      active={number === pagination.page}
+                      onClick={() => handlePageChange(number)}
+                      disabled={loading}
+                    >
+                      {number}
+                    </Pagination.Item>
+                  )
+                )}
+                <Pagination.Next
+                  onClick={() => handlePageChange(pagination.page + 1)}
+                  disabled={pagination.page === pagination.pages || loading}
+                >
+                  <IoMdArrowDropright />
+                </Pagination.Next>
+              </Pagination>
+            </div>
+          )}
         </Col>
       </Row>
 
-      {/* Clear All Modal */}
       <Modal
         show={showClearModal}
         onHide={() => setShowClearModal(false)}
@@ -398,68 +757,11 @@ const NotificationPage = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Settings Modal */}
-      <Modal show={showSettings} onHide={() => setShowSettings(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Notification Settings</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Check
-                type="switch"
-                id="email-alerts"
-                label="Email notifications"
-                checked={notificationSettings.emailAlerts}
-                onChange={(e) =>
-                  setNotificationSettings({
-                    ...notificationSettings,
-                    emailAlerts: e.target.checked,
-                  })
-                }
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Check
-                type="switch"
-                id="push-notifications"
-                label="Push notifications"
-                checked={notificationSettings.pushNotifications}
-                onChange={(e) =>
-                  setNotificationSettings({
-                    ...notificationSettings,
-                    pushNotifications: e.target.checked,
-                  })
-                }
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Check
-                type="switch"
-                id="sound-enabled"
-                label="Notification sound"
-                checked={notificationSettings.soundEnabled}
-                onChange={(e) =>
-                  setNotificationSettings({
-                    ...notificationSettings,
-                    soundEnabled: e.target.checked,
-                  })
-                }
-              />
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="primary" onClick={() => setShowSettings(false)}>
-            Save Settings
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      {renderSettingsModal()}
     </Container>
   );
 };
 
-// Notification List Component
 const NotificationList = ({
   notifications,
   markAsRead,
@@ -511,7 +813,7 @@ const NotificationList = ({
                     }`}
                   >
                     {notification.type === "message" && (
-                      <IoMdCommentDots size={20} />
+                      <IoMdNotificationsOutline size={20} />
                     )}
                     {notification.type === "alert" && (
                       <IoMdNotificationsOutline size={20} />
@@ -530,7 +832,7 @@ const NotificationList = ({
                     <p className="mb-1">{notification.message}</p>
                     <small className="text-muted">
                       <IoMdTime className="me-1" />
-                      {new Date(notification.date).toLocaleString()}
+                      {new Date(notification.createdAt).toLocaleString()}
                     </small>
                   </div>
                 </div>
@@ -547,6 +849,7 @@ const NotificationList = ({
                         size="sm"
                         className="me-2"
                         onClick={() => markAsRead(notification._id)}
+                        disabled={loading}
                       >
                         <IoMdCheckmark size={16} />
                       </Button>
@@ -560,6 +863,7 @@ const NotificationList = ({
                       variant="outline-danger"
                       size="sm"
                       onClick={() => deleteNotification(notification._id)}
+                      disabled={loading}
                     >
                       <IoMdClose size={16} />
                     </Button>

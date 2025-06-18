@@ -47,7 +47,9 @@ const SuggestedConnectionsCard = () => {
       if (!userId) throw new Error("Please log in to see suggestions");
 
       const response = await axios.get(
-        `http://localhost:5000/api/user/suggestions/suggestions?userId=${userId}`
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/user/suggestions/suggestions?userId=${userId}`
       );
 
       // Ensure we always have an array, even if API response structure varies
@@ -72,10 +74,13 @@ const SuggestedConnectionsCard = () => {
         return;
       }
 
-      await axios.post("http://localhost:5000/api/user/suggestions/request", {
-        userId,
-        targetUserId,
-      });
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/user/suggestions/request`,
+        {
+          userId,
+          targetUserId,
+        }
+      );
 
       setSuggestions((prev) =>
         prev.map((user) =>
@@ -100,7 +105,7 @@ const SuggestedConnectionsCard = () => {
     }
 
     try {
-      await axios.post("http://localhost:5000/api/messages", {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/messages`, {
         recipient: selectedUser._id,
         content: messageContent,
       });

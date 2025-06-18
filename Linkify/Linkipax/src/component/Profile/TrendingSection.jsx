@@ -18,7 +18,7 @@ const TrendingSection = () => {
         setError(false);
 
         const response = await axios.get(
-          "http://localhost:5000/external/trending"
+          `${import.meta.env.VITE_API_URL}/external/trending`
         );
         setGoogleTrends(response.data.googleTrends || []);
         setGithubTrends(response.data.githubTrends || []);

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 
-
 import {
   Container,
   Card,
@@ -71,7 +70,7 @@ const ProfilePage = () => {
       setError(null);
       try {
         const response = await axios.get(
-          `http://localhost:5000/user/${userId}`,
+          `${import.meta.env.VITE_API_URL}/user/${userId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
@@ -120,7 +119,7 @@ const ProfilePage = () => {
       };
 
       const response = await axios.put(
-        `http://localhost:5000/user/update-details/${userId}`,
+        `${import.meta.env.VITE_API_URL}/user/update-details/${userId}`,
         updatedData,
         {
           headers: {
@@ -294,10 +293,7 @@ const ProfilePage = () => {
 
             {/* Scrollable Analytics Section */}
             <div ref={analyticsRef} className="scrollable-section mt-5">
-              <AnalyticsDashboard
-                analytics={analytics}
-                profileId={userId}
-              />
+              <AnalyticsDashboard analytics={analytics} profileId={userId} />
             </div>
           </Col>
 

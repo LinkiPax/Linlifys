@@ -30,7 +30,7 @@ ChartJS.register(
   ArcElement
 );
 
-const API_BASE_URL = "http://localhost:5000/post-impression";
+const API_BASE_URL = "${import.meta.env.VITE_API_URL}/post-impression";
 
 const AnalyticsDashboard = ({ profileId }) => {
   // State declarations
@@ -78,7 +78,7 @@ const AnalyticsDashboard = ({ profileId }) => {
     try {
       setLoading((prev) => ({ ...prev, posts: true }));
       const response = await axios.get(
-        `http://localhost:5000/api/posts/user/${profileId}`
+        `${import.meta.env.VITE_API_URL}/api/posts/user/${profileId}`
       );
       setPosts(response.data);
       if (response.data.length > 0) {

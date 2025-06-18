@@ -1,14 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
-import './ShortUpload.css'
-import { 
-  FiUpload, 
-  FiX, 
-  FiMusic, 
-  FiHash, 
+import "./ShortUpload.css";
+import {
+  FiUpload,
+  FiX,
+  FiMusic,
+  FiHash,
   FiAtSign,
   FiCheckCircle,
-  FiEdit2
+  FiEdit2,
 } from "react-icons/fi";
 import { RiMagicLine } from "react-icons/ri";
 import { IoMdAdd } from "react-icons/io";
@@ -34,14 +34,17 @@ const ShortUpload = () => {
   useEffect(() => {
     const checkMobile = () => setIsMobileView(window.innerWidth < 768);
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   // Auto-scroll form section into view on mobile when video is selected
   useEffect(() => {
     if (isMobileView && preview && formSectionRef.current) {
-      formSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      formSectionRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
     }
   }, [preview, isMobileView]);
 
@@ -75,7 +78,7 @@ const ShortUpload = () => {
       alert("Please select a video to upload");
       return;
     }
-  
+
     const formData = new FormData();
     formData.append("video", video);
     formData.append("caption", caption);
@@ -83,20 +86,24 @@ const ShortUpload = () => {
     formData.append("tags", tags);
     formData.append("mentions", mentions);
     formData.append("userId", localStorage.getItem("userId"));
-  
+
     try {
       setUploading(true);
-      const res = await axios.post("http://localhost:5000/api/short/shorts", formData, {
-        onUploadProgress: (e) => {
-          const percent = Math.round((e.loaded * 100) / e.total);
-          setProgress(percent);
-        },
-        headers: {
-          "Content-Type": "multipart/form-data",
-          "Authorization": `Bearer ${localStorage.getItem("token")}` // Add if using auth
-        },
-      });
-  
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/short/shorts`,
+        formData,
+        {
+          onUploadProgress: (e) => {
+            const percent = Math.round((e.loaded * 100) / e.total);
+            setProgress(percent);
+          },
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${localStorage.getItem("token")}`, // Add if using auth
+          },
+        }
+      );
+
       if (res.data.message) {
         setUploadSuccess(true);
         setTimeout(() => {
@@ -107,16 +114,17 @@ const ShortUpload = () => {
       }
     } catch (err) {
       console.error("Upload failed", err);
-      const errorMessage = err.response?.data?.error || 
-                          err.response?.data?.message || 
-                          "Upload failed. Please try again.";
+      const errorMessage =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        "Upload failed. Please try again.";
       alert(errorMessage);
       setUploading(false);
       setProgress(0);
     }
   };
   const resetForm = () => {
-    setCaption("");   
+    setCaption("");
     setVideo(null);
     setPreview(null);
     setUploading(false);
@@ -140,7 +148,11 @@ const ShortUpload = () => {
   };
 
   return (
-    <div className={`short-upload-container ${isMobileView ? 'mobile' : 'desktop'}`}>
+    <div
+      className={`short-upload-container ${
+        isMobileView ? "mobile" : "desktop"
+      }`}
+    >
       {/* Mobile Header */}
       {isMobileView && preview && (
         <div className="mobile-header">
@@ -148,12 +160,12 @@ const ShortUpload = () => {
             <BsArrowLeft size={24} />
           </button>
           <h2>New Reel</h2>
-          <button 
+          <button
             onClick={handleUpload}
             disabled={!video || uploading}
-            className={`upload-button ${uploadSuccess ? 'success' : ''}`}
+            className={`upload-button ${uploadSuccess ? "success" : ""}`}
           >
-            {uploadSuccess ? 'Posted' : 'Share'}
+            {uploadSuccess ? "Posted" : "Share"}
           </button>
         </div>
       )}
@@ -162,7 +174,7 @@ const ShortUpload = () => {
       <div className="content-wrapper">
         {/* Upload Area */}
         {!preview && (
-          <div 
+          <div
             className="upload-area"
             onDragOver={handleDragOver}
             onDrop={handleDrop}
@@ -173,9 +185,7 @@ const ShortUpload = () => {
               </div>
               <h3>Upload Short Video</h3>
               <p>Drag and drop your video here or click to browse</p>
-              <div className="upload-button">
-                Select Video
-              </div>
+              <div className="upload-button">Select Video</div>
               <input
                 type="file"
                 accept="video/*"
@@ -191,11 +201,7 @@ const ShortUpload = () => {
         {/* Video Preview */}
         {preview && (
           <div className="video-preview-container">
-            <video
-              src={preview}
-              controls
-              className="video-preview"
-            />
+            <video src={preview} controls className="video-preview" />
             {!isMobileView && (
               <button onClick={removeVideo} className="remove-video">
                 <FiX />
@@ -227,11 +233,11 @@ const ShortUpload = () => {
 
             {/* Advanced Options */}
             <div className="advanced-options">
-              <button 
+              <button
                 onClick={() => setShowAdvanced(!showAdvanced)}
                 className="toggle-advanced"
               >
-                <IoMdAdd className={`icon ${showAdvanced ? 'open' : ''}`} />
+                <IoMdAdd className={`icon ${showAdvanced ? "open" : ""}`} />
                 {showAdvanced ? "Hide Options" : "More Options"}
               </button>
 
@@ -246,7 +252,7 @@ const ShortUpload = () => {
                       onChange={(e) => setMusic(e.target.value)}
                     />
                   </div>
-                  
+
                   <div className="advanced-field">
                     <FiHash className="field-icon" />
                     <input
@@ -256,7 +262,7 @@ const ShortUpload = () => {
                       onChange={(e) => setTags(e.target.value)}
                     />
                   </div>
-                  
+
                   <div className="advanced-field">
                     <FiAtSign className="field-icon" />
                     <input
@@ -292,7 +298,7 @@ const ShortUpload = () => {
                 <span>{progress}%</span>
               </div>
               <div className="progress-bar">
-                <div 
+                <div
                   className="progress-fill"
                   style={{ width: `${progress}%` }}
                 ></div>
@@ -313,18 +319,18 @@ const ShortUpload = () => {
                 <span>{progress}%</span>
               </div>
               <div className="progress-bar">
-                <div 
+                <div
                   className="progress-fill"
                   style={{ width: `${progress}%` }}
                 ></div>
               </div>
             </div>
           )}
-          
+
           <button
             onClick={handleUpload}
             disabled={!video || uploading}
-            className={`upload-submit ${uploadSuccess ? 'success' : ''}`}
+            className={`upload-submit ${uploadSuccess ? "success" : ""}`}
           >
             {uploadSuccess ? (
               <>
@@ -340,7 +346,8 @@ const ShortUpload = () => {
 
           {/* Privacy Notice */}
           <p className="privacy-notice">
-            By posting, you agree to our Terms and acknowledge our Privacy Policy.
+            By posting, you agree to our Terms and acknowledge our Privacy
+            Policy.
           </p>
         </div>
       )}

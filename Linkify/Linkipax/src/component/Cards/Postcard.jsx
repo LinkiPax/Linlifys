@@ -30,7 +30,7 @@ const Postcard = ({ post }) => {
   const fetchComments = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/posts/get/${postId}/comments`,
+        `${import.meta.env.VITE_API_URL}/api/posts/get/${postId}/comments`,
         {
           headers: {
             "Cache-Control": "no-cache",
@@ -58,7 +58,7 @@ const Postcard = ({ post }) => {
       try {
         setLoading(true);
         const response = await axios.post(
-          `http://localhost:5000/api/posts/${postId}/comment`,
+          `${import.meta.env.VITE_API_URL}/api/posts/${postId}/comment`,
           {
             content: comment,
             createdBy: currentUser,
@@ -80,7 +80,9 @@ const Postcard = ({ post }) => {
   const handleCommentUpdate = async (commentId, newContent) => {
     try {
       await axios.put(
-        `http://localhost:5000/api/posts/${postId}/comment/${commentId}`,
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/posts/${postId}/comment/${commentId}`,
         { content: newContent }
       );
       fetchComments();
@@ -93,7 +95,9 @@ const Postcard = ({ post }) => {
   const handleCommentDelete = async (commentId) => {
     try {
       await axios.delete(
-        `http://localhost:5000/api/posts/${postId}/comment/${commentId}`
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/posts/${postId}/comment/${commentId}`
       );
       setComments((prev) =>
         prev.filter((comment) => comment._id !== commentId)
@@ -111,7 +115,7 @@ const Postcard = ({ post }) => {
         return;
       }
       const response = await axios.post(
-        `http://localhost:5000/api/posts/like/${postId}`,
+        `${import.meta.env.VITE_API_URL}/api/posts/like/${postId}`,
         { userId: currentUser }
       );
       setLikeCount(response.data.likes);

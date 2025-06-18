@@ -16,36 +16,28 @@ cloudinary.config({
 
 // Sanitize filename for Cloudinary public_id
 const sanitizeFilename = (filename) => {
-  return filename
-    .replace(/[^a-zA-Z0-9-_]/g, '_') // Replace special chars with underscore
-    .replace(/\s+/g, '_') // Replace spaces with underscore
-    .replace(/\.mp4$/, '') // Remove .mp4 extension
-    .substring(0, 100); // Limit length
+  return path.parse(filename).name // Remove extension
+    .replace(/[^a-zA-Z0-9-_]/g, '_')
+    .replace(/\s+/g, '_')
+    .substring(0, 100);
 };
-
-// Enhanced storage configuration
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  params: {
-    folder: "Linkipax-shorts",
-    resource_type: "video",
-    allowed_formats: ['mp4', 'mov', 'avi'], // Explicit allowed formats
-    format: async (req, file) => {
-      const ext = path.extname(file.originalname).substring(1);
-      return ['mp4', 'mov', 'avi'].includes(ext) ? ext : 'mp4';
-    },
-    public_id: (req, file) => {
-      const timestamp = Date.now();
-      const cleanName = sanitizeFilename(file.originalname);
-      return `short_${timestamp}_${cleanName}`;
-    },
-    chunk_size: 6000000, // 6MB chunks for large files
-    eager: [
-      { width: 640, height: 360, crop: "scale" } // Create optimized version
-    ],
-    eager_async: true,
-    invalidate: true
-  }
+  params: async (req, file) => {
+    const ext = path.extname(file.originalname).substring(1).toLowerCase();
+    const isDocument = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt'].includes(ext);
+    return {
+      folder: "Linkipax-shorts",
+      resource_type: isDocument ? "raw" : "auto",
+      allowed_formats: ['mp4', 'mov', 'avi', 'jpg', 'png', 'jpeg', 'gif', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'pdf'],
+      format: ext, 
+      public_id: `short_${Date.now()}_${sanitizeFilename(file.originalname)}`,
+      chunk_size: 6000000,
+      eager: isDocument ? null : [{ width: 640, height: 360, crop: "scale" }], // Skip transformations for documents
+      eager_async: true,
+      invalidate: true,
+    };
+  },
 });
 
 // Utility function to delete uploaded files
@@ -99,5 +91,6 @@ module.exports = {
   deleteFromCloudinary,
   uploadProfilePic,
   uploadImage,
-  deleteImage
+  deleteImage,
+   unlinkAsync 
 };

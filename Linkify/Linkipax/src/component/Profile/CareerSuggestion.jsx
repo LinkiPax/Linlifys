@@ -55,9 +55,12 @@ const CareerSuggestion = ({ userId }) => {
       
       Format the response as JSON with 'careers' and 'learningPaths' arrays.`;
 
-      const { data } = await axios.post(`http://localhost:5000/openai/`, {
-        prompt,
-      });
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_API_URL}/openai/`,
+        {
+          prompt,
+        }
+      );
 
       if (data.careers) {
         setSuggestions(data.careers);

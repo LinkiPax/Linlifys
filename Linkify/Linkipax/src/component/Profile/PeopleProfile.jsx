@@ -18,7 +18,24 @@ import {
   ProgressBar,
   Modal,
 } from "react-bootstrap";
-import { FaLinkedin, FaGithub, FaTwitter, FaFacebook, FaGlobe, FaEnvelope, FaUserPlus, FaUserCheck, FaUserTimes, FaUserClock, FaRegStar, FaStar, FaRegThumbsUp, FaThumbsUp, FaRegComment, FaShare } from "react-icons/fa";
+import {
+  FaLinkedin,
+  FaGithub,
+  FaTwitter,
+  FaFacebook,
+  FaGlobe,
+  FaEnvelope,
+  FaUserPlus,
+  FaUserCheck,
+  FaUserTimes,
+  FaUserClock,
+  FaRegStar,
+  FaStar,
+  FaRegThumbsUp,
+  FaThumbsUp,
+  FaRegComment,
+  FaShare,
+} from "react-icons/fa";
 import { motion } from "framer-motion";
 import { FiAward, FiBriefcase, FiMapPin, FiMail } from "react-icons/fi";
 import "./PeopleProfile.css"; // Custom CSS file for additional styling
@@ -29,7 +46,11 @@ const PeopleProfile = () => {
 
   const [profile, setProfile] = useState(null);
   const [connectionStatus, setConnectionStatus] = useState("none");
-  const [feedback, setFeedback] = useState({ show: false, message: "", variant: "info" });
+  const [feedback, setFeedback] = useState({
+    show: false,
+    message: "",
+    variant: "info",
+  });
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("about");
   const [showMessageModal, setShowMessageModal] = useState(false);
@@ -45,11 +66,19 @@ const PeopleProfile = () => {
     const fetchProfile = async () => {
       try {
         const [profileRes, connectionRes, skillsRes] = await Promise.all([
-          axios.get(`http://localhost:5000/profile/merged-user-details/${userId}`),
-          axios.get(`http://localhost:5000/connections/status/${loggedInUserId}/${userId}`),
-          axios.get(`http://localhost:5000/skill/${userId}`),
+          axios.get(
+            `${
+              import.meta.env.VITE_API_URL
+            }/profile/merged-user-details/${userId}`
+          ),
+          axios.get(
+            `${
+              import.meta.env.VITE_API_URL
+            }/connections/status/${loggedInUserId}/${userId}`
+          ),
+          axios.get(`${import.meta.env.VITE_API_URL}/skill/${userId}`),
         ]);
-        
+
         setProfile(profileRes.data);
         setConnectionStatus(connectionRes.data.status);
         setSkills(skillsRes.data);
@@ -67,10 +96,26 @@ const PeopleProfile = () => {
   const handleConnectionAction = async (type) => {
     try {
       const actions = {
-        send: () => axios.post("http://localhost:5000/connections/request", { senderId: loggedInUserId, receiverId: userId }),
-        withdraw: () => axios.post("http://localhost:5000/connections/withdraw", { senderId: loggedInUserId, receiverId: userId }),
-        accept: () => axios.post("http://localhost:5000/connections/accept", { senderId: userId, receiverId: loggedInUserId }),
-        block: () => axios.post("http://localhost:5000/connections/block", { blockerId: loggedInUserId, blockedId: userId }),
+        send: () =>
+          axios.post(`${import.meta.env.VITE_API_URL}/connections/request`, {
+            senderId: loggedInUserId,
+            receiverId: userId,
+          }),
+        withdraw: () =>
+          axios.post(`${import.meta.env.VITE_API_URL}/connections/withdraw`, {
+            senderId: loggedInUserId,
+            receiverId: userId,
+          }),
+        accept: () =>
+          axios.post(`${import.meta.env.VITE_API_URL}/connections/accept`, {
+            senderId: userId,
+            receiverId: loggedInUserId,
+          }),
+        block: () =>
+          axios.post(`${import.meta.env.VITE_API_URL}/connections/block`, {
+            blockerId: loggedInUserId,
+            blockedId: userId,
+          }),
       };
 
       await actions[type]();
@@ -80,7 +125,7 @@ const PeopleProfile = () => {
         send: "pending",
         withdraw: "none",
         accept: "connected",
-        block: "blocked"
+        block: "blocked",
       };
       setConnectionStatus(statusMap[type]);
 
@@ -93,10 +138,10 @@ const PeopleProfile = () => {
 
   const handleSendMessage = async () => {
     try {
-      await axios.post("http://localhost:5000/messages/send", {
+      await axios.post(`${import.meta.env.VITE_API_URL}/messages/send`, {
         senderId: loggedInUserId,
         receiverId: userId,
-        content: messageContent
+        content: messageContent,
       });
       showAlert("Message sent successfully", "success");
       setShowMessageModal(false);
@@ -115,7 +160,11 @@ const PeopleProfile = () => {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <Spinner animation="border" variant="primary" style={{ width: "3rem", height: "3rem" }} />
+          <Spinner
+            animation="border"
+            variant="primary"
+            style={{ width: "3rem", height: "3rem" }}
+          />
           <p className="mt-3">Loading profile...</p>
         </motion.div>
       </Container>
@@ -132,7 +181,10 @@ const PeopleProfile = () => {
         >
           <Alert variant="danger" className="shadow">
             <h4>User not found</h4>
-            <p>The profile you're looking for doesn't exist or may have been removed.</p>
+            <p>
+              The profile you're looking for doesn't exist or may have been
+              removed.
+            </p>
           </Alert>
         </motion.div>
       </Container>
@@ -162,7 +214,11 @@ const PeopleProfile = () => {
       case "none":
         return (
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button variant="primary" onClick={() => handleConnectionAction("send")} className="rounded-pill px-4">
+            <Button
+              variant="primary"
+              onClick={() => handleConnectionAction("send")}
+              className="rounded-pill px-4"
+            >
               <FaUserPlus className="me-2" /> Connect
             </Button>
           </motion.div>
@@ -179,12 +235,20 @@ const PeopleProfile = () => {
         return (
           <div className="d-flex gap-2">
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button variant="success" onClick={() => handleConnectionAction("accept")} className="rounded-pill px-4">
+              <Button
+                variant="success"
+                onClick={() => handleConnectionAction("accept")}
+                className="rounded-pill px-4"
+              >
                 <FaUserCheck className="me-2" /> Accept
               </Button>
             </motion.div>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button variant="danger" onClick={() => handleConnectionAction("block")} className="rounded-pill px-4">
+              <Button
+                variant="danger"
+                onClick={() => handleConnectionAction("block")}
+                className="rounded-pill px-4"
+              >
                 <FaUserTimes className="me-2" /> Block
               </Button>
             </motion.div>
@@ -194,12 +258,20 @@ const PeopleProfile = () => {
         return (
           <div className="d-flex gap-2">
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button variant="outline-primary" onClick={() => setShowMessageModal(true)} className="rounded-pill px-4">
+              <Button
+                variant="outline-primary"
+                onClick={() => setShowMessageModal(true)}
+                className="rounded-pill px-4"
+              >
                 <FaEnvelope className="me-2" /> Message
               </Button>
             </motion.div>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button variant="outline-danger" onClick={() => handleConnectionAction("withdraw")} className="rounded-pill px-4">
+              <Button
+                variant="outline-danger"
+                onClick={() => handleConnectionAction("withdraw")}
+                className="rounded-pill px-4"
+              >
                 <FaUserTimes className="me-2" /> Disconnect
               </Button>
             </motion.div>
@@ -212,13 +284,13 @@ const PeopleProfile = () => {
 
   const renderSocialIcon = (platform) => {
     switch (platform.toLowerCase()) {
-      case 'linkedin':
+      case "linkedin":
         return <FaLinkedin />;
-      case 'github':
+      case "github":
         return <FaGithub />;
-      case 'twitter':
+      case "twitter":
         return <FaTwitter />;
-      case 'facebook':
+      case "facebook":
         return <FaFacebook />;
       default:
         return <FaGlobe />;
@@ -240,7 +312,12 @@ const PeopleProfile = () => {
             className="position-fixed top-0 start-50 translate-middle-x mt-3 z-3"
             style={{ width: "fit-content" }}
           >
-            <Alert variant={feedback.variant} className="shadow-lg" onClose={() => setFeedback({ ...feedback, show: false })} dismissible>
+            <Alert
+              variant={feedback.variant}
+              className="shadow-lg"
+              onClose={() => setFeedback({ ...feedback, show: false })}
+              dismissible
+            >
               {feedback.message}
             </Alert>
           </motion.div>
@@ -249,7 +326,13 @@ const PeopleProfile = () => {
         {/* Profile Header */}
         <Card className="shadow-lg mb-4 border-0 overflow-hidden">
           {backgroundImage && (
-            <div className="profile-banner" style={{ backgroundImage: `url(${backgroundImage})`, height: "250px" }} />
+            <div
+              className="profile-banner"
+              style={{
+                backgroundImage: `url(${backgroundImage})`,
+                height: "250px",
+              }}
+            />
           )}
           <Card.Body className="position-relative pt-5">
             <div className="d-flex flex-column flex-md-row align-items-start">
@@ -261,9 +344,9 @@ const PeopleProfile = () => {
                   src={profilePicture}
                   alt="Profile"
                   className="rounded-circle border border-4 border-white shadow"
-                  style={{ 
-                    width: "150px", 
-                    height: "150px", 
+                  style={{
+                    width: "150px",
+                    height: "150px",
                     objectFit: "cover",
                     position: "absolute",
                     top: "-75px",
@@ -284,25 +367,24 @@ const PeopleProfile = () => {
                       <span>{location}</span>
                     </div>
                   </div>
-                  <div className="d-flex gap-2">
-                    {getConnectionButton()}
-                  </div>
+                  <div className="d-flex gap-2">{getConnectionButton()}</div>
                 </div>
 
                 <div className="d-flex flex-wrap gap-2 mt-3">
-                  {socialLinks && Object.entries(socialLinks).map(([platform, url]) => (
-                    <motion.a
-                      key={platform}
-                      href={url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="btn btn-outline-dark btn-sm rounded-circle"
-                      whileHover={{ scale: 1.1, rotate: 10 }}
-                      whileTap={{ scale: 0.9 }}
-                    >
-                      {renderSocialIcon(platform)}
-                    </motion.a>
-                  ))}
+                  {socialLinks &&
+                    Object.entries(socialLinks).map(([platform, url]) => (
+                      <motion.a
+                        key={platform}
+                        href={url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="btn btn-outline-dark btn-sm rounded-circle"
+                        whileHover={{ scale: 1.1, rotate: 10 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        {renderSocialIcon(platform)}
+                      </motion.a>
+                    ))}
                   <motion.a
                     href={`mailto:${email}`}
                     className="btn btn-outline-dark btn-sm rounded-circle"
@@ -325,12 +407,13 @@ const PeopleProfile = () => {
               <Card.Body>
                 <h5 className="mb-3">About</h5>
                 <p className="text-muted">{bio || "No bio provided"}</p>
-                
+
                 <div className="mt-4">
                   <h6 className="text-muted mb-3">Details</h6>
                   <ul className="list-unstyled">
                     <li className="mb-2">
-                      <strong>Occupation:</strong> {occupation || "Not specified"}
+                      <strong>Occupation:</strong>{" "}
+                      {occupation || "Not specified"}
                     </li>
                     {education?.length > 0 && (
                       <li className="mb-2">
@@ -353,7 +436,12 @@ const PeopleProfile = () => {
                         <span>{skill.name}</span>
                         <span>{skill.level}%</span>
                       </div>
-                      <ProgressBar now={skill.level} variant="primary" className="rounded-pill" style={{ height: "8px" }} />
+                      <ProgressBar
+                        now={skill.level}
+                        variant="primary"
+                        className="rounded-pill"
+                        style={{ height: "8px" }}
+                      />
                     </div>
                   ))}
                 </Card.Body>
@@ -364,7 +452,7 @@ const PeopleProfile = () => {
             <Card className="shadow-sm mb-4">
               <Card.Body>
                 <h5 className="mb-3">Interests & Hobbies</h5>
-                
+
                 {interests?.length > 0 && (
                   <>
                     <h6 className="text-muted mb-2">Interests</h6>
@@ -375,7 +463,9 @@ const PeopleProfile = () => {
                           whileHover={{ scale: 1.05 }}
                           className="d-inline-block me-2 mb-2"
                         >
-                          <Badge pill bg="info" className="px-3 py-2">{interest}</Badge>
+                          <Badge pill bg="info" className="px-3 py-2">
+                            {interest}
+                          </Badge>
                         </motion.div>
                       ))}
                     </div>
@@ -392,7 +482,9 @@ const PeopleProfile = () => {
                           whileHover={{ scale: 1.05 }}
                           className="d-inline-block me-2 mb-2"
                         >
-                          <Badge pill bg="secondary" className="px-3 py-2">{hobby}</Badge>
+                          <Badge pill bg="secondary" className="px-3 py-2">
+                            {hobby}
+                          </Badge>
                         </motion.div>
                       ))}
                     </div>
@@ -414,15 +506,23 @@ const PeopleProfile = () => {
                   <Tab eventKey="about" title="About">
                     <div className="mt-3">
                       <h5 className="mb-3">Professional Summary</h5>
-                      <p className="text-muted">{bio || "No professional summary provided"}</p>
-                      
+                      <p className="text-muted">
+                        {bio || "No professional summary provided"}
+                      </p>
+
                       {achievements?.length > 0 && (
                         <>
                           <h5 className="mt-4 mb-3">Achievements</h5>
                           <ListGroup variant="flush">
                             {achievements.map((ach, idx) => (
-                              <ListGroup.Item key={idx} className="d-flex align-items-center">
-                                <FiAward className="text-warning me-3 flex-shrink-0" size={20} />
+                              <ListGroup.Item
+                                key={idx}
+                                className="d-flex align-items-center"
+                              >
+                                <FiAward
+                                  className="text-warning me-3 flex-shrink-0"
+                                  size={20}
+                                />
                                 <span>{ach}</span>
                               </ListGroup.Item>
                             ))}
@@ -442,7 +542,9 @@ const PeopleProfile = () => {
                             <h6>{jobTitle}</h6>
                             <p className="text-muted mb-1">{company}</p>
                             <small className="text-muted">Present</small>
-                            <p className="mt-2">Details about the position and responsibilities...</p>
+                            <p className="mt-2">
+                              Details about the position and responsibilities...
+                            </p>
                           </div>
                         </div>
                         {/* Add more timeline items as needed */}
@@ -458,13 +560,21 @@ const PeopleProfile = () => {
                           {projects.map((project, idx) => (
                             <Col md={6} key={idx} className="mb-3">
                               <Card className="h-100">
-                                <Card.Img variant="top" src={project.image || "https://via.placeholder.com/300x200"} />
+                                <Card.Img
+                                  variant="top"
+                                  src={
+                                    project.image ||
+                                    "https://via.placeholder.com/300x200"
+                                  }
+                                />
                                 <Card.Body>
                                   <Card.Title>{project.name}</Card.Title>
                                   <Card.Text>{project.description}</Card.Text>
                                 </Card.Body>
                                 <Card.Footer className="bg-transparent border-top-0">
-                                  <Button variant="outline-primary" size="sm">View Details</Button>
+                                  <Button variant="outline-primary" size="sm">
+                                    View Details
+                                  </Button>
                                 </Card.Footer>
                               </Card>
                             </Col>
@@ -485,10 +595,17 @@ const PeopleProfile = () => {
                 <h5 className="mb-3">Recent Activity</h5>
                 <div className="activity-item">
                   <div className="activity-avatar">
-                    <img src={profilePicture} alt="User" className="rounded-circle" width="40" />
+                    <img
+                      src={profilePicture}
+                      alt="User"
+                      className="rounded-circle"
+                      width="40"
+                    />
                   </div>
                   <div className="activity-content">
-                    <p className="mb-1"><strong>{name}</strong> shared a new project</p>
+                    <p className="mb-1">
+                      <strong>{name}</strong> shared a new project
+                    </p>
                     <small className="text-muted">2 hours ago</small>
                     <div className="activity-actions mt-2">
                       <Button variant="link" size="sm" className="text-muted">
@@ -509,7 +626,11 @@ const PeopleProfile = () => {
         </Row>
 
         {/* Message Modal */}
-        <Modal show={showMessageModal} onHide={() => setShowMessageModal(false)} centered>
+        <Modal
+          show={showMessageModal}
+          onHide={() => setShowMessageModal(false)}
+          centered
+        >
           <Modal.Header closeButton>
             <Modal.Title>Send Message to {name}</Modal.Title>
           </Modal.Header>
@@ -523,10 +644,17 @@ const PeopleProfile = () => {
             />
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowMessageModal(false)}>
+            <Button
+              variant="secondary"
+              onClick={() => setShowMessageModal(false)}
+            >
               Cancel
             </Button>
-            <Button variant="primary" onClick={handleSendMessage} disabled={!messageContent.trim()}>
+            <Button
+              variant="primary"
+              onClick={handleSendMessage}
+              disabled={!messageContent.trim()}
+            >
               Send Message
             </Button>
           </Modal.Footer>

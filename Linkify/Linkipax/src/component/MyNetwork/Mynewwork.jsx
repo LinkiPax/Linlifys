@@ -1,15 +1,7 @@
 import React, { useEffect, useState } from "react";
-import {
-  Button,
-  ListGroup,
-  Card,
-  Spinner,
-  Badge,
-  Modal,
-  Form,
-} from "react-bootstrap";
+import { Button, Card, Spinner, Badge, Modal, Form } from "react-bootstrap";
 import axios from "axios";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   FiUserPlus,
@@ -36,7 +28,7 @@ const MyNetwork = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [userToBlock, setUserToBlock] = useState(null);
-  const [activeTab, setActiveTab] = useState("requests"); // 'requests', 'connections', 'pending', or 'blocked'
+  const [activeTab, setActiveTab] = useState("requests");
 
   useEffect(() => {
     if (!userId) return;
@@ -45,7 +37,9 @@ const MyNetwork = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `http://localhost:5000/api/user/suggestions/network?userId=${userId}`
+          `${
+            import.meta.env.VITE_API_URL
+          }/api/user/suggestions/network?userId=${userId}`
         );
         setConnections(response.data.connections || []);
         setConnectionRequests(response.data.requests || []);
@@ -63,6 +57,7 @@ const MyNetwork = () => {
     fetchNetwork();
   }, [userId]);
 
+  const navigate = useNavigate();
   useEffect(() => {
     if (searchTerm === "") {
       setFilteredConnections(connections);
@@ -81,12 +76,14 @@ const MyNetwork = () => {
 
   const handleAccept = async (targetUserId) => {
     try {
-      await axios.post("http://localhost:5000/api/user/suggestions/accept", {
-        userId,
-        targetUserId,
-      });
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/user/suggestions/accept`,
+        {
+          userId,
+          targetUserId,
+        }
+      );
 
-      // Find the user in requests to add to connections
       const acceptedUser = connectionRequests.find(
         (user) => user._id === targetUserId
       );
@@ -95,8 +92,6 @@ const MyNetwork = () => {
       setConnectionRequests((prev) =>
         prev.filter((user) => user._id !== targetUserId)
       );
-
-      console.log(`Connection with ${acceptedUser.name} accepted!`);
     } catch (error) {
       console.error("Error accepting connection:", error);
       alert("Failed to accept connection");
@@ -105,14 +100,16 @@ const MyNetwork = () => {
 
   const handleDecline = async (targetUserId) => {
     try {
-      await axios.post("http://localhost:5000/api/user/suggestions/decline", {
-        userId,
-        targetUserId,
-      });
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/user/suggestions/decline`,
+        {
+          userId,
+          targetUserId,
+        }
+      );
       setConnectionRequests((prev) =>
         prev.filter((user) => user._id !== targetUserId)
       );
-      console.log("Connection declined");
     } catch (error) {
       console.error("Error declining connection:", error);
       alert("Failed to decline connection");
@@ -128,10 +125,13 @@ const MyNetwork = () => {
     if (!userToBlock) return;
 
     try {
-      await axios.post("http://localhost:5000/api/user/block", {
-        userId,
-        targetUserId: userToBlock._id,
-      });
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/user/suggestions/block`,
+        {
+          userId,
+          targetUserId: userToBlock._id,
+        }
+      );
 
       // Remove from all lists
       setConnections((prev) =>
@@ -146,10 +146,30 @@ const MyNetwork = () => {
       setBlockedUsers((prev) => [...prev, userToBlock]);
 
       setShowBlockModal(false);
-      console.log(`${userToBlock.name} blocked successfully`);
     } catch (error) {
       console.error("Error blocking user:", error);
       alert("Failed to block user");
+    }
+  };
+  const handleMessageClick = (userId) => {
+    navigate(`/messages?userId=${userId}`);
+  };
+  const handleUnblock = async (targetUserId) => {
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/user/suggestions/unblock`,
+        {
+          userId,
+          targetUserId,
+        }
+      );
+
+      setBlockedUsers((prev) =>
+        prev.filter((user) => user._id !== targetUserId)
+      );
+    } catch (error) {
+      console.error("Error unblocking user:", error);
+      alert("Failed to unblock user");
     }
   };
 
@@ -355,6 +375,7 @@ const MyNetwork = () => {
                               variant="primary"
                               size="sm"
                               className="rounded-pill"
+                              onClick={() => handleMessageClick(user._id)}
                             >
                               <FiMessageSquare className="me-1" />
                               Message
@@ -489,13 +510,13 @@ const MyNetwork = () => {
                           </Card.Subtitle>
                           <div className="d-flex justify-content-center gap-2 mt-3">
                             <Button
-                              variant="outline-danger"
+                              variant="success"
                               size="sm"
                               className="rounded-pill"
-                              disabled
+                              onClick={() => handleUnblock(user._id)}
                             >
-                              <FiUserX className="me-1" />
-                              Blocked
+                              <FiUserCheck className="me-1" />
+                              Unblock
                             </Button>
                           </div>
                         </Card.Body>

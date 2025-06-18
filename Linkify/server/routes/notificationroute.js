@@ -1,176 +1,491 @@
+const webpush = require('web-push');
+const webPushService = require('../service/webPushService');
 const express = require('express');
-const Notification = require('../model/notificationschema'); // Import the Notification model
+const Notification = require('../model/notificationschema');
 const router = express.Router();
-const checkForAuthenticationHeader = require('../middleware/Authentication');
-const { body, param, validationResult } = require('express-validator'); // For request validation
-const cookieParser = require('cookie-parser');
-const logger = require('../utils/logger'); // Custom logger (optional)
+const { check, validationResult } = require('express-validator');
+const mongoose = require('mongoose');
+const { getIO }  = require('../socket/socketnadle');
+const logger = require('../utils/logger');
+const User = require('../model/usermodel'); // Adjust the path as needed
 
-router.use(cookieParser());
-
-// Helper function to handle validation errors
-const handleValidationErrors = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-  next();
+const validate = validations => {
+  return async (req, res, next) => {
+    await Promise.all(validations.map(validation => validation.run(req)));
+    const errors = validationResult(req);
+    if (errors.isEmpty()) return next();
+    res.status(400).json({ errors: errors.array() });
+  };
 };
 
-// 1. Create a new notification for a user and their connections
-router.post(
-  '/create',
-  checkForAuthenticationHeader(),
-  [
-    body('userId').isMongoId().withMessage('Invalid user ID'),
-    body('notificationText').isString().trim().notEmpty().withMessage('Notification text is required'),
-    body('connections').isArray().withMessage('Connections must be an array'),
-    body('connections.*').isMongoId().withMessage('Invalid connection ID'),
-  ],
-  handleValidationErrors,
-  async (req, res) => {
-    const { userId, notificationText, connections } = req.body;
+// // Create notification
+// router.post(
+//   '/',
+//   async (req, res) => {
+//     try {
+//       const notification = new Notification({
+//         ...req.body,
+//         createdBy: req.body.userId
+//       });
 
+//       await notification.save();
+      
+//       // Emit socket notification
+//       socket.io.to(`user_${req.body.userId}`).emit('new_notification', notification);
+      
+//       // Send web push notification if subscription exists
+//       const user = await User.findById(req.body.userId).select('pushSubscription');
+//       if (user?.pushSubscription) {
+//         const pushPayload = {
+//           title: notification.title,
+//           body: notification.message,
+//           icon: '/icons/icon-192x192.png',
+//           data: {
+//             url: notification.actionUrl || '/notifications',
+//             notificationId: notification._id.toString()
+//           }
+//         };
+
+//         const pushResult = await webPushService.sendWebPushNotification(
+//           user.pushSubscription,
+//           pushPayload
+//         );
+
+//         if (pushResult === 'expired') {
+//           // Remove expired subscription
+//           await User.findByIdAndUpdate(req.body.userId, {
+//             $unset: { pushSubscription: 1 }
+//           });
+//         }
+//       }
+
+//       res.status(201).json(notification);
+//     } catch (err) {
+//       logger.error('Notification creation failed', { error: err });
+//       res.status(500).json({ error: 'Failed to create notification' });
+//     }
+//   }
+// );
+router.post('/', async (req, res) => {
+  try {
+    const { userId, title = 'New Notification', message = 'You have a new notification', type, actionUrl } = req.body;
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'userId is required' });
+    }
+
+    const notification = new Notification({
+      userId,
+      title: title || 'New Notification', // Fallback to default
+      message: message || 'You have a new notification', // Fallback to default
+      type: type || 'system',
+      status: 'unread',
+      actionUrl,
+      createdBy: userId
+    });
+
+    await notification.save();
+    
+    // Emit real-time notification via socket.io
+    getIO().to(`user_${userId}`).emit('new_notification', notification);
+    
+    // Send web push notification if user has subscription
+    const user = await User.findById(userId).select('pushSubscription');
+    if (user?.pushSubscription) {
+      const pushPayload = {
+        title: notification.title,
+        body: notification.message,
+        icon: '/icons/notification-icon.png',
+        data: {
+          url: notification.actionUrl || '/notifications',
+          notificationId: notification._id.toString()
+        }
+      };
+
+      try {
+        await webPushService.sendWebPushNotification(
+          user.pushSubscription,
+          pushPayload
+        );
+      } catch (error) {
+        console.error('Web push failed:', error);
+        // Remove invalid subscription
+        if (error.statusCode === 410) {
+          await User.findByIdAndUpdate(userId, {
+            $unset: { pushSubscription: 1 }
+          });
+        }
+      }
+    }
+
+    res.status(201).json(notification);
+  } catch (error) {
+    console.error('Notification creation failed:', error);
+    res.status(500).json({ error: 'Failed to create notification' });
+  }
+});
+// Get notifications with filters
+router.get(
+  '/',
+  validate([
+    check('status').optional().isIn(['read', 'unread', 'archived']),
+    check('type').optional().isIn(['system', 'message', 'alert', 'success', 'warning', 'info', 'friend_request', 'post', 'comment', 'like']),
+    check('limit').optional().isInt({ min: 1, max: 100 }).toInt(),
+    check('page').optional().isInt({ min: 1 }).toInt(),
+    check('sort').optional().isIn(['newest', 'oldest', 'priority']),
+    check('search').optional().trim().isLength({ max: 100 }),
+    check('createdAt').optional()
+  ]),
+  async (req, res) => {
     try {
-      // Create a notification for the user who made the post
-      const newNotification = new Notification({
-        userId,
-        notification: notificationText,
-        status: 'unread',
-        date: new Date(),
+      const { userId, status, type, limit = 10, page = 1, sort = 'newest', search, createdAt } = req.query;
+      
+      if (!userId) {
+        return res.status(400).json({ error: 'userId parameter is required' });
+      }
+
+      const skip = (page - 1) * limit;
+      
+      let sortOption;
+      switch (sort) {
+        case 'oldest': sortOption = { createdAt: 1 }; break;
+        case 'priority': sortOption = { priority: -1, createdAt: -1 }; break;
+        default: sortOption = { createdAt: -1 };
+      }
+      
+      const query = { userId };
+      if (status) query.status = status;
+      if (type) query.type = type;
+      if (search) {
+        query.$or = [
+          { title: { $regex: search, $options: 'i' } },
+          { message: { $regex: search, $options: 'i' } }
+        ];
+      }
+      if (createdAt) {
+        try {
+          const dateFilter = JSON.parse(createdAt);
+          query.createdAt = {
+            $gte: new Date(dateFilter.$gte),
+            $lte: new Date(dateFilter.$lte)
+          };
+        } catch (err) {
+          return res.status(400).json({ error: 'Invalid date filter format' });
+        }
+      }
+      
+      const notifications = await Notification.find(query)
+        .sort(sortOption)
+        .skip(skip)
+        .limit(limit);
+      
+      const total = await Notification.countDocuments(query);
+      
+      res.json({
+        notifications,
+        pagination: {
+          total,
+          page,
+          pages: Math.ceil(total / limit),
+          limit
+        }
+      });
+    } catch (err) {
+      logger.error('Failed to fetch notifications', { error: err });
+      res.status(500).json({ error: 'Failed to fetch notifications' });
+    }
+  }
+);
+
+// Get notification counts
+router.get(
+  '/count',
+  async (req, res) => {
+    try {
+      const { userId } = req.query;
+      
+      if (!userId) {
+        return res.status(400).json({ error: 'userId parameter is required' });
+      }
+
+      const counts = await Promise.all([
+        Notification.countDocuments({ userId, status: 'unread' }),
+        Notification.countDocuments({ userId })
+      ]);
+      
+      res.json({
+        unread: counts[0],
+        total: counts[1]
+      });
+    } catch (err) {
+      logger.error('Failed to get notification counts', { error: err });
+      res.status(500).json({ error: 'Failed to get counts' });
+    }
+  }
+);
+
+// Mark notification as read
+router.patch(
+  '/:id/read',
+  validate([
+    check('id').isMongoId().withMessage('Invalid notification ID')
+  ]),
+  async (req, res) => {
+    try {
+      const { userId } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ error: 'userId is required' });
+      }
+
+      const notification = await Notification.findOneAndUpdate(
+        { _id: req.params.id, userId },
+        { status: 'read', readAt: new Date() },
+        { new: true }
+      );
+      
+      if (!notification) {
+        return res.status(404).json({ error: 'Notification not found' });
+      }
+      
+      res.json(notification);
+    } catch (err) {
+      logger.error('Failed to mark notification as read', { 
+        error: err,
+        notificationId: req.params.id 
+      });
+      res.status(500).json({ error: 'Failed to mark as read' });
+    }
+  }
+);
+
+// Mark all notifications as read
+router.patch(
+  '/read-all',
+  async (req, res) => {
+    try {
+      const { userId } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ error: 'userId is required' });
+      }
+
+      await Notification.updateMany(
+        { userId, status: 'unread' },
+        { status: 'read', readAt: new Date() }
+      );
+      
+      res.json({ message: 'All notifications marked as read' });
+    } catch (err) {
+      logger.error('Failed to mark all as read', { error: err });
+      res.status(500).json({ error: 'Failed to mark all as read' });
+    }
+  }
+);
+
+// Archive notification
+router.patch(
+  '/:id/archive',
+  validate([
+    check('id').isMongoId().withMessage('Invalid notification ID')
+  ]),
+  async (req, res) => {
+    try {
+      const { userId } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ error: 'userId is required' });
+      }
+
+      const notification = await Notification.findOneAndUpdate(
+        { _id: req.params.id, userId },
+        { status: 'archived' },
+        { new: true }
+      );
+      
+      if (!notification) {
+        return res.status(404).json({ error: 'Notification not found' });
+      }
+      
+      res.json(notification);
+    } catch (err) {
+      logger.error('Failed to archive notification', { 
+        error: err,
+        notificationId: req.params.id 
+      });
+      res.status(500).json({ error: 'Failed to archive' });
+    }
+  }
+);
+
+// Delete notification
+router.delete(
+  '/:id',
+  validate([
+    check('id').isMongoId().withMessage('Invalid notification ID')
+  ]),
+  async (req, res) => {
+    try {
+      const { userId } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ error: 'userId is required' });
+      }
+
+      const notification = await Notification.findOneAndDelete({
+        _id: req.params.id,
+        userId
+      });
+      
+      if (!notification) {
+        return res.status(404).json({ error: 'Notification not found' });
+      }
+      
+      res.json({ message: 'Notification deleted' });
+    } catch (err) {
+      logger.error('Failed to delete notification', { 
+        error: err,
+        notificationId: req.params.id 
+      });
+      res.status(500).json({ error: 'Failed to delete' });
+    }
+  }
+);
+
+// Clear all notifications
+router.delete(
+  '/',
+  async (req, res) => {
+    try {
+      const { userId } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ error: 'userId is required' });
+      }
+
+      await Notification.deleteMany({ userId });
+      res.json({ message: 'All notifications cleared' });
+    } catch (err) {
+      logger.error('Failed to clear notifications', { error: err });
+      res.status(500).json({ error: 'Failed to clear notifications' });
+    }
+  }
+);
+
+// Subscribe to push notifications
+router.post(
+  '/subscribe',
+  validate([
+    check('userId').isMongoId().withMessage('Invalid user ID'),
+    check('subscription').isObject().withMessage('Invalid push subscription')
+  ]),
+  async (req, res) => {
+    try {
+      const { userId, subscription } = req.body;
+
+      // Store subscription in database (you might want a separate UserPushSubscription model)
+      await User.findByIdAndUpdate(userId, {
+        pushSubscription: subscription
       });
 
-      // Save the notification for the user making the post
-      await newNotification.save();
-
-      // Create notifications for each connection (follower) of the user
-      const connectionNotifications = connections.map((connectionId) => ({
-        userId: connectionId,
-        notification: `User ${userId} has made a new post!`,
-        status: 'unread',
-        date: new Date(),
-      }));
-
-      // Use bulk insert for better performance
-      await Notification.insertMany(connectionNotifications);
-
-      logger.info('Notifications created successfully for the user and their connections.');
-      res.status(201).json({ message: 'Notifications created successfully.' });
-    } catch (error) {
-      logger.error('Failed to create notification:', error);
-      res.status(500).json({ error: 'Failed to create notification.' });
-    }
-  }
-);
-
-// 2. Mark a notification as read
-router.patch(
-  '/mark-as-read/:notificationId',
-  checkForAuthenticationHeader(),
-  [param('notificationId').isMongoId().withMessage('Invalid notification ID')],
-  handleValidationErrors,
-  async (req, res) => {
-    const { notificationId } = req.params;
-
-    try {
-      const notification = await Notification.findById(notificationId);
-      if (!notification) {
-        return res.status(404).json({ error: 'Notification not found.' });
+      // Send test notification
+      if (webPushService.isWebPushEnabled) {
+        await webPushService.sendWebPushNotification(subscription, {
+          title: 'Subscription successful',
+          body: 'You will now receive push notifications',
+          icon: '/icons/icon-192x192.png'
+        });
       }
 
-      // Update the notification status to 'read'
-      await Notification.findByIdAndUpdate(notificationId, { status: 'read' });
-      res.status(200).json({ message: 'Notification marked as read.' });
-    } catch (error) {
-      logger.error('Failed to mark notification as read:', error);
-      res.status(500).json({ error: 'Failed to mark notification as read.' });
+      res.status(200).json({ success: true });
+    } catch (err) {
+      logger.error('Push subscription failed', { error: err });
+      res.status(500).json({ error: 'Failed to subscribe to push notifications' });
     }
   }
 );
 
-// 3. Mark multiple notifications as read
-router.patch(
-  '/mark-as-read',
-  checkForAuthenticationHeader(),
-  [body('notificationIds').isArray().withMessage('Notification IDs must be an array')],
-  handleValidationErrors,
+// Unsubscribe from push notifications
+router.post(
+  '/unsubscribe',
+  validate([
+    check('userId').isMongoId().withMessage('Invalid user ID')
+  ]),
   async (req, res) => {
-    const { notificationIds } = req.body;
-
     try {
-      await Notification.updateMany(
-        { _id: { $in: notificationIds } },
-        { $set: { status: 'read' } }
+      const { userId } = req.body;
+
+      await User.findByIdAndUpdate(userId, {
+        $unset: { pushSubscription: 1 }
+      });
+
+      res.status(200).json({ success: true });
+    } catch (err) {
+      logger.error('Push unsubscribe failed', { error: err });
+      res.status(500).json({ error: 'Failed to unsubscribe from push notifications' });
+    }
+  }
+);
+router.get('/vapid-public-key', (req, res) => {
+  res.json({ publicKey: webPushService.publicKey });
+});
+// Add this near your other push notification routes
+router.post(
+  '/push-subscriptions',
+  validate([
+    check('userId').isMongoId().withMessage('Invalid user ID'),
+    check('subscription').isObject().withMessage('Invalid push subscription')
+  ]),
+  async (req, res) => {
+    try {
+      const { userId, subscription } = req.body;
+
+      // Validate the subscription object structure
+      if (!subscription.endpoint || !subscription.keys || !subscription.keys.p256dh || !subscription.keys.auth) {
+        return res.status(400).json({ error: 'Invalid subscription format' });
+      }
+
+      // Update user with new subscription
+      const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { 
+          pushSubscription: subscription,
+          pushEnabled: true 
+        },
+        { new: true }
       );
-      res.status(200).json({ message: 'Notifications marked as read.' });
-    } catch (error) {
-      logger.error('Failed to mark notifications as read:', error);
-      res.status(500).json({ error: 'Failed to mark notifications as read.' });
-    }
-  }
-);
 
-// 4. Get all notifications for a user (with pagination)
-router.get(
-  '/all',
-  checkForAuthenticationHeader(),
-  async (req, res) => {
-    const { page = 1, limit = 10 } = req.query; // Pagination parameters
-    const userId = req.user.userId;
-
-    try {
-      const notifications = await Notification.find({ userId })
-        .sort({ date: -1 })
-        .skip((page - 1) * limit)
-        .limit(parseInt(limit));
-
-      res.status(200).json({ notifications });
-    } catch (error) {
-      logger.error('Error fetching notifications:', error);
-      res.status(500).json({ message: 'Error fetching notifications' });
-    }
-  }
-);
-
-// 5. Get filtered notifications (read/unread)
-router.get(
-  '/:filter',
-  checkForAuthenticationHeader(),
-  [param('filter').isIn(['read', 'unread']).withMessage('Invalid filter')],
-  handleValidationErrors,
-  async (req, res) => {
-    const { filter } = req.params;
-    const userId = req.user.userId;
-
-    try {
-      let query = { userId };
-      if (filter === 'read' || filter === 'unread') {
-        query.status = filter;
+      if (!updatedUser) {
+        return res.status(404).json({ error: 'User not found' });
       }
 
-      const notifications = await Notification.find(query).sort({ date: -1 });
-      res.status(200).json({ notifications });
-    } catch (error) {
-      logger.error('Error fetching filtered notifications:', error);
-      res.status(500).json({ message: 'Error fetching notifications' });
-    }
-  }
-);
-// 6. Clear all notifications for a user
-router.delete(
-  '/clear-all',
-  checkForAuthenticationHeader(),
-  async (req, res) => {
-    const userId = req.user.userId; // Get the authenticated user's ID
+      // Optionally send a welcome notification
+      try {
+        await webPushService.sendWebPushNotification(subscription, {
+          title: 'Subscription successful',
+          body: 'You will now receive push notifications from our app',
+          icon: '/icons/notification-icon.png'
+        });
+      } catch (error) {
+        console.error('Welcome push notification failed:', error);
+        // Don't fail the request if the welcome notification fails
+      }
 
-    try {
-      // Delete all notifications for the user
-      await Notification.deleteMany({ userId });
-      res.status(200).json({ message: 'All notifications cleared successfully.' });
-    } catch (error) {
-      logger.error('Failed to clear notifications:', error);
-      res.status(500).json({ error: 'Failed to clear notifications.' });
+      res.status(200).json({ 
+        success: true,
+        message: 'Push subscription saved successfully'
+      });
+    } catch (err) {
+      logger.error('Push subscription failed', { 
+        error: err,
+        userId: req.body.userId 
+      });
+      res.status(500).json({ 
+        error: 'Failed to save push subscription',
+        details: err.message 
+      });
     }
   }
 );
+
 module.exports = router;

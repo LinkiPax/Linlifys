@@ -1,207 +1,11 @@
-// import React, { useState, useRef, useEffect } from 'react';
-// import { Button, Form, Container, Row, Col, Alert } from 'react-bootstrap';
-// import axios from 'axios';
-// import io from 'socket.io-client';
-// import './Meetingroom.css';
-
-// const socket = io('http://localhost:5000'); // Replace with your backend URL
-// const userId = localStorage.getItem('userId');
-// const MeetingApp = () => {
-//   const [meetingId, setMeetingId] = useState('');
-//   const [username, setUsername] = useState('');
-//   const [joined, setJoined] = useState(false);
-//   const [error, setError] = useState('');
-//   const [participants, setParticipants] = useState([]);
-//   const [messages, setMessages] = useState([]);
-//   const [newMessage, setNewMessage] = useState('');
-//   const localStream = useRef(null);
-//   const remoteStreams = useRef({});
-
-//   useEffect(() => {
-//     socket.on('user-joined', ({ id, username }) => {
-//       setParticipants((prev) => [...prev, { id, username }]);
-//     });
-
-//     socket.on('user-left', ({ id }) => {
-//       setParticipants((prev) => prev.filter((p) => p.id !== id));
-//     });
-
-//     socket.on('receive-message', ({ username, message }) => {
-//       setMessages((prev) => [...prev, { username, message }]);
-//     });
-
-//     return () => {
-//       socket.off('user-joined');
-//       socket.off('user-left');
-//       socket.off('receive-message');
-//     };
-//   }, []);
-
-//   const startVideo = async () => {
-//     try {
-//       localStream.current = await navigator.mediaDevices.getUserMedia({
-//         video: true,
-//         audio: true,
-//       });
-//     } catch (err) {
-//       console.error('Error accessing media devices:', err);
-//     }
-//   };
-
-//   const handleCreateRoom = async () => {
-//     try {
-//       const response = await axios.post('http://localhost:5000/room/create');
-//       if (response.data && response.data.roomId) {
-//         setMeetingId(response.data.roomId);
-//         setError('');
-//       } else {
-//         setError('Failed to create room.');
-//       }
-//     } catch (err) {
-//       setError('Failed to create room.');
-//     }
-//   };
-
-//   const handleJoinMeeting = async () => {
-//     if (!meetingId.trim() || !username.trim()) {
-//       setError('Meeting ID and username are required');
-//       return;
-//     }
-//     try {
-//       const response = await axios.post('http://localhost:5000/room/join', { meetingId, username,userId });
-//       if (response.data.success) {
-//         socket.emit('join-meeting', { meetingId, username, userId });
-//         setJoined(true);
-//         startVideo();
-//       } else {
-//         setError('Failed to join the meeting.');
-//       }
-//     } catch (err) {
-//       setError('Failed to join the meeting.');
-//     }
-//   };
-
-//   const handleLeaveMeeting = () => {
-//     socket.emit('leave-meeting', { meetingId });
-//     setJoined(false);
-//     setParticipants([]);
-//   };
-
-//   const handleSendMessage = () => {
-//     if (newMessage.trim()) {
-//       socket.emit('send-message', { meetingId, username, message: newMessage });
-//       setNewMessage('');
-//     }
-//   };
-
-//   return (
-//     <Container className="mt-5 cont">
-//       <Row>
-//         <Col>
-//           <h2 className="text-center text-primary logo">Linkipax Meeting</h2>
-//           {error && <Alert variant="danger">{error}</Alert>}
-
-//           {!joined ? (
-//             <>
-//               <Button variant="success" onClick={handleCreateRoom} className="me-3">
-//                 Create Room
-//               </Button>
-
-//               {meetingId && (
-//                 <Alert variant="info" className="mt-3">
-//                   Room created! Share this Meeting ID: <strong>{meetingId}</strong>
-//                 </Alert>
-//               )}
-
-//               <Form className="form">
-//                 <Form.Group className="mb-3">
-//                   <Form.Label>Meeting ID</Form.Label>
-//                   <Form.Control
-//                     type="text"
-//                     placeholder="Enter Meeting ID"
-//                     value={meetingId}
-//                     onChange={(e) => setMeetingId(e.target.value)}
-//                   />
-//                 </Form.Group>
-
-//                 <Form.Group className="mb-3">
-//                   <Form.Label>Username</Form.Label>
-//                   <Form.Control
-//                     type="text"
-//                     placeholder="Enter your name"
-//                     value={username}
-//                     onChange={(e) => setUsername(e.target.value)}
-//                   />
-//                 </Form.Group>
-
-//                 <Button variant="primary" onClick={handleJoinMeeting}>
-//                   Join Meeting
-//                 </Button>
-//               </Form>
-//             </>
-//           ) : (
-//             <>
-//               <div className="mb-4">
-//                 <h5>Participants:</h5>
-//                 <ul className="list-group">
-//                   {participants.map((participant) => (
-//                     <li key={participant.id} className="list-group-item">
-//                       {participant.username}
-//                     </li>
-//                   ))}
-//                 </ul>
-//               </div>
-
-//               <div className="mt-4">
-//                 <video ref={localStream} autoPlay muted className="w-100 mb-3"></video>
-//                 <div className="remote-videos">
-//                   {Object.values(remoteStreams.current).map((stream, index) => (
-//                     <video key={index} srcObject={stream} autoPlay className="w-100 mb-3"></video>
-//                   ))}
-//                 </div>
-//               </div>
-
-//               <div className="chat mt-4">
-//                 <h5>Chat</h5>
-//                 <div className="chat-messages chat" >
-//                   {messages.map((msg, index) => (
-//                     <p key={index}>
-//                       <strong>{msg.username}: </strong>
-//                      <h7>{msg.message}</h7>
-//                     </p>
-//                   ))}
-//                 </div>
-//                 <Form.Control
-//                   type="text"
-//                   placeholder="Type your message"
-//                   value={newMessage}
-//                   onChange={(e) => setNewMessage(e.target.value)}
-//                   onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-//                 />
-//               </div>
-
-//               <Button variant="danger" onClick={handleLeaveMeeting} className="mt-3">
-//                 Leave Meeting
-//               </Button>
-//             </>
-//           )}
-//         </Col>
-//       </Row>
-//     </Container>
-//   );
-// };
-
-// export default MeetingApp; 
+import Peer from "peerjs";
 import React, { useState, useRef, useEffect } from "react";
 import {
   Button,
   Form,
   Container,
-  Row,
-  Col,
   Alert,
   Modal,
-  Badge,
   Spinner,
   OverlayTrigger,
   Tooltip,
@@ -219,13 +23,59 @@ import {
   FiUsers,
   FiSettings,
   FiLogOut,
+  FiX,
 } from "react-icons/fi";
 import { BsEmojiSmile, BsRecordCircle } from "react-icons/bs";
+import { FaChalkboardTeacher } from "react-icons/fa";
 import EmojiPicker from "emoji-picker-react";
+import { v4 as uuidv4 } from "uuid";
 import "./Meetingroom.css";
 
-const socket = io("http://localhost:5000", { transports: ["websocket"] });
-const userId = localStorage.getItem("userId");
+class ErrorBoundary extends React.Component {
+  state = { hasError: false, error: null };
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("MeetingApp Error:", error, errorInfo);
+    // TODO: Integrate with error tracking service (e.g., Sentry)
+    // Sentry.captureException(error, { extra: errorInfo });
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="error-fallback">
+          <h2>Something went wrong with the video call.</h2>
+          <p>
+            Error:{" "}
+            {this.state.error instanceof Error
+              ? this.state.error.message
+              : String(this.state.error) || "Unknown error occurred"}
+          </p>
+          <p>Please retry or refresh the page to continue.</p>
+          <button
+            onClick={() => this.setState({ hasError: false, error: null })}
+            className="btn btn-secondary"
+            aria-label="Retry joining meeting"
+          >
+            Retry
+          </button>
+          <button
+            onClick={() => window.location.reload()}
+            className="btn btn-primary"
+            aria-label="Refresh page"
+          >
+            Refresh Page
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const MeetingApp = () => {
   const [meetingId, setMeetingId] = useState("");
@@ -241,43 +91,319 @@ const MeetingApp = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [videoQuality, setVideoQuality] = useState("720p");
-  const [showParticipants, setShowParticipants] = useState(true);
+  const [showParticipants, setShowParticipants] = useState(false);
   const [showChat, setShowChat] = useState(true);
   const [loading, setLoading] = useState(false);
   const [roomCreated, setRoomCreated] = useState(false);
+  const [mediaAccessGranted, setMediaAccessGranted] = useState(false);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [activeSpeaker, setActiveSpeaker] = useState(null);
+  const [isConnecting, setIsConnecting] = useState(false);
 
   const localStream = useRef(null);
-  const remoteStreams = useRef({});
-  const videoRef = useRef(null);
+  const screenStream = useRef(null);
+  const localVideoRef = useRef(null);
+  const socketRef = useRef(null);
+  const peersRef = useRef([]);
   const chatContainerRef = useRef(null);
   const meetingIdRef = useRef(null);
+  const userVideoRefs = useRef({});
+  const userId = useRef(uuidv4());
+
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+  const logPeers = () => {
+    console.log(
+      "Current peers:",
+      peersRef.current.map((p) => ({
+        userId: p.userId,
+        peer: p.peer
+          ? { destroyed: p.peer.destroyed, connected: p.peer.connected }
+          : "No peer object",
+      }))
+    );
+  };
 
   useEffect(() => {
-    socket.on("user-joined", ({ id, username }) => {
-      setParticipants((prev) => [...prev, { id, username }]);
-      addMessage(`${username} joined the meeting`, "system");
+    console.log("Initializing socket connection...");
+    socketRef.current = io(API_URL, {
+      transports: ["websocket"],
+      withCredentials: true,
+      secure: true,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      timeout: 20000,
     });
 
-    socket.on("user-left", ({ id, username }) => {
-      setParticipants((prev) => prev.filter((p) => p.id !== id));
-      addMessage(`${username} left the meeting`, "system");
+    socketRef.current.on("connect", () => {
+      console.log("Socket connected with ID:", socketRef.current.id);
+      setIsConnecting(false);
     });
 
-    socket.on("receive-message", ({ username, message }) => {
-      addMessage(message, username);
+    socketRef.current.on("reconnect", async (attempt) => {
+      console.log("Socket reconnected after attempt:", attempt);
+      if (joined && meetingId) {
+        if (!localStream.current) {
+          const mediaSuccess = await startVideo();
+          if (!mediaSuccess) {
+            setError(
+              "Failed to access media on reconnect. Joining without media."
+            );
+          }
+        }
+        socketRef.current.emit("join-meeting", {
+          meetingId,
+          username,
+          userId: userId.current,
+          isMicOn: localStream.current ? isMicOn : false,
+          isVideoOn: localStream.current ? isVideoOn : false,
+        });
+      }
     });
 
-    socket.on("ice-candidate", ({ candidate, senderId }) => {
-      // Handle ICE candidate for WebRTC
+    socketRef.current.on("disconnect", () => {
+      console.log("Socket disconnected");
+      setIsConnecting(true);
+    });
+
+    socketRef.current.on("connect_error", (err) => {
+      console.error("Socket connection error:", err);
+      const message = err.message.includes("xhr poll error")
+        ? "Server is unreachable. Please try again later."
+        : "Failed to connect to server. Please check your network.";
+      setError(message);
+      setIsConnecting(false);
     });
 
     return () => {
-      socket.off("user-joined");
-      socket.off("user-left");
-      socket.off("receive-message");
-      socket.off("ice-candidate");
+      console.log("Cleaning up socket connection...");
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        setTimeout(() => {
+          socketRef.current = null;
+        }, 0);
+      }
+      cleanupMediaStreams();
+      userId.current = uuidv4();
     };
   }, []);
+
+  useEffect(() => {
+    if (!socketRef.current) {
+      console.log("Socket not initialized yet");
+      return;
+    }
+
+    const socket = socketRef.current;
+
+    const handleUserJoined = ({
+      id,
+      username,
+      socketId,
+      isMicOn = false,
+      isVideoOn = false,
+    }) => {
+      console.log("User joined:", {
+        id,
+        username,
+        socketId,
+        isMicOn,
+        isVideoOn,
+      });
+      if (id !== userId.current) {
+        setParticipants((prev) => [
+          ...prev.filter((p) => p.socketId !== socketId),
+          {
+            id,
+            username: username || "Unknown",
+            socketId,
+            isMicOn,
+            isVideoOn,
+            isScreenSharing: false,
+          },
+        ]);
+        addMessage(`${username || "Unknown"} joined the meeting`, "system");
+        if (localStream.current) {
+          callUser(socketId, id);
+        } else {
+          setError("Cannot connect to new user: No media stream available.");
+        }
+      }
+    };
+
+    const handleUserLeft = ({ id, username }) => {
+      console.log("User left:", { id, username });
+      setParticipants((prev) => prev.filter((p) => p.id !== id));
+      addMessage(`${username || "Unknown"} left the meeting`, "system");
+      removePeer(id);
+    };
+
+    const handleReceiveMessage = ({ username, message }) => {
+      console.log("Received message:", { username, message });
+      addMessage(message, username);
+    };
+
+    const handleScreenShareStarted = ({ userId: sharerId }) => {
+      console.log("Screen share started by:", sharerId);
+      addMessage("Screen sharing started", "system");
+      setActiveSpeaker(sharerId);
+      setParticipants((prev) =>
+        prev.map((p) =>
+          p.id === sharerId ? { ...p, isScreenSharing: true } : p
+        )
+      );
+    };
+
+    const handleScreenShareStopped = ({ userId: sharerId }) => {
+      console.log("Screen share stopped by:", sharerId);
+      addMessage("Screen sharing stopped", "system");
+      setActiveSpeaker(null);
+      setParticipants((prev) =>
+        prev.map((p) =>
+          p.id === sharerId ? { ...p, isScreenSharing: false } : p
+        )
+      );
+    };
+
+    const handleExistingUsers = (users) => {
+      console.log("Existing users:", users);
+      if (!localStream.current) {
+        setError("Cannot connect to existing users: No media stream.");
+        return;
+      }
+      setParticipants(
+        users
+          .filter((user) => user.userId !== userId.current && user.socketId)
+          .map((user) => ({
+            id: user.userId,
+            username: user.username || "Unknown",
+            socketId: user.socketId,
+            isMicOn: user.isMicOn ?? false,
+            isVideoOn: user.isVideoOn ?? false,
+            isScreenSharing: false,
+          }))
+      );
+      users.forEach((user) => {
+        if (user.userId !== userId.current && user.socketId) {
+          callUser(user.socketId, user.userId);
+        }
+      });
+    };
+
+    const handleSignal = ({ from, signal, userId: remoteUserId }) => {
+      console.log("Handling signal from:", from);
+      const peerObj = peersRef.current.find((p) => p.userId === remoteUserId);
+      if (peerObj && !peerObj.peer.destroyed) {
+        peerObj.peer.signal(signal);
+        return;
+      }
+      if (!localStream.current) {
+        setError("Cannot answer peer: No media stream available.");
+        return;
+      }
+
+      const peer = new Peer({
+        initiator: false,
+        trickle: false,
+        stream: localStream.current,
+        config: {
+          iceServers: [
+            { urls: "stun:stun.l.google.com:19302" },
+            { urls: "stun:global.stun.twilio.com:3478" },
+          ],
+        },
+      });
+
+      peer.on("signal", (answerSignal) => {
+        if (!socket.connected) return;
+        socket.emit("signal", {
+          to: from,
+          from: socket.id,
+          signal: answerSignal,
+          userId: userId.current,
+        });
+      });
+
+      peer.on("stream", (stream) => {
+        console.log("Received stream from:", remoteUserId);
+        if (userVideoRefs.current[remoteUserId]) {
+          userVideoRefs.current[remoteUserId].srcObject = stream;
+        }
+      });
+
+      peer.on("error", (err) => {
+        console.error("Answering peer error:", err);
+        setError("Peer connection error. Please try again.");
+        removePeer(remoteUserId);
+      });
+
+      peer.on("close", () => {
+        console.log("Answering peer connection closed with:", remoteUserId);
+        removePeer(remoteUserId);
+      });
+
+      peer.on("icecandidate", (event) => {
+        if (event.candidate && socket.connected) {
+          socket.emit("ice-candidate", {
+            to: from,
+            candidate: event.candidate,
+            userId: userId.current,
+          });
+        }
+      });
+
+      peer.on("connect", () => {
+        console.log("Peer connected with:", remoteUserId);
+      });
+
+      peersRef.current.push({ peer, userId: remoteUserId });
+      peer.signal(signal);
+      logPeers();
+    };
+
+    const handleIceCandidate = ({ from, candidate, userId: remoteUserId }) => {
+      console.log("Handling ICE candidate from:", from);
+      const peerObj = peersRef.current.find((p) => p.userId === remoteUserId);
+      if (peerObj && peerObj.peer && candidate && !peerObj.peer.destroyed) {
+        peerObj.peer
+          .addIceCandidate(new RTCIceCandidate(candidate))
+          .catch((err) => {
+            console.error("Error adding ICE candidate:", err);
+          });
+      }
+    };
+
+    const handleUserStatusUpdate = ({ userId, isMicOn, isVideoOn }) => {
+      console.log("User status update:", { userId, isMicOn, isVideoOn });
+      setParticipants((prev) =>
+        prev.map((p) => (p.id === userId ? { ...p, isMicOn, isVideoOn } : p))
+      );
+    };
+
+    socket.on("user-joined", handleUserJoined);
+    socket.on("user-left", handleUserLeft);
+    socket.on("receive-message", handleReceiveMessage);
+    socket.on("signal", handleSignal);
+    socket.on("ice-candidate", handleIceCandidate);
+    socket.on("screen-share-started", handleScreenShareStarted);
+    socket.on("screen-share-stopped", handleScreenShareStopped);
+    socket.on("existing-users", handleExistingUsers);
+    socket.on("user-status-update", handleUserStatusUpdate);
+
+    return () => {
+      console.log("Cleaning up socket event listeners");
+      socket.off("user-joined", handleUserJoined);
+      socket.off("user-left", handleUserLeft);
+      socket.off("receive-message", handleReceiveMessage);
+      socket.off("signal", handleSignal);
+      socket.off("ice-candidate", handleIceCandidate);
+      socket.off("screen-share-started", handleScreenShareStarted);
+      socket.off("screen-share-stopped", handleScreenShareStopped);
+      socket.off("existing-users", handleExistingUsers);
+      socket.off("user-status-update", handleUserStatusUpdate);
+    };
+  }, [joined, username, meetingId, isMicOn, isVideoOn]);
 
   useEffect(() => {
     if (chatContainerRef.current) {
@@ -286,87 +412,284 @@ const MeetingApp = () => {
     }
   }, [messages]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      peersRef.current = peersRef.current.filter((p) => !p.peer.destroyed);
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   const addMessage = (message, username) => {
+    const sanitizedMessage = message.slice(0, 500);
     setMessages((prev) => [
       ...prev,
-      { username, message, timestamp: new Date().toLocaleTimeString() },
+      {
+        username,
+        message: sanitizedMessage,
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      },
     ]);
   };
 
-  const startVideo = async () => {
-    try {
-      const constraints = {
-        video: {
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-          frameRate: { ideal: 30 },
-        },
-        audio: true,
-      };
+  const callUser = (socketId, userId) => {
+    console.log("Attempting to call user:", { socketId, userId });
+    peersRef.current = peersRef.current.filter((p) => !p.peer.destroyed);
+    if (peersRef.current.some((p) => p.userId === userId)) {
+      console.log("Peer already exists for user:", userId);
+      return;
+    }
+    if (!socketRef.current.connected) {
+      console.error("Socket not connected for signaling");
+      setError("Cannot connect to peer: Server disconnected.");
+      return;
+    }
+    if (
+      !localStream.current ||
+      !localStream.current.getTracks().some((track) => track.enabled)
+    ) {
+      console.error("No active tracks in local stream");
+      setError("No active media tracks available.");
+      return;
+    }
 
-      localStream.current = await navigator.mediaDevices.getUserMedia(
-        constraints
-      );
-      if (videoRef.current) {
-        videoRef.current.srcObject = localStream.current;
+    const peer = new Peer({
+      initiator: true,
+      trickle: false,
+      stream: localStream.current,
+      config: {
+        iceServers: [
+          { urls: "stun:stun.l.google.com:19302" },
+          { urls: "stun:global.stun.twilio.com:3478" },
+        ],
+      },
+    });
+
+    peer.on("signal", (signal) => {
+      if (!socketRef.current.connected) return;
+      socketRef.current.emit("signal", {
+        to: socketId,
+        from: socketRef.current.id,
+        signal,
+        userId: userId.current,
+      });
+    });
+
+    peer.on("stream", (stream) => {
+      console.log("Received stream from peer for user:", userId);
+      if (userVideoRefs.current[userId]) {
+        userVideoRefs.current[userId].srcObject = stream;
       }
-    } catch (err) {
-      console.error("Error accessing media devices:", err);
-      setError("Could not access camera/microphone. Please check permissions.");
+    });
+
+    peer.on("error", (err) => {
+      console.error("Peer error:", err);
+      setError("Failed to connect to peer. Please try again.");
+      removePeer(userId);
+    });
+
+    peer.on("close", () => {
+      console.log("Peer connection closed with:", userId);
+      removePeer(userId);
+    });
+
+    peer.on("icecandidate", (event) => {
+      if (event.candidate && socketRef.current.connected) {
+        socketRef.current.emit("ice-candidate", {
+          to: socketId,
+          candidate: event.candidate,
+          userId: userId.current,
+        });
+      }
+    });
+
+    peer.on("connect", () => {
+      console.log("Peer connected with:", userId);
+    });
+
+    peersRef.current.push({ peer, userId });
+    logPeers();
+  };
+
+  const removePeer = (userId) => {
+    console.log("Removing peer:", userId);
+    const peerIndex = peersRef.current.findIndex((p) => p.userId === userId);
+    if (peerIndex !== -1) {
+      try {
+        if (!peersRef.current[peerIndex].peer.destroyed) {
+          peersRef.current[peerIndex].peer.destroy();
+        }
+      } catch (err) {
+        console.error("Error destroying peer:", err);
+        setError("Failed to close peer connection.");
+      }
+      peersRef.current.splice(peerIndex, 1);
+      if (userVideoRefs.current[userId]) {
+        userVideoRefs.current[userId].srcObject = null;
+        delete userVideoRefs.current[userId];
+      }
+      setParticipants((prev) => prev.filter((p) => p.id !== userId));
+      logPeers();
+    }
+  };
+
+  const startVideo = async () => {
+    console.log("Attempting to start video with quality:", videoQuality);
+    const resolutions = {
+      "1080p": { width: { ideal: 1920 }, height: { ideal: 1080 } },
+      "720p": { width: { ideal: 1280 }, height: { ideal: 720 } },
+      "480p": { width: { ideal: 640 }, height: { ideal: 480 } },
+    };
+    const qualities = ["1080p", "720p", "480p"];
+    for (const quality of qualities) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { ...resolutions[quality], frameRate: { ideal: 30 } },
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          },
+        });
+        if (localStream.current) {
+          localStream.current.getTracks().forEach((track) => {
+            if (track.readyState === "live") track.stop();
+          });
+        }
+        localStream.current = stream;
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
+        }
+        setVideoQuality(quality);
+        setMediaAccessGranted(true);
+        console.log("Local stream initialized at", quality);
+        return true;
+      } catch (err) {
+        console.warn(`Failed to get stream at ${quality}:`, err);
+      }
+    }
+    try {
+      const audioStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
+      if (!audioStream.getAudioTracks().length) {
+        throw new Error("No audio tracks available");
+      }
+      if (localStream.current) {
+        localStream.current.getTracks().forEach((track) => {
+          if (track.readyState === "live") track.stop();
+        });
+      }
+      localStream.current = audioStream;
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = audioStream;
+      }
+      setIsVideoOn(false);
+      setMediaAccessGranted(true);
+      console.log("Audio-only stream initialized");
+      return true;
+    } catch (audioErr) {
+      console.error("Couldn't access audio either:", audioErr);
+      setError("No audio or video access. Please check permissions.");
+      setMediaAccessGranted(false);
+      return false;
     }
   };
 
   const toggleMic = () => {
-    if (localStream.current) {
-      localStream.current.getAudioTracks().forEach((track) => {
-        track.enabled = !track.enabled;
+    if (!localStream.current) {
+      setError("No media stream available to toggle microphone.");
+      return;
+    }
+    const audioTracks = localStream.current.getAudioTracks();
+    if (!audioTracks.length) {
+      setError("No audio tracks available.");
+      return;
+    }
+    audioTracks.forEach((track) => {
+      track.enabled = !track.enabled;
+    });
+    setIsMicOn(!isMicOn);
+    if (socketRef.current.connected) {
+      socketRef.current.emit("user-status-update", {
+        roomId: meetingId,
+        userId: userId.current,
+        isMicOn: !isMicOn,
+        isVideoOn,
       });
-      setIsMicOn(!isMicOn);
     }
   };
 
   const toggleVideo = () => {
-    if (localStream.current) {
-      localStream.current.getVideoTracks().forEach((track) => {
-        track.enabled = !track.enabled;
+    if (!localStream.current) {
+      setError("No media stream available to toggle video.");
+      return;
+    }
+    const videoTracks = localStream.current.getVideoTracks();
+    if (!videoTracks.length) {
+      setError("No video tracks available.");
+      return;
+    }
+    videoTracks.forEach((track) => {
+      track.enabled = !track.enabled;
+    });
+    setIsVideoOn(!isVideoOn);
+    if (socketRef.current.connected) {
+      socketRef.current.emit("user-status-update", {
+        roomId: meetingId,
+        userId: userId.current,
+        isMicOn,
+        isVideoOn: !isVideoOn,
       });
-      setIsVideoOn(!isVideoOn);
     }
   };
 
   const startRecording = () => {
     setIsRecording(true);
-    // Implement recording logic here
     addMessage("Meeting recording started", "system");
   };
 
   const stopRecording = () => {
     setIsRecording(false);
-    // Implement recording stop logic here
     addMessage("Meeting recording stopped", "system");
   };
+
+  
 
   const handleCreateRoom = async () => {
     setLoading(true);
     try {
-      const response = await axios.post("http://localhost:5000/room/create");
-      if (response.data?.roomId) {
-        setMeetingId(response.data.roomId);
-        setRoomCreated(true);
-        setError("");
-      } else {
-        setError("Failed to create room. Please try again.");
+      const response = await axios.post(`${API_URL}/api/room/create`);
+      if (!response.data || typeof response.data.roomId !== "string") {
+        throw new Error("Invalid room creation response");
       }
+      setMeetingId(response.data.roomId);
+      setRoomCreated(true);
+      setError("");
     } catch (err) {
-      setError("Failed to create room. Please try again.");
+      console.error("Error creating room:", err);
+      const message =
+        err.response?.status === 429
+          ? "Too many requests. Please try again later."
+          : "Failed to create room. Please check your network.";
+      setError(message);
     } finally {
       setLoading(false);
     }
   };
 
   const copyMeetingId = () => {
-    navigator.clipboard.writeText(meetingId);
-    addMessage("Meeting ID copied to clipboard", "system");
+    if (meetingId) {
+      navigator.clipboard.writeText(meetingId).then(() => {
+        addMessage("Meeting ID copied to clipboard", "system");
+      });
+    }
   };
 
   const handleJoinMeeting = async () => {
@@ -374,74 +697,253 @@ const MeetingApp = () => {
       setError("Meeting ID and username are required");
       return;
     }
+    
+    if (!socketRef.current.connected) {
+      setError("Cannot join meeting: Server not connected.");
+      return;
+    }
     setLoading(true);
     try {
-      const response = await axios.post("http://localhost:5000/room/join", {
+      const response = await axios.post(`${API_URL}/api/room/join`, {
         meetingId,
         username,
-        userId,
+        userId: userId.current,
       });
-
       if (response.data.success) {
-        socket.emit("join-meeting", { meetingId, username, userId });
+        const mediaSuccess = await startVideo();
+        if (!mediaSuccess) {
+          addMessage(
+            "Joining without camera/microphone due to permission issues",
+            "system"
+          );
+        }
+        socketRef.current.emit("join-meeting", {
+          meetingId,
+          username,
+          userId: userId.current,
+          isMicOn: mediaSuccess ? isMicOn : false,
+          isVideoOn: mediaSuccess ? isVideoOn : false,
+        });
         setJoined(true);
-        await startVideo();
         addMessage("You joined the meeting", "system");
+        if (response.data.users && response.data.users.length > 0) {
+          socketRef.current.emit("get-existing-users", { meetingId });
+        }
       } else {
         setError(response.data.message || "Failed to join the meeting.");
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to join the meeting.");
+      console.error("Error joining meeting:", err);
+      setError("Failed to join the meeting. Please check your network.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLeaveMeeting = () => {
-    socket.emit("leave-meeting", { meetingId, username });
-    if (localStream.current) {
-      localStream.current.getTracks().forEach((track) => track.stop());
+  const handleLeaveMeeting = async () => {
+    try {
+      await axios.post(`${API_URL}/api/room/leave`, {
+        roomId: meetingId,
+        userId: userId.current,
+      });
+      if (socketRef.current.connected) {
+        socketRef.current.emit("leave-meeting", {
+          meetingId,
+          username,
+          userId: userId.current,
+        });
+      }
+      cleanupMediaStreams();
+      setJoined(false);
+      setParticipants([]);
+      setMessages([]);
+      setMediaAccessGranted(false);
+      setIsScreenSharing(false);
+      setMeetingId("");
+    } catch (err) {
+      console.error("Error leaving meeting:", err);
+      setError(
+        "Failed to leave meeting on server. You are disconnected locally."
+      );
     }
-    setJoined(false);
-    setParticipants([]);
-    setMessages([]);
-    addMessage("You left the meeting", "system");
+  };
+
+  const cleanupMediaStreams = () => {
+    [localStream, screenStream].forEach((streamRef) => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => {
+          if (track.readyState === "live") track.stop();
+        });
+        streamRef.current = null;
+      }
+    });
+    peersRef.current.forEach(({ peer }) => {
+      try {
+        if (!peer.destroyed) peer.destroy();
+      } catch (err) {
+        console.error("Error destroying peer:", err);
+        setError("Failed to clean up some peer connections.");
+      }
+    });
+    peersRef.current = [];
+    userVideoRefs.current = {};
   };
 
   const handleSendMessage = () => {
-    if (newMessage.trim()) {
-      socket.emit("send-message", { meetingId, username, message: newMessage });
-      addMessage(newMessage, "You");
-      setNewMessage("");
-      setShowEmojiPicker(false);
+    if (!newMessage.trim()) return;
+    if (!socketRef.current.connected) {
+      setError("Cannot send message: Server disconnected.");
+      return;
     }
+    socketRef.current.emit("send-message", {
+      roomId: meetingId,
+      username,
+      message: newMessage,
+    });
+    addMessage(newMessage, "You");
+    setNewMessage("");
+    setShowEmojiPicker(false);
   };
 
   const addEmoji = (emojiData) => {
-    setNewMessage((prev) => prev + emojiData.emoji);
+    setNewMessage((prev) =>
+      prev.length < 500 ? prev + emojiData.emoji : prev
+    );
   };
 
   const shareScreen = async () => {
     try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: true,
-        audio: true,
-      });
-      // Handle screen sharing stream
+      if (!socketRef.current.connected) {
+        throw new Error("Cannot update screen share: Server disconnected");
+      }
+      if (isScreenSharing) {
+        if (screenStream.current) {
+          screenStream.current.getTracks().forEach((track) => {
+            if (track.readyState === "live") track.stop();
+          });
+          screenStream.current = null;
+        }
+        if (
+          localStream.current &&
+          localStream.current.getVideoTracks().length
+        ) {
+          localVideoRef.current.srcObject = localStream.current;
+        } else {
+          setError("No video track available to restore.");
+        }
+        setIsScreenSharing(false);
+        socketRef.current.emit("stop-screen-share", {
+          roomId: meetingId,
+          userId: userId.current,
+        });
+        peersRef.current.forEach(({ peer }) => {
+          if (peer.destroyed || !localStream.current) return;
+          const videoTrack = localStream.current.getVideoTracks()[0];
+          const sender = peer
+            .getSenders()
+            .find((s) => s.track?.kind === "video");
+          if (sender && videoTrack) {
+            sender.replaceTrack(videoTrack).catch((err) => {
+              console.error("Error replacing track:", err);
+              setError("Failed to restore video for some peers.");
+            });
+          }
+        });
+      } else {
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+          video: true,
+          audio: true,
+        });
+        if (!stream.getVideoTracks().length) {
+          throw new Error("No video track in screen share stream");
+        }
+        screenStream.current = stream;
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
+        }
+        socketRef.current.emit("start-screen-share", {
+          roomId: meetingId,
+          userId: userId.current,
+        });
+        setIsScreenSharing(true);
+        setActiveSpeaker(userId.current);
+
+        stream.getVideoTracks()[0].onended = () => {
+          if (localVideoRef.current && localStream.current) {
+            localVideoRef.current.srcObject = localStream.current;
+          }
+          setIsScreenSharing(false);
+          setActiveSpeaker(null);
+          if (socketRef.current.connected) {
+            socketRef.current.emit("stop-screen-share", {
+              roomId: meetingId,
+              userId: userId.current,
+            });
+          }
+          peersRef.current.forEach(({ peer }) => {
+            if (peer.destroyed || !localStream.current) return;
+            const videoTrack = localStream.current.getVideoTracks()[0];
+            const sender = peer
+              .getSenders()
+              .find((s) => s.track?.kind === "video");
+            if (sender && videoTrack) {
+              sender.replaceTrack(videoTrack).catch((err) => {
+                console.error("Error replacing track:", err);
+                setError("Failed to restore video for some peers.");
+              });
+            }
+          });
+        };
+
+        peersRef.current.forEach(({ peer }) => {
+          if (peer.destroyed) return;
+          const videoTrack = stream.getVideoTracks()[0];
+          const sender = peer
+            .getSenders()
+            .find((s) => s.track?.kind === "video");
+          if (sender) {
+            sender.replaceTrack(videoTrack).catch((err) => {
+              console.error("Error replacing track:", err);
+              setError("Failed to share screen with some peers.");
+            });
+          } else {
+            peer.addTrack(videoTrack, stream);
+          }
+        });
+      }
     } catch (err) {
       console.error("Error sharing screen:", err);
-      setError("Could not share screen. Please try again.");
+      setError(
+        "Failed to share screen. Please grant permissions or try again."
+      );
+    }
+  };
+
+  const setUserVideoRef = (userId, ref) => {
+    if (ref) {
+      userVideoRefs.current[userId] = ref;
+      console.log("Set video ref for userId:", userId);
+    } else if (userVideoRefs.current[userId]) {
+      userVideoRefs.current[userId].srcObject = null;
+      delete userVideoRefs.current[userId];
+      console.log("Cleared video ref for userId:", userId);
     }
   };
 
   return (
     <Container fluid className="meeting-container">
+      {isConnecting && (
+        <div className="connecting-overlay">
+          <Spinner animation="border" />
+          <span>Connecting to peers...</span>
+        </div>
+      )}
       {!joined ? (
         <div className="join-screen">
           <div className="join-card">
             <h1 className="text-center mb-4">
-              <span className="logo-primary">Link</span>
-              <span className="logo-secondary">ipax</span>
+              <span className="logo-primary">Meeting</span>
+              <span className="logo-secondary">Room</span>
               <span className="logo-tagline">Premium Video Meetings</span>
             </h1>
 
@@ -457,6 +959,7 @@ const MeetingApp = () => {
                 onClick={handleCreateRoom}
                 disabled={loading}
                 className="action-btn"
+                aria-label="Create new meeting"
               >
                 {loading ? (
                   <Spinner animation="border" size="sm" />
@@ -471,6 +974,7 @@ const MeetingApp = () => {
                 value={meetingId}
                 onChange={(e) => setMeetingId(e.target.value)}
                 className="meeting-id-input"
+                aria-label="Meeting ID"
               />
             </div>
 
@@ -479,14 +983,20 @@ const MeetingApp = () => {
                 <p className="text-muted">Your Meeting ID:</p>
                 <div className="meeting-id-display">
                   <span ref={meetingIdRef}>{meetingId}</span>
-                  <Button
-                    variant="outline-secondary"
-                    size="sm"
-                    onClick={copyMeetingId}
-                    className="copy-btn"
+                  <OverlayTrigger
+                    placement="top"
+                    overlay={<Tooltip>Copy to clipboard</Tooltip>}
                   >
-                    <FiCopy /> Copy
-                  </Button>
+                    <Button
+                      variant="outline-secondary"
+                      size="sm"
+                      onClick={copyMeetingId}
+                      className="copy-btn"
+                      aria-label="Copy meeting ID"
+                    >
+                      <FiCopy />
+                    </Button>
+                  </OverlayTrigger>
                 </div>
                 <p className="text-muted small mt-2">
                   Share this ID with participants to join the meeting
@@ -502,6 +1012,8 @@ const MeetingApp = () => {
                   placeholder="Enter your name"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
+                  required
+                  aria-label="Username"
                 />
               </Form.Group>
 
@@ -510,6 +1022,7 @@ const MeetingApp = () => {
                 onClick={handleJoinMeeting}
                 disabled={!meetingId || !username || loading}
                 className="join-btn"
+                aria-label="Join meeting"
               >
                 {loading ? (
                   <Spinner animation="border" size="sm" />
@@ -525,12 +1038,14 @@ const MeetingApp = () => {
           <div className={`video-container ${!showChat ? "full-width" : ""}`}>
             <div className="main-video">
               <video
-                ref={videoRef}
+                ref={localVideoRef}
                 autoPlay
                 muted
+                playsInline
                 className={!isVideoOn ? "video-off" : ""}
+                aria-label="Local video"
               ></video>
-              {!isVideoOn && (
+              {(!isVideoOn || !mediaAccessGranted) && (
                 <div className="video-placeholder">
                   <div className="user-avatar">
                     {username.charAt(0).toUpperCase()}
@@ -538,21 +1053,67 @@ const MeetingApp = () => {
                 </div>
               )}
               <div className="user-info">
-                <span>{username}</span>
-                {!isMicOn && <FiMicOff className="mic-status" />}
+                <span>{username} (You)</span>
+                {!isMicOn && (
+                  <FiMicOff
+                    className="mic-status"
+                    aria-label="Microphone off"
+                  />
+                )}
+                {isScreenSharing && (
+                  <FaChalkboardTeacher
+                    className="screen-share-icon"
+                    aria-label="Screen sharing"
+                  />
+                )}
+                {!mediaAccessGranted && (
+                  <span className="media-warning">No media access</span>
+                )}
               </div>
             </div>
 
             <div className="participants-grid">
               {participants.map((participant) => (
-                <div key={participant.id} className="participant-video">
-                  <div className="video-placeholder">
-                    <div className="user-avatar">
-                      {participant.username.charAt(0).toUpperCase()}
+                <div
+                  key={`participant-${participant.id}-${participant.socketId}`}
+                  className={`participant-video ${
+                    participant.id === activeSpeaker ? "active-speaker" : ""
+                  }`}
+                >
+                  <video
+                    ref={(ref) => setUserVideoRef(participant.id, ref)}
+                    autoPlay
+                    playsInline
+                    className="remote-video"
+                    aria-label={`Video for ${participant.username}`}
+                  />
+                  {!participant.isVideoOn && (
+                    <div className="video-placeholder">
+                      <div className="user-avatar">
+                        {participant.username.charAt(0).toUpperCase()}
+                      </div>
                     </div>
-                  </div>
+                  )}
                   <div className="user-info">
                     <span>{participant.username}</span>
+                    <div className="participant-status">
+                      {participant.isMicOn ? (
+                        <FiMic size={12} aria-label="Microphone on" />
+                      ) : (
+                        <FiMicOff size={12} aria-label="Microphone off" />
+                      )}
+                      {participant.isVideoOn ? (
+                        <FiVideo size={12} aria-label="Video on" />
+                      ) : (
+                        <FiVideoOff size={12} aria-label="Video off" />
+                      )}
+                      {participant.isScreenSharing && (
+                        <FaChalkboardTeacher
+                          size={12}
+                          aria-label="Screen sharing"
+                        />
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -562,21 +1123,22 @@ const MeetingApp = () => {
           {showChat && (
             <div className="chat-container">
               <div className="chat-header">
-                <h5>
+                <h3>
                   <FiMessageSquare /> Chat
-                </h5>
+                </h3>
                 <Button
                   variant="link"
                   onClick={() => setShowChat(false)}
-                  className="close-chat"
+                  className="close-btn"
+                  aria-label="Close chat"
                 >
-                  &times;
+                  <FiX />
                 </Button>
               </div>
               <div className="chat-messages" ref={chatContainerRef}>
                 {messages.map((msg, index) => (
                   <div
-                    key={index}
+                    key={`message-${index}`}
                     className={`message ${
                       msg.username === "You"
                         ? "sent"
@@ -584,6 +1146,8 @@ const MeetingApp = () => {
                         ? "system"
                         : "received"
                     }`}
+                    role="listitem"
+                    aria-label={`Message from ${msg.username} at ${msg.timestamp}`}
                   >
                     {msg.username !== "system" && msg.username !== "You" && (
                       <span className="message-sender">{msg.username}</span>
@@ -596,13 +1160,19 @@ const MeetingApp = () => {
                 ))}
               </div>
               <div className="chat-input">
-                <Button
-                  variant="link"
-                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                  className="emoji-btn"
+                <OverlayTrigger
+                  placement="top"
+                  overlay={<Tooltip>Add emoji</Tooltip>}
                 >
-                  <BsEmojiSmile />
-                </Button>
+                  <Button
+                    variant="link"
+                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                    className="emoji-btn"
+                    aria-label="Toggle emoji picker"
+                  >
+                    <BsEmojiSmile />
+                  </Button>
+                </OverlayTrigger>
                 {showEmojiPicker && (
                   <div className="emoji-picker">
                     <EmojiPicker
@@ -618,11 +1188,13 @@ const MeetingApp = () => {
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                  aria-label="Chat input"
                 />
                 <Button
                   variant="primary"
                   onClick={handleSendMessage}
                   disabled={!newMessage.trim()}
+                  aria-label="Send message"
                 >
                   Send
                 </Button>
@@ -630,8 +1202,85 @@ const MeetingApp = () => {
             </div>
           )}
 
-          <div className="meeting-controls">
-            <div className="controls-left">
+          {showParticipants && (
+            <div className="participants-sidebar">
+              <div className="sidebar-header">
+                <h3>
+                  <FiUsers /> Participants ({participants.length + 1})
+                </h3>
+                <Button
+                  variant="link"
+                  onClick={() => setShowParticipants(false)}
+                  className="close-btn"
+                  aria-label="Close participants"
+                >
+                  <FiX />
+                </Button>
+              </div>
+              <div className="participants-list">
+                <div className="participant-item you">
+                  <div className="participant-avatar">
+                    {username.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="participant-info">
+                    <span>{username} (You)</span>
+                    <div className="participant-status">
+                      {isMicOn ? (
+                        <FiMic size={12} aria-label="Microphone on" />
+                      ) : (
+                        <FiMicOff size={12} aria-label="Microphone off" />
+                      )}
+                      {isVideoOn ? (
+                        <FiVideo size={12} aria-label="Video on" />
+                      ) : (
+                        <FiVideoOff size={12} aria-label="Video off" />
+                      )}
+                      {isScreenSharing && (
+                        <FaChalkboardTeacher
+                          size={12}
+                          aria-label="Screen sharing"
+                        />
+                      )}
+                    </div>
+                  </div>
+                </div>
+                {participants.map((participant) => (
+                  <div
+                    key={`participant-${participant.id}-${participant.socketId}`}
+                    className="participant-item"
+                  >
+                    <div className="participant-avatar">
+                      {participant.username.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="participant-info">
+                      <span>{participant.username}</span>
+                      <div className="participant-status">
+                        {participant.isMicOn ? (
+                          <FiMic size={12} aria-label="Microphone on" />
+                        ) : (
+                          <FiMicOff size={12} aria-label="Microphone off" />
+                        )}
+                        {participant.isVideoOn ? (
+                          <FiVideo size={12} aria-label="Video on" />
+                        ) : (
+                          <FiVideoOff size={12} aria-label="Video off" />
+                        )}
+                        {participant.isScreenSharing && (
+                          <FaChalkboardTeacher
+                            size={12}
+                            aria-label="Screen sharing"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="controls-container">
+            <div className="control-buttons">
               <OverlayTrigger
                 placement="top"
                 overlay={<Tooltip>{isMicOn ? "Mute" : "Unmute"}</Tooltip>}
@@ -639,6 +1288,13 @@ const MeetingApp = () => {
                 <Button
                   variant={isMicOn ? "secondary" : "danger"}
                   onClick={toggleMic}
+                  disabled={!mediaAccessGranted}
+                  className={
+                    isMicOn
+                      ? "bg-gray-600 hover:bg-gray-700"
+                      : "bg-red-600 hover:bg-red-700"
+                  }
+                  aria-label={isMicOn ? "Mute mic" : "Unmute mic"}
                 >
                   {isMicOn ? <FiMic /> : <FiMicOff />}
                 </Button>
@@ -647,14 +1303,19 @@ const MeetingApp = () => {
               <OverlayTrigger
                 placement="top"
                 overlay={
-                  <Tooltip>
-                    {isVideoOn ? "Turn off camera" : "Turn on camera"}
-                  </Tooltip>
+                  <Tooltip>{isVideoOn ? "Stop video" : "Start video"}</Tooltip>
                 }
               >
                 <Button
                   variant={isVideoOn ? "secondary" : "danger"}
                   onClick={toggleVideo}
+                  disabled={!mediaAccessGranted}
+                  className={
+                    isVideoOn
+                      ? "bg-gray-600 hover:bg-gray-700"
+                      : "bg-red-600 hover:bg-red-700"
+                  }
+                  aria-label={isVideoOn ? "Stop video" : "Start video"}
                 >
                   {isVideoOn ? <FiVideo /> : <FiVideoOff />}
                 </Button>
@@ -662,10 +1323,23 @@ const MeetingApp = () => {
 
               <OverlayTrigger
                 placement="top"
-                overlay={<Tooltip>Share screen</Tooltip>}
+                overlay={
+                  <Tooltip>
+                    {isScreenSharing ? "Stop sharing" : "Share screen"}
+                  </Tooltip>
+                }
               >
-                <Button variant="secondary" onClick={shareScreen}>
-                  <FiShare2 />
+                <Button
+                  variant={isScreenSharing ? "danger" : "secondary"}
+                  onClick={shareScreen}
+                  className={
+                    isScreenSharing
+                      ? "bg-red-600 hover:bg-red-700"
+                      : "bg-gray-600 hover:bg-gray-700"
+                  }
+                  aria-label={isScreenSharing ? "Stop sharing" : "Share screen"}
+                >
+                  <FiShare2 /> {isScreenSharing ? "Stop" : "Share"}
                 </Button>
               </OverlayTrigger>
 
@@ -674,7 +1348,12 @@ const MeetingApp = () => {
                   placement="top"
                   overlay={<Tooltip>Stop recording</Tooltip>}
                 >
-                  <Button variant="danger" onClick={stopRecording}>
+                  <Button
+                    variant="danger"
+                    onClick={stopRecording}
+                    className="bg-red-600 hover:bg-red-700"
+                    aria-label="Stop recording"
+                  >
                     <BsRecordCircle /> Recording
                   </Button>
                 </OverlayTrigger>
@@ -683,20 +1362,29 @@ const MeetingApp = () => {
                   placement="top"
                   overlay={<Tooltip>Start recording</Tooltip>}
                 >
-                  <Button variant="secondary" onClick={startRecording}>
+                  <Button
+                    variant="secondary"
+                    onClick={startRecording}
+                    className="bg-gray-600 hover:bg-gray-700"
+                    aria-label="Start recording"
+                  >
                     <BsRecordCircle /> Record
                   </Button>
                 </OverlayTrigger>
               )}
             </div>
 
-            <div className="controls-center">
-              <Button variant="danger" onClick={handleLeaveMeeting}>
+            <div>
+              <Button
+                variant="danger"
+                onClick={handleLeaveMeeting}
+                className="bg-red-600 hover:bg-red-700"
+                aria-label="Leave meeting"
+              >
                 <FiLogOut /> Leave
               </Button>
             </div>
-
-            <div className="controls-right">
+            <div className="flex space-x-2">
               <OverlayTrigger
                 placement="top"
                 overlay={
@@ -706,18 +1394,30 @@ const MeetingApp = () => {
                 <Button
                   variant={showParticipants ? "primary" : "secondary"}
                   onClick={() => setShowParticipants(!showParticipants)}
+                  className={
+                    showParticipants
+                      ? "bg-blue-500 hover:bg-blue-600"
+                      : "bg-gray-600 hover:bg-gray-700"
+                  }
+                  aria-label={`Show participants (${participants.length + 1})`}
                 >
-                  <FiUsers />{" "}
-                  <Badge bg="light" text="dark">
-                    {participants.length + 1}
-                  </Badge>
+                  <FiUsers />
                 </Button>
               </OverlayTrigger>
 
-              <OverlayTrigger placement="top" overlay={<Tooltip>Chat</Tooltip>}>
+              <OverlayTrigger
+                placement="top"
+                overlay={<Tooltip>Toggle chat</Tooltip>}
+              >
                 <Button
                   variant={showChat ? "primary" : "secondary"}
                   onClick={() => setShowChat(!showChat)}
+                  className={
+                    showChat
+                      ? "bg-blue-500 hover:bg-blue-600"
+                      : "bg-gray-600 hover:bg-gray-700"
+                  }
+                  aria-label="Toggle chat"
                 >
                   <FiMessageSquare />
                 </Button>
@@ -730,6 +1430,8 @@ const MeetingApp = () => {
                 <Button
                   variant="secondary"
                   onClick={() => setShowSettings(true)}
+                  className="bg-gray-600 hover:bg-gray-700"
+                  aria-label="Open settings"
                 >
                   <FiSettings />
                 </Button>
@@ -739,10 +1441,15 @@ const MeetingApp = () => {
         </div>
       )}
 
-      {/* Settings Modal */}
-      <Modal show={showSettings} onHide={() => setShowSettings(false)} centered>
+      <Modal
+        show={showSettings}
+        onHide={() => setShowSettings(false)}
+        centered
+        className="modal"
+        aria-labelledby="modal-label"
+      >
         <Modal.Header closeButton>
-          <Modal.Title>Meeting Settings</Modal.Title>
+          <Modal.Title id="modal-label">Settings</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
@@ -751,6 +1458,7 @@ const MeetingApp = () => {
               <Form.Select
                 value={videoQuality}
                 onChange={(e) => setVideoQuality(e.target.value)}
+                aria-label="Select video quality"
               >
                 <option value="480p">480p (SD)</option>
                 <option value="720p">720p (HD)</option>
@@ -759,26 +1467,40 @@ const MeetingApp = () => {
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Check
-                type="switch"
+                type="checkbox"
                 label="Enable Noise Suppression"
                 defaultChecked
+                disabled={!mediaAccessGranted}
+                aria-label="Toggle noise suppression"
               />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Check
-                type="switch"
+                type="checkbox"
                 label="Enable Echo Cancellation"
                 defaultChecked
+                disabled={!mediaAccessGranted}
+                aria-label="Toggle echo cancellation"
               />
             </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowSettings(false)}>
+          <Button
+            variant="light"
+            onClick={() => setShowSettings(false)}
+            className="bg-gray-600 hover:bg-gray-700"
+            aria-label="Close settings"
+          >
             Close
           </Button>
-          <Button variant="primary" onClick={() => setShowSettings(false)}>
-            Save Changes
+          <Button
+            variant="primary"
+            onClick={() => setShowSettings(false)}
+            className="bg-blue-500 hover:bg-blue-600"
+            aria-label="Save settings"
+          >
+            Save Settings
           </Button>
         </Modal.Footer>
       </Modal>
@@ -786,4 +1508,10 @@ const MeetingApp = () => {
   );
 };
 
-export default MeetingApp;
+export default function MeetingRoom() {
+  return (
+    <ErrorBoundary>
+      <MeetingApp />
+    </ErrorBoundary>
+  );
+}

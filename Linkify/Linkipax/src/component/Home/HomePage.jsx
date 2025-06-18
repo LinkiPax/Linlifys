@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col , Spinner} from "react-bootstrap";
+import { Container, Row, Col, Spinner } from "react-bootstrap";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import NavbarComponent from "../navbar/Navbar";
@@ -9,7 +9,7 @@ import AdvertisementCard from "../Cards/AdvertisementCard";
 import CreatePostCard from "../Cards/CreatePostCard";
 import SuggestedConnectionsCard from "../Cards/SuggestedConnectionsCard";
 import TrendingTopicsCard from "../Cards/TrendingCard";
-import MyNetwork from '../MyNetwork/Mynewwork';
+import MyNetwork from "../MyNetwork/Mynewwork";
 import Status from "../Status/Status";
 import "./HomePage.css";
 
@@ -25,9 +25,9 @@ const HomePage = () => {
       try {
         const [postResponse, connectionsResponse, trendingResponse] =
           await Promise.all([
-            axios.get(`http://localhost:5000/api/posts`),
+            axios.get(`${import.meta.env.VITE_API_URL}/api/posts`),
             axios.get(`/api/user/suggestions/suggestions?userId=${userId}`),
-            axios.get(`http://localhost:5000/api/trending-topics`),
+            axios.get(`${import.meta.env.VITE_API_URL}/api/trending-topics`),
           ]);
         setPosts(postResponse.data || []);
         setConnections(connectionsResponse.data || []);
@@ -47,7 +47,9 @@ const HomePage = () => {
       try {
         const storedUserId = localStorage.getItem("userId");
         if (storedUserId) {
-          const response = await axios.get(`http://localhost:5000/user/${storedUserId}`);
+          const response = await axios.get(
+            `${import.meta.env.VITE_API_URL}/user/${storedUserId}`
+          );
           setUserProfile(response.data);
         }
       } catch (error) {
@@ -70,46 +72,46 @@ const HomePage = () => {
 
   return (
     <>
-      <NavbarComponent />
-      <Container fluid className={`mt-3 px-3 main-content`}>
-        <Row>
-          {/* Left Column */}
-          <Col md={3} className="px-2">
-            <div className="sticky-column">
-              <div className="suggested-connections-card">
-                <SuggestedConnectionsCard connections={connections} />
-              </div>
-              <div className="trending-topics-card">
+      <div className="homepage-background">
+        <NavbarComponent />
+        <Container fluid className={`mt-3 px-3 main-content`}>
+          <Row>
+            {/* Left Column */}
+            <Col md={3} className="px-2">
+              <div className="sticky-column">
+                <div className="suggested-connections-card">
+                  <SuggestedConnectionsCard connections={connections} />
+                </div>
+
                 <TrendingTopicsCard topics={trendingTopics} />
               </div>
-            </div>
-          </Col>
+            </Col>
 
-          {/* Middle Column */}
-          <Col md={6} className="px-2">
-            <Status userProfilePic={userProfile?.profilePicture} />
-            <CreatePostCard userId={userId} />
-            <div className="scrollable-postcards">
-              {posts.length > 0 ? (
-                posts.map((post) => (
-                  <Postcard key={post._id} post={post} />
-                ))
-              ) : (
-                <div className="text-center text-muted mt-4">No posts to display.</div>
-              )}
-            </div>
-          </Col>
+            {/* Middle Column */}
+            <Col md={6} className="px-2">
+              <Status userProfilePic={userProfile?.profilePicture} />
+              <CreatePostCard userId={userId} />
+              <div className="scrollable-postcards">
+                {posts.length > 0 ? (
+                  posts.map((post) => <Postcard key={post._id} post={post} />)
+                ) : (
+                  <div className="text-center text-muted mt-4">
+                    No posts to display.
+                  </div>
+                )}
+              </div>
+            </Col>
 
-          {/* Right Column */}
-          <Col md={3} className="px-2">
-            <div className="sticky-column">
-              <EventsCard />
-              <AdvertisementCard />
-              <MyNetwork userId={userId} />
-            </div>
-          </Col>
-        </Row>
-      </Container>
+            {/* Right Column */}
+            <Col md={3} className="px-2">
+              <div className="sticky-column">
+                <EventsCard />
+                <AdvertisementCard />
+              </div>
+            </Col>
+          </Row>
+        </Container>
+      </div>
     </>
   );
 };

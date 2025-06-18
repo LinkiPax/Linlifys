@@ -65,7 +65,7 @@ const Education = ({ userId }) => {
     try {
       setLoading(true);
       const { data } = await axios.get(
-        `http://localhost:5000/education/${userId}`
+        `${import.meta.env.VITE_API_URL}/education/${userId}`
       );
       setEducation(data);
       setError(null);
@@ -91,7 +91,9 @@ const Education = ({ userId }) => {
     try {
       setIsSearching(true);
       const { data } = await axios.get(
-        `http://localhost:5000/education/search/colleges?query=${query}`
+        `${
+          import.meta.env.VITE_API_URL
+        }/education/search/colleges?query=${query}`
       );
       setSearchResults(data);
     } catch (err) {
@@ -111,7 +113,7 @@ const Education = ({ userId }) => {
 
     try {
       const { data } = await axios.get(
-        `http://localhost:5000/education/search/skills?query=${query}`
+        `${import.meta.env.VITE_API_URL}/education/search/skills?query=${query}`
       );
       setSkillSearchResults(data);
     } catch (err) {
@@ -248,7 +250,7 @@ const Education = ({ userId }) => {
       let response;
       if (editMode) {
         response = await axios.put(
-          `http://localhost:5000/education/${currentEducationId}`,
+          `${import.meta.env.VITE_API_URL}/education/${currentEducationId}`,
           payload
         );
         setEducation(
@@ -259,7 +261,7 @@ const Education = ({ userId }) => {
         setToastMessage("Education updated successfully");
       } else {
         response = await axios.post(
-          `http://localhost:5000/education/${userId}`,
+          `${import.meta.env.VITE_API_URL}/education/${userId}`,
           payload
         );
         setEducation([...education, response.data]);
@@ -307,7 +309,7 @@ const Education = ({ userId }) => {
       window.confirm("Are you sure you want to delete this education record?")
     ) {
       try {
-        await axios.delete(`http://localhost:5000/education/${id}`);
+        await axios.delete(`${import.meta.env.VITE_API_URL}/education/${id}`);
         setEducation(education.filter((edu) => edu._id !== id));
         setToastMessage("Education deleted successfully");
         setShowToast(true);

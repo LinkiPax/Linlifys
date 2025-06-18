@@ -350,6 +350,7 @@
   border-radius: 12px;
   padding: 8px 0;
   min-width: 200px;
+  height: fit-content;
 }
 
 .dropdown-item {

@@ -81,7 +81,7 @@ const SkillSection = ({ userId, updateSkills }) => {
   const fetchSuggestions = async () => {
     try {
       const { data } = await axios.get(
-        `http://localhost:5000/skill/suggestions?query=${newSkill}`
+        `${import.meta.env.VITE_API_URL}/skill/suggestions?query=${newSkill}`
       );
       setSkillSuggestions(data.suggestions || []);
     } catch (error) {
@@ -103,7 +103,7 @@ const SkillSection = ({ userId, updateSkills }) => {
     setIsAddingSkill(true);
     try {
       const updatedSkills = [...skills, newSkill.trim()];
-      await axios.post(`http://localhost:5000/skill/${userId}`, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/skill/${userId}`, {
         skills: updatedSkills,
         skillLevels: { ...skillLevels, [newSkill.trim()]: 1 }, // Default level 1
       });
@@ -132,7 +132,7 @@ const SkillSection = ({ userId, updateSkills }) => {
       const updatedSkillLevels = { ...skillLevels };
       delete updatedSkillLevels[skillToRemove];
 
-      await axios.post(`http://localhost:5000/skill/${userId}`, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/skill/${userId}`, {
         skills: updatedSkills,
         skillLevels: updatedSkillLevels,
       });
@@ -208,7 +208,7 @@ const SkillSection = ({ userId, updateSkills }) => {
   const updateSkillLevel = async (skill, level) => {
     try {
       const updatedSkillLevels = { ...skillLevels, [skill]: level };
-      await axios.post(`http://localhost:5000/skill/${userId}`, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/skill/${userId}`, {
         skills,
         skillLevels: updatedSkillLevels,
       });

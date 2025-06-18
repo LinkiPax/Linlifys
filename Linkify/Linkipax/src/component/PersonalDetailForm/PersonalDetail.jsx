@@ -66,7 +66,7 @@ function PersonalDetails() {
       setUploadProgress(0);
 
       const response = await axios.post(
-        `http://localhost:5000/user/upload-profile-pic/${userId}`,
+        `${import.meta.env.VITE_API_URL}/user/upload-profile-pic/${userId}`,
         formData,
         {
           headers: {
@@ -111,7 +111,7 @@ function PersonalDetails() {
       };
 
       await axios.post(
-        `http://localhost:5000/user/update-details/${userId}`,
+        `${import.meta.env.VITE_API_URL}/user/update-details/${userId}`,
         payload,
         { withCredentials: true }
       );

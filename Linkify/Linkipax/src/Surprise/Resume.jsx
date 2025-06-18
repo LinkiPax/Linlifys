@@ -4,7 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./ResumeAnalyzer.css"; // Custom styling
 
 const ResumeAnalyzer = () => {
-  const [file, setFile] = useState(null); 
+  const [file, setFile] = useState(null);
   const [jobDescription, setJobDescription] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState("");
@@ -19,7 +19,7 @@ const ResumeAnalyzer = () => {
       const validFileTypes = [".pdf", ".doc", ".docx"];
       const fileType = uploadedFile.name.split(".").pop();
       if (!validFileTypes.includes(`.${fileType.toLowerCase()}`)) {
-        setError("Invalid file type. Please upload a PDF, DOC, or DOCX file."); 
+        setError("Invalid file type. Please upload a PDF, DOC, or DOCX file.");
         setFile(null); // Reset file selection
       } else {
         setError("");
@@ -41,14 +41,18 @@ const ResumeAnalyzer = () => {
     formData.append("userId", userId);
 
     try {
-      const response = await axios.post("http://localhost:5000/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/upload`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       console.log(response.data.analysisResult);
       setResults(response.data.analysisResult); // Display analysis result
-      console.log(results); 
+      console.log(results);
       setIsAnalyzing(false);
     } catch (err) {
       console.error("Error uploading or analyzing resume:", err);
@@ -72,7 +76,9 @@ const ResumeAnalyzer = () => {
       {error && <div className="alert alert-danger">{error}</div>}
 
       <div className="mt-4 upload-section">
-        <label htmlFor="resume-upload" className="form-label">Upload Your Resume</label>
+        <label htmlFor="resume-upload" className="form-label">
+          Upload Your Resume
+        </label>
         <input
           type="file"
           id="resume-upload"
@@ -84,7 +90,9 @@ const ResumeAnalyzer = () => {
       </div>
 
       <div className="mt-4 job-description-section">
-        <label htmlFor="job-description" className="form-label">Paste Job Description (Optional)</label>
+        <label htmlFor="job-description" className="form-label">
+          Paste Job Description (Optional)
+        </label>
         <textarea
           id="job-description"
           className="form-control job-description-textarea"
@@ -101,8 +109,14 @@ const ResumeAnalyzer = () => {
           disabled={!file || isAnalyzing}
         >
           {isAnalyzing ? (
-            <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-          ) : "Analyze Resume"}
+            <span
+              className="spinner-border spinner-border-sm"
+              role="status"
+              aria-hidden="true"
+            ></span>
+          ) : (
+            "Analyze Resume"
+          )}
         </button>
         <button
           className="btn btn-secondary ml-3"
@@ -183,7 +197,9 @@ const ResumeAnalyzer = () => {
             </div>
           </div>
         ) : (
-          <p className="results-placeholder">Upload a resume to see analysis results here.</p>
+          <p className="results-placeholder">
+            Upload a resume to see analysis results here.
+          </p>
         )}
       </div>
     </div>

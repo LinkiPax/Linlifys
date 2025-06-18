@@ -1,1142 +1,3 @@
-// import React, { useState, useEffect, useRef, useCallback } from "react";
-// import {
-//   Avatar,
-//   Badge,
-//   Button,
-//   Divider,
-//   Drawer,
-//   Dropdown,
-//   Input,
-//   List,
-//   Menu,
-//   Modal,
-//   Space,
-//   Tag,
-//   Tooltip,
-//   Typography,
-//   message as antMessage,
-//   Spin,
-// } from "antd";
-// import {
-//   AudioOutlined,
-//   EllipsisOutlined,
-//   PaperClipOutlined,
-//   PhoneOutlined,
-//   SearchOutlined,
-//   SendOutlined,
-//   SmileOutlined,
-//   VideoCameraOutlined,
-//   MenuOutlined,
-//   CloseOutlined,
-//   CheckOutlined,
-//   CheckCircleOutlined,
-//   ClockCircleOutlined,
-//   InfoCircleOutlined,
-//   StarOutlined,
-//   PictureOutlined,
-//   DeleteOutlined,
-// } from "@ant-design/icons";
-// import { useParams } from "react-router-dom";
-// import { io } from "socket.io-client";
-// import WaveSurfer from "wavesurfer.js";
-// import EmojiPicker from "emoji-picker-react";
-// import axios from "axios";
-// import Peer from "peerjs";
-// import "./ProfessionalChat.css";
-
-// const { Text, Title } = Typography;
-
-// const ProfessionalChat = () => {
-//   // State management
-//   const [messages, setMessages] = useState([]);
-//   const [inputMessage, setInputMessage] = useState("");
-//   const [currentUser, setCurrentUser] = useState({
-//     id: localStorage.getItem("userId"),
-//     name: localStorage.getItem("username") || "User",
-//   });
-//   const [activeContact, setActiveContact] = useState(null);
-//   const [contacts, setContacts] = useState([]);
-//   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-//   const [isRecording, setIsRecording] = useState(false);
-//   const [audioUrl, setAudioUrl] = useState("");
-//   const [showDrawer, setShowDrawer] = useState(false);
-//   const [callStatus, setCallStatus] = useState(null);
-//   const [searchQuery, setSearchQuery] = useState("");
-//   const [pinnedMessages, setPinnedMessages] = useState([]);
-//   const [showMediaViewer, setShowMediaViewer] = useState(false);
-//   const [mediaType, setMediaType] = useState("images");
-//   const [replyTo, setReplyTo] = useState(null);
-//   const [loading, setLoading] = useState(false);
-//   const [unreadCounts, setUnreadCounts] = useState({});
-//   const [isInCall, setIsInCall] = useState(false);
-//   const [peerInstance, setPeerInstance] = useState(null);
-//   const [currentCall, setCurrentCall] = useState(null);
-
-//   // Refs
-//   const messagesEndRef = useRef(null);
-//   const waveformRef = useRef(null);
-//   const audioRecorderRef = useRef(null);
-//   const { contactId } = useParams();
-//   const typingTimeoutRef = useRef(null);
-//   const socketRef = useRef(null);
-//   const remoteAudioRef = useRef(null);
-
-//   // Initialize socket and peer connections
-//   useEffect(() => {
-//     // Initialize socket connection
-//     const socket = io("http://localhost:5000", { withCredentials: true });
-//     socketRef.current = socket;
-
-//     // Initialize PeerJS
-//     const peer = new Peer(currentUser.id, {
-//       host: "localhost",
-//       port: 9000,
-//       path: "/",
-//       secure: false,
-//     });
-
-//     peer.on("open", (id) => {
-//       console.log("Peer connection established with ID:", id);
-//     });
-
-//     // Handle incoming calls
-//     peer.on("call", (call) => {
-//       console.log("Incoming call", call);
-//       setCallStatus({
-//         type: "audio",
-//         outgoing: false,
-//         active: true,
-//         with: activeContact,
-//       });
-//       setCurrentCall(call);
-//     });
-
-//     setPeerInstance(peer);
-
-//     // Create audio element for remote stream
-//     const audio = document.createElement("audio");
-//     remoteAudioRef.current = audio;
-//     document.body.appendChild(audio);
-
-//     return () => {
-//       socket.disconnect();
-//       peer.destroy();
-//       if (remoteAudioRef.current) {
-//         document.body.removeChild(remoteAudioRef.current);
-//       }
-//     };
-//   }, [currentUser.id]);
-
-//   // Handle call status changes
-//   useEffect(() => {
-//     if (!socketRef.current) return;
-
-//     const handleIncomingCall = (callData) => {
-//       setCallStatus({
-//         type: "audio",
-//         outgoing: false,
-//         active: true,
-//         with: contacts.find((c) => c.id === callData.senderId) || {
-//           id: callData.senderId,
-//           name: callData.senderName,
-//         },
-//       });
-//     };
-
-//     socketRef.current.on("incoming_call", handleIncomingCall);
-
-//     return () => {
-//       socketRef.current.off("incoming_call", handleIncomingCall);
-//     };
-//   }, [contacts]);
-
-//   // Initialize socket listeners for messages
-//   useEffect(() => {
-//     if (!socketRef.current || !currentUser.id) return;
-
-//     // Join user's room
-//     socketRef.current.emit("join", currentUser.id);
-
-//     // Listen for new messages
-//     const handleNewMessage = (newMessage) => {
-//       if (
-//         !newMessage.deletedFor?.includes(currentUser.id) &&
-//         (newMessage.sender === activeContact?.id ||
-//           newMessage.receiver === activeContact?.id)
-//       ) {
-//         setMessages((prev) => [...prev, newMessage]);
-//       }
-
-//       // Update unread counts
-//       if (newMessage.receiver === currentUser.id) {
-//         setUnreadCounts((prev) => ({
-//           ...prev,
-//           [newMessage.sender]: (prev[newMessage.sender] || 0) + 1,
-//         }));
-//       }
-//     };
-
-//     socketRef.current.on("new_message", handleNewMessage);
-
-//     return () => {
-//       socketRef.current.off("new_message", handleNewMessage);
-//     };
-//   }, [currentUser.id, activeContact]);
-
-//   // Fetch current user data
-//   useEffect(() => {
-//     const fetchUserData = async () => {
-//       try {
-//         const response = await axios.get(
-//           `http://localhost:5000/user/${currentUser.id}`
-//         );
-//         setCurrentUser((prev) => ({
-//           ...prev,
-//           id: response.data._id,
-//           name: response.data.name || response.data.username,
-//           avatar: response.data.profilePicture,
-//           status: response.data.isOnline ? "online" : "offline",
-//           bio: response.data.bio,
-//           company: response.data.company,
-//           jobTitle: response.data.jobTitle,
-//         }));
-//       } catch (error) {
-//         antMessage.error("Failed to fetch user data");
-//       }
-//     };
-
-//     if (currentUser.id) {
-//       fetchUserData();
-//     }
-//   }, [currentUser.id]);
-
-//   // Fetch contacts
-//   useEffect(() => {
-//     const fetchContacts = async () => {
-//       try {
-//         const userResponse = await axios.get(
-//           `http://localhost:5000/user/${currentUser.id}`
-//         );
-//         const connectionIds = [...new Set(userResponse.data.connections)];
-
-//         const contactsWithDetails = await Promise.all(
-//           connectionIds.map(async (connId) => {
-//             if (connId === currentUser.id) return null;
-
-//             try {
-//               const contactResponse = await axios.get(
-//                 `http://localhost:5000/user/${connId}`
-//               );
-//               const unreadResponse = await axios.get(
-//                 `http://localhost:5000/api/messages/unread-count?userId=${currentUser.id}&targetUserId=${connId}`
-//               );
-
-//               return {
-//                 id: contactResponse.data._id,
-//                 name:
-//                   contactResponse.data.name || contactResponse.data.username,
-//                 avatar: contactResponse.data.profilePicture,
-//                 status: "offline", // Will be updated by socket
-//                 unread: unreadResponse.data.count,
-//               };
-//             } catch (error) {
-//               console.error(`Error fetching contact ${connId}:`, error);
-//               return null;
-//             }
-//           })
-//         );
-
-//         setContacts(contactsWithDetails.filter((contact) => contact !== null));
-
-//         // Set unread counts
-//         const counts = {};
-//         contactsWithDetails.forEach((contact) => {
-//           if (contact) counts[contact.id] = contact.unread;
-//         });
-//         setUnreadCounts(counts);
-//       } catch (error) {
-//         antMessage.error("Failed to fetch contacts");
-//       }
-//     };
-
-//     if (currentUser.id) {
-//       fetchContacts();
-//     }
-//   }, [currentUser.id]);
-
-//   // Set active contact when contactId changes
-//   useEffect(() => {
-//     if (contactId && contacts.length > 0) {
-//       const contact = contacts.find((c) => c.id === contactId);
-//       if (contact) {
-//         setActiveContact(contact);
-//         markMessagesAsRead(contact.id);
-//       }
-//     }
-//   }, [contactId, contacts]);
-
-//   // Fetch messages when active contact changes
-//   useEffect(() => {
-//     const fetchMessages = async () => {
-//       if (!activeContact || !currentUser.id) return;
-
-//       setLoading(true);
-//       try {
-//         const response = await axios.get("http://localhost:5000/api/messages", {
-//           params: {
-//             userId: currentUser.id,
-//             targetUserId: activeContact.id,
-//           },
-//         });
-
-//         const filteredMessages = response.data.filter(
-//           (msg) => !msg.deletedFor.includes(currentUser.id)
-//         );
-
-//         setMessages(filteredMessages);
-//       } catch (error) {
-//         antMessage.error("Failed to fetch messages");
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchMessages();
-//   }, [activeContact, currentUser.id]);
-
-//   // Scroll to bottom when messages change
-//   useEffect(() => {
-//     scrollToBottom();
-//   }, [messages]);
-
-//   const scrollToBottom = () => {
-//     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-//   };
-
-//   const markMessagesAsRead = async (contactId) => {
-//     try {
-//       await axios.patch("http://localhost:5000/api/messages/mark-as-read", {
-//         userId: currentUser.id,
-//         targetUserId: contactId,
-//       });
-
-//       setUnreadCounts((prev) => ({
-//         ...prev,
-//         [contactId]: 0,
-//       }));
-//     } catch (error) {
-//       console.error("Error marking messages as read:", error);
-//     }
-//   };
-
-//   const handleSendMessage = async () => {
-//     if (!inputMessage.trim() || !activeContact) return;
-
-//     const tempId = Date.now().toString();
-//     const newMessage = {
-//       _id: tempId,
-//       sender: currentUser.id,
-//       receiver: activeContact.id,
-//       content: inputMessage,
-//       replyTo: replyTo?._id || null,
-//       isRead: false,
-//       createdAt: new Date(),
-//       replyToMessage: replyTo,
-//       isOptimistic: true,
-//     };
-
-//     // Optimistic update
-//     setMessages((prev) => [...prev, newMessage]);
-//     setInputMessage("");
-//     setReplyTo(null);
-//     setShowEmojiPicker(false);
-
-//     try {
-//       // Emit via socket
-//       socketRef.current.emit("send_message", {
-//         senderId: currentUser.id,
-//         receiverId: activeContact.id,
-//         content: inputMessage,
-//         replyTo: replyTo?._id || null,
-//       });
-//     } catch (error) {
-//       antMessage.error("Failed to send message");
-//       setMessages((prev) => prev.filter((msg) => msg._id !== tempId));
-//     }
-//   };
-
-//   // Audio calling functions
-//   const initiateCall = async (isVideo) => {
-//     if (!peerInstance || !activeContact) return;
-
-//     try {
-//       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-//       const call = peerInstance.call(activeContact.id, stream);
-
-//       setCurrentCall(call);
-//       setIsInCall(true);
-
-//       setCallStatus({
-//         type: isVideo ? "video" : "audio",
-//         outgoing: true,
-//         active: true,
-//         with: activeContact,
-//       });
-
-//       call.on("stream", (remoteStream) => {
-//         if (remoteAudioRef.current) {
-//           remoteAudioRef.current.srcObject = remoteStream;
-//           remoteAudioRef.current
-//             .play()
-//             .catch((e) => console.error("Error playing audio:", e));
-//         }
-//       });
-
-//       call.on("close", () => {
-//         setIsInCall(false);
-//         setCallStatus(null);
-//       });
-
-//       // Notify the other user via socket
-//       socketRef.current.emit("call_initiated", {
-//         senderId: currentUser.id,
-//         senderName: currentUser.name,
-//         receiverId: activeContact.id,
-//       });
-//     } catch (error) {
-//       console.error("Error initiating call:", error);
-//       antMessage.error(
-//         "Failed to start call. Please check your microphone permissions."
-//       );
-//     }
-//   };
-
-//   const answerCall = async () => {
-//     if (!currentCall) return;
-
-//     try {
-//       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-//       currentCall.answer(stream);
-//       setIsInCall(true);
-
-//       currentCall.on("stream", (remoteStream) => {
-//         if (remoteAudioRef.current) {
-//           remoteAudioRef.current.srcObject = remoteStream;
-//           remoteAudioRef.current
-//             .play()
-//             .catch((e) => console.error("Error playing audio:", e));
-//         }
-//       });
-
-//       setCallStatus((prev) => ({
-//         ...prev,
-//         outgoing: false,
-//         active: true,
-//       }));
-//     } catch (error) {
-//       console.error("Error answering call:", error);
-//       antMessage.error(
-//         "Failed to answer call. Please check your microphone permissions."
-//       );
-//     }
-//   };
-
-//   const endCall = () => {
-//     if (currentCall) {
-//       currentCall.close();
-//     }
-//     setIsInCall(false);
-//     setCallStatus(null);
-//     setCurrentCall(null);
-
-//     if (remoteAudioRef.current) {
-//       remoteAudioRef.current.srcObject = null;
-//     }
-//   };
-
-//   // Voice message functions
-//   const startRecording = () => {
-//     if (isRecording) {
-//       stopRecording();
-//       return;
-//     }
-
-//     navigator.mediaDevices
-//       .getUserMedia({ audio: true })
-//       .then((stream) => {
-//         const mediaRecorder = new MediaRecorder(stream);
-//         audioRecorderRef.current = mediaRecorder;
-//         const audioChunks = [];
-
-//         mediaRecorder.ondataavailable = (e) => {
-//           audioChunks.push(e.data);
-//         };
-
-//         mediaRecorder.onstop = () => {
-//           const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
-//           const audioUrl = URL.createObjectURL(audioBlob);
-//           setAudioUrl(audioUrl);
-
-//           // Initialize WaveSurfer
-//           if (waveformRef.current) {
-//             const wavesurfer = WaveSurfer.create({
-//               container: waveformRef.current,
-//               waveColor: "#1890ff",
-//               progressColor: "#096dd9",
-//               cursorColor: "transparent",
-//               barWidth: 2,
-//               barRadius: 3,
-//               barGap: 2,
-//               height: 40,
-//               responsive: true,
-//             });
-//             wavesurfer.load(audioUrl);
-//           }
-//         };
-
-//         mediaRecorder.start();
-//         setIsRecording(true);
-
-//         // Auto-stop after 60 seconds
-//         setTimeout(() => {
-//           if (isRecording) {
-//             mediaRecorder.stop();
-//             setIsRecording(false);
-//           }
-//         }, 60000);
-//       })
-//       .catch((error) => {
-//         console.error("Error accessing microphone:", error);
-//         antMessage.error("Microphone access denied");
-//       });
-//   };
-
-//   const stopRecording = () => {
-//     if (audioRecorderRef.current) {
-//       audioRecorderRef.current.stop();
-//       setIsRecording(false);
-//       audioRecorderRef.current.stream
-//         .getTracks()
-//         .forEach((track) => track.stop());
-//     }
-//   };
-
-//   const sendVoiceMessage = async () => {
-//     if (!audioUrl || !activeContact) return;
-
-//     try {
-//       // Convert audio URL to blob
-//       const blob = await fetch(audioUrl).then((r) => r.blob());
-//       const formData = new FormData();
-//       formData.append("audio", blob, "recording.wav");
-
-//       // Upload audio file
-//       const uploadResponse = await axios.post(
-//         "http://localhost:5000/api/upload-audio",
-//         formData,
-//         { headers: { "Content-Type": "multipart/form-data" } }
-//       );
-
-//       // Send via socket
-//       socketRef.current.emit("send_message", {
-//         senderId: currentUser.id,
-//         receiverId: activeContact.id,
-//         audioURL: uploadResponse.data.url,
-//         isAudioMessage: true,
-//         replyTo: replyTo?._id || null,
-//       });
-
-//       setAudioUrl("");
-//       setReplyTo(null);
-//     } catch (error) {
-//       antMessage.error("Failed to send voice message");
-//     }
-//   };
-
-//   const renderMessageStatus = (isRead) => {
-//     return isRead ? (
-//       <CheckCircleOutlined style={{ color: "#1890ff", fontSize: 12 }} />
-//     ) : (
-//       <CheckOutlined style={{ color: "#8c8c8c", fontSize: 12 }} />
-//     );
-//   };
-
-//   const pinMessage = (message) => {
-//     setPinnedMessages((prev) => [...prev, message]);
-//   };
-
-//   const deleteMessage = async (messageId) => {
-//     try {
-//       await axios.patch(`http://localhost:5000/api/messages/${messageId}`, {
-//         userId: currentUser.id,
-//       });
-
-//       // Update local state
-//       setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
-//       antMessage.success("Message deleted");
-//     } catch (error) {
-//       antMessage.error("Failed to delete message");
-//     }
-//   };
-
-//   const searchMessages = async () => {
-//     if (!searchQuery.trim() || !activeContact) return;
-
-//     try {
-//       const response = await axios.get(
-//         "http://localhost:5000/api/messages/search",
-//         {
-//           params: {
-//             userId: currentUser.id,
-//             targetUserId: activeContact.id,
-//             searchTerm: searchQuery,
-//           },
-//         }
-//       );
-
-//       // Filter out messages deleted for current user
-//       const filteredMessages = response.data.filter(
-//         (msg) => !msg.deletedFor.includes(currentUser.id)
-//       );
-
-//       setMessages(filteredMessages);
-//     } catch (error) {
-//       antMessage.error("Failed to search messages");
-//     }
-//   };
-
-//   const filteredContacts = contacts.filter((contact) =>
-//     contact.name.toLowerCase().includes(searchQuery.toLowerCase())
-//   );
-
-//   return (
-//     <div className="professional-chat-container">
-//       {/* Sidebar */}
-//       <div className="chat-sidebar">
-//         <div className="sidebar-header">
-//           <div className="user-profile">
-//             <Badge
-//               dot
-//               status={currentUser.status === "online" ? "success" : "default"}
-//               offset={[-5, 40]}
-//             >
-//               <Avatar src={currentUser.avatar} size="large" />
-//             </Badge>
-//             <div className="user-info">
-//               <Text strong>{currentUser.name}</Text>
-//               <Text type="secondary" style={{ fontSize: 12 }}>
-//                 {currentUser.status === "online" ? "Online" : "Offline"}
-//               </Text>
-//             </div>
-//           </div>
-//           <Button
-//             type="text"
-//             icon={<MenuOutlined />}
-//             onClick={() => setShowDrawer(true)}
-//           />
-//         </div>
-
-//         <div className="sidebar-search">
-//           <Input
-//             placeholder="Search contacts"
-//             prefix={<SearchOutlined />}
-//             value={searchQuery}
-//             onChange={(e) => setSearchQuery(e.target.value)}
-//           />
-//         </div>
-
-//         <div className="contacts-list">
-//           {filteredContacts.map((contact) => (
-//             <div
-//               key={contact.id}
-//               className={`contact-item ${
-//                 activeContact?.id === contact.id ? "active" : ""
-//               }`}
-//               onClick={() => {
-//                 setActiveContact(contact);
-//                 markMessagesAsRead(contact.id);
-//               }}
-//             >
-//               <Badge
-//                 dot
-//                 status={contact.status === "online" ? "success" : "default"}
-//                 offset={[-5, 30]}
-//               >
-//                 <Avatar src={contact.avatar} />
-//               </Badge>
-//               <div className="contact-info">
-//                 <div className="contact-name">
-//                   <Text strong>{contact.name}</Text>
-//                   {unreadCounts[contact.id] > 0 && (
-//                     <span className="unread-badge">
-//                       {unreadCounts[contact.id]}
-//                     </span>
-//                   )}
-//                 </div>
-//                 <Text
-//                   type="secondary"
-//                   className="contact-status"
-//                   style={{
-//                     color: contact.status === "online" ? "#52c41a" : undefined,
-//                   }}
-//                 >
-//                   {contact.status === "online" ? "Online" : "Offline"}
-//                 </Text>
-//               </div>
-//             </div>
-//           ))}
-//         </div>
-//       </div>
-
-//       {/* Main Chat Area */}
-//       <div className="chat-main">
-//         {activeContact ? (
-//           <>
-//             <div className="chat-header">
-//               <div className="contact-info">
-//                 <Badge
-//                   dot
-//                   status={
-//                     activeContact.status === "online" ? "success" : "default"
-//                   }
-//                   offset={[-5, 30]}
-//                 >
-//                   <Avatar src={activeContact.avatar} size="default" />
-//                 </Badge>
-//                 <div>
-//                   <Text strong>{activeContact.name}</Text>
-//                   <Text type="secondary" style={{ fontSize: 12 }}>
-//                     {activeContact.status === "online" ? "Online" : "Offline"}
-//                   </Text>
-//                 </div>
-//               </div>
-
-//               <Space size="middle">
-//                 <Tooltip title="Voice call">
-//                   <Button
-//                     type="text"
-//                     shape="circle"
-//                     icon={<PhoneOutlined />}
-//                     onClick={() => initiateCall(false)}
-//                   />
-//                 </Tooltip>
-//                 <Tooltip title="Video call">
-//                   <Button
-//                     type="text"
-//                     shape="circle"
-//                     icon={<VideoCameraOutlined />}
-//                     onClick={() => initiateCall(true)}
-//                   />
-//                 </Tooltip>
-//                 <Tooltip title="Contact info">
-//                   <Button
-//                     type="text"
-//                     shape="circle"
-//                     icon={<InfoCircleOutlined />}
-//                     onClick={() => setShowDrawer(true)}
-//                   />
-//                 </Tooltip>
-//               </Space>
-//             </div>
-
-//             <Divider style={{ margin: 0 }} />
-
-//             <div className="messages-container">
-//               {loading ? (
-//                 <div className="empty-messages">
-//                   <Spin size="large" />
-//                 </div>
-//               ) : messages.length > 0 ? (
-//                 <>
-//                   {messages.map((msg) => (
-//                     <div
-//                       key={msg._id}
-//                       className={`message ${
-//                         msg.sender === currentUser.id ? "sent" : "received"
-//                       }`}
-//                     >
-//                       <Dropdown
-//                         overlay={
-//                           <Menu>
-//                             <Menu.Item
-//                               icon={<StarOutlined />}
-//                               onClick={() => pinMessage(msg)}
-//                             >
-//                               Pin message
-//                             </Menu.Item>
-//                             <Menu.Item
-//                               icon={<SendOutlined />}
-//                               onClick={() => setReplyTo(msg)}
-//                             >
-//                               Reply
-//                             </Menu.Item>
-//                             <Menu.Item
-//                               icon={<CloseOutlined />}
-//                               danger
-//                               onClick={() => deleteMessage(msg._id)}
-//                             >
-//                               Delete
-//                             </Menu.Item>
-//                           </Menu>
-//                         }
-//                         trigger={["contextMenu"]}
-//                       >
-//                         <div className="message-content">
-//                           {msg.replyTo && (
-//                             <div className="message-reply">
-//                               <Text type="secondary">
-//                                 Replying to{" "}
-//                                 {msg.replyTo.sender === currentUser.id
-//                                   ? "yourself"
-//                                   : activeContact.name}
-//                               </Text>
-//                               <div className="reply-content">
-//                                 {msg.replyTo.content || "Audio message"}
-//                               </div>
-//                             </div>
-//                           )}
-
-//                           {msg.content && !msg.isAudioMessage && (
-//                             <div className="message-text">{msg.content}</div>
-//                           )}
-
-//                           {msg.audioURL && (
-//                             <div className="audio-message">
-//                               <audio controls src={msg.audioURL} />
-//                               <div ref={waveformRef} className="waveform" />
-//                             </div>
-//                           )}
-
-//                           <div className="message-meta">
-//                             <Text type="secondary" className="timestamp">
-//                               {new Date(msg.createdAt).toLocaleTimeString([], {
-//                                 hour: "2-digit",
-//                                 minute: "2-digit",
-//                               })}
-//                             </Text>
-//                             {msg.sender === currentUser.id && (
-//                               <span className="status-icon">
-//                                 {renderMessageStatus(msg.isRead)}
-//                               </span>
-//                             )}
-//                           </div>
-//                         </div>
-//                       </Dropdown>
-//                     </div>
-//                   ))}
-//                   <div ref={messagesEndRef} />
-//                 </>
-//               ) : (
-//                 <div className="empty-messages">
-//                   <div className="empty-content">
-//                     <Avatar
-//                       src={activeContact.avatar}
-//                       size={64}
-//                       style={{ marginBottom: 16 }}
-//                     />
-//                     <Title level={4}>No messages yet</Title>
-//                     <Text type="secondary">
-//                       Start your conversation with {activeContact.name}
-//                     </Text>
-//                   </div>
-//                 </div>
-//               )}
-//             </div>
-
-//             {/* Reply preview */}
-//             {replyTo && (
-//               <div className="reply-preview">
-//                 <div className="reply-content">
-//                   <Text strong>
-//                     Replying to{" "}
-//                     {replyTo.sender === currentUser.id
-//                       ? "yourself"
-//                       : activeContact.name}
-//                   </Text>
-//                   <Text ellipsis>{replyTo.content || "Audio message"}</Text>
-//                 </div>
-//                 <Button
-//                   type="text"
-//                   icon={<CloseOutlined />}
-//                   onClick={() => setReplyTo(null)}
-//                 />
-//               </div>
-//             )}
-
-//             {/* Message input */}
-//             <div className="message-input-container">
-//               {audioUrl ? (
-//                 <div className="voice-message-preview">
-//                   <div className="waveform-container" ref={waveformRef} />
-//                   <Space>
-//                     <Button
-//                       type="text"
-//                       danger
-//                       icon={<CloseOutlined />}
-//                       onClick={() => setAudioUrl("")}
-//                     />
-//                     <Button
-//                       type="primary"
-//                       icon={<SendOutlined />}
-//                       onClick={sendVoiceMessage}
-//                     />
-//                   </Space>
-//                 </div>
-//               ) : (
-//                 <>
-//                   <Button
-//                     type="text"
-//                     icon={<PaperClipOutlined />}
-//                     className="input-action-btn"
-//                   />
-
-//                   <Input.TextArea
-//                     value={inputMessage}
-//                     onChange={(e) => {
-//                       setInputMessage(e.target.value);
-//                     }}
-//                     placeholder="Type a message..."
-//                     autoSize={{ minRows: 1, maxRows: 4 }}
-//                     onPressEnter={(e) => {
-//                       if (!e.shiftKey) {
-//                         e.preventDefault();
-//                         handleSendMessage();
-//                       }
-//                     }}
-//                   />
-
-//                   <Space>
-//                     <Button
-//                       type="text"
-//                       icon={<SmileOutlined />}
-//                       className="input-action-btn"
-//                       onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-//                     />
-//                     {inputMessage ? (
-//                       <Button
-//                         type="primary"
-//                         icon={<SendOutlined />}
-//                         onClick={handleSendMessage}
-//                       />
-//                     ) : (
-//                       <Button
-//                         type="text"
-//                         icon={<AudioOutlined />}
-//                         className={`input-action-btn ${
-//                           isRecording ? "recording" : ""
-//                         }`}
-//                         onMouseDown={startRecording}
-//                         onMouseUp={stopRecording}
-//                         onTouchStart={startRecording}
-//                         onTouchEnd={stopRecording}
-//                       />
-//                     )}
-//                   </Space>
-
-//                   {showEmojiPicker && (
-//                     <div className="emoji-picker">
-//                       <EmojiPicker
-//                         onEmojiClick={(emoji) => {
-//                           setInputMessage((prev) => prev + emoji.emoji);
-//                           setShowEmojiPicker(false);
-//                         }}
-//                         width="100%"
-//                         height={300}
-//                       />
-//                     </div>
-//                   )}
-//                 </>
-//               )}
-//             </div>
-//           </>
-//         ) : (
-//           <div className="no-contact-selected">
-//             <div className="empty-content">
-//               <Title level={3}>Select a conversation</Title>
-//               <Text type="secondary">
-//                 Choose from your existing conversations or start a new one
-//               </Text>
-//             </div>
-//           </div>
-//         )}
-//       </div>
-
-//       {/* Right Drawer */}
-//       <Drawer
-//         title="Conversation Info"
-//         placement="right"
-//         width={350}
-//         onClose={() => setShowDrawer(false)}
-//         visible={showDrawer}
-//         className="info-drawer"
-//       >
-//         {activeContact && (
-//           <>
-//             <div className="drawer-header">
-//               <Avatar src={activeContact.avatar} size={64} />
-//               <Title level={4} style={{ marginTop: 16 }}>
-//                 {activeContact.name}
-//               </Title>
-//               <Tag
-//                 color={
-//                   activeContact.status === "online" ? "success" : "default"
-//                 }
-//               >
-//                 {activeContact.status === "online" ? "Online" : "Offline"}
-//               </Tag>
-//             </div>
-
-//             <Divider />
-
-//             <Title level={5}>Pinned Messages</Title>
-//             {pinnedMessages.length > 0 ? (
-//               <List
-//                 dataSource={pinnedMessages}
-//                 renderItem={(msg) => (
-//                   <List.Item className="pinned-message">
-//                     <Text type="secondary">
-//                       {msg.sender === currentUser.id
-//                         ? "You"
-//                         : activeContact.name}
-//                     </Text>
-//                     <Text>{msg.content || "Audio message"}</Text>
-//                   </List.Item>
-//                 )}
-//               />
-//             ) : (
-//               <Text type="secondary">No pinned messages</Text>
-//             )}
-
-//             <Divider />
-
-//             <Title level={5}>Shared Media</Title>
-//             <Space>
-//               <Button
-//                 type="text"
-//                 icon={<PictureOutlined />}
-//                 onClick={() => {
-//                   setMediaType("images");
-//                   setShowMediaViewer(true);
-//                 }}
-//               >
-//                 Photos
-//               </Button>
-//               <Button
-//                 type="text"
-//                 icon={<VideoCameraOutlined />}
-//                 onClick={() => {
-//                   setMediaType("videos");
-//                   setShowMediaViewer(true);
-//                 }}
-//               >
-//                 Videos
-//               </Button>
-//             </Space>
-
-//             <Divider />
-
-//             <Button
-//               type="text"
-//               danger
-//               icon={<DeleteOutlined />}
-//               onClick={() => {
-//                 antMessage.warning("This will delete the entire conversation");
-//               }}
-//             >
-//               Delete Conversation
-//             </Button>
-//           </>
-//         )}
-//       </Drawer>
-
-//       {/* Media Viewer Modal */}
-//       <Modal
-//         title={`Shared ${mediaType === "images" ? "Photos" : "Videos"}`}
-//         visible={showMediaViewer}
-//         onCancel={() => setShowMediaViewer(false)}
-//         footer={null}
-//         width="80%"
-//       >
-//         <div className="media-grid">
-//           {messages
-//             .filter(
-//               (msg) =>
-//                 (mediaType === "images" && msg.imageUrl) ||
-//                 (mediaType === "videos" && msg.videoUrl)
-//             )
-//             .map((msg) => (
-//               <div key={msg._id} className="media-item">
-//                 {mediaType === "images" ? (
-//                   <img src={msg.imageUrl} alt="Shared content" />
-//                 ) : (
-//                   <video controls>
-//                     <source src={msg.videoUrl} type="video/mp4" />
-//                   </video>
-//                 )}
-//               </div>
-//             ))}
-//         </div>
-//       </Modal>
-
-//       {/* Call Modal */}
-//       {callStatus && (
-//         <Modal
-//           visible={callStatus.active}
-//           onCancel={endCall}
-//           footer={null}
-//           centered
-//           className="call-modal"
-//           closable={false}
-//         >
-//           <div className="call-content">
-//             <Avatar
-//               src={callStatus.with.avatar}
-//               size={100}
-//               style={{ marginBottom: 24 }}
-//             />
-//             <Title level={3}>
-//               {callStatus.outgoing ? "Calling" : "Incoming call"}
-//             </Title>
-//             <Text>{callStatus.with.name}</Text>
-
-//             <div className="call-actions">
-//               {callStatus.outgoing ? (
-//                 <Button
-//                   type="primary"
-//                   danger
-//                   shape="circle"
-//                   size="large"
-//                   icon={<PhoneOutlined />}
-//                   onClick={endCall}
-//                 />
-//               ) : (
-//                 <>
-//                   <Button
-//                     type="primary"
-//                     danger
-//                     shape="circle"
-//                     size="large"
-//                     icon={<PhoneOutlined />}
-//                     onClick={endCall}
-//                   />
-//                   <Button
-//                     type="primary"
-//                     shape="circle"
-//                     size="large"
-//                     icon={<PhoneOutlined />}
-//                     onClick={answerCall}
-//                   />
-//                 </>
-//               )}
-//             </div>
-//           </div>
-//         </Modal>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default ProfessionalChat;
 import React, { useState, useEffect, useRef } from "react";
 import {
   Avatar,
@@ -1162,11 +23,9 @@ import {
   Checkbox,
   Radio,
   Progress,
-  Upload,
 } from "antd";
 import {
   AudioOutlined,
-  EllipsisOutlined,
   PaperClipOutlined,
   PhoneOutlined,
   SearchOutlined,
@@ -1189,15 +48,22 @@ import {
   CalendarOutlined,
   MoreOutlined,
   UploadOutlined,
+  DownloadOutlined,
+  EyeOutlined,
+  SoundOutlined,
+  FileWordOutlined,
+  FilePptOutlined,
+  FileExcelOutlined,
 } from "@ant-design/icons";
 import { useParams } from "react-router-dom";
 import { io } from "socket.io-client";
-import WaveSurfer from "wavesurfer.js";
 import EmojiPicker from "emoji-picker-react";
 import axios from "axios";
 import Peer from "peerjs";
 import "./ProfessionalChat.css";
 
+import CircularProgress from "@mui/material/CircularProgress";
+import { FilePdfOutlined } from "@ant-design/icons";
 const { Text, Title } = Typography;
 const { Option } = Select;
 const { TextArea } = Input;
@@ -1214,7 +80,6 @@ const ProfessionalChat = () => {
   const [contacts, setContacts] = useState([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [audioUrl, setAudioUrl] = useState("");
   const [showDrawer, setShowDrawer] = useState(false);
   const [callStatus, setCallStatus] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -1225,7 +90,6 @@ const ProfessionalChat = () => {
   const [loading, setLoading] = useState(false);
   const [unreadCounts, setUnreadCounts] = useState({});
   const [isInCall, setIsInCall] = useState(false);
-  const [peerInstance, setPeerInstance] = useState(null);
   const [currentCall, setCurrentCall] = useState(null);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [locationDuration, setLocationDuration] = useState(15);
@@ -1244,44 +108,32 @@ const ProfessionalChat = () => {
   const [eventDate, setEventDate] = useState(null);
   const [eventTime, setEventTime] = useState(null);
   const [eventLocation, setEventLocation] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingIndicator, setTypingIndicator] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [audioBlob, setAudioBlob] = useState(null);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   // Refs
   const messagesEndRef = useRef(null);
-  const waveformRef = useRef(null);
   const audioRecorderRef = useRef(null);
   const { contactId } = useParams();
   const typingTimeoutRef = useRef(null);
   const socketRef = useRef(null);
   const remoteAudioRef = useRef(null);
   const documentInputRef = useRef(null);
+  const recordingIntervalRef = useRef(null);
+  const peerInstanceRef = useRef(null);
 
-  // Initialize socket and peer connections
+  // Initialize socket connection
   useEffect(() => {
-    const socket = io("http://localhost:5000", { withCredentials: true });
+    const socket = io(`${import.meta.env.VITE_API_URL}`, {
+      withCredentials: true,
+    });
     socketRef.current = socket;
-
-    const peer = new Peer(currentUser.id, {
-      host: "localhost",
-      port: 9000,
-      path: "/",
-      secure: false,
-    });
-
-    peer.on("open", (id) => {
-      console.log("Peer connection established with ID:", id);
-    });
-
-    peer.on("call", (call) => {
-      setCallStatus({
-        type: "audio",
-        outgoing: false,
-        active: true,
-        with: activeContact,
-      });
-      setCurrentCall(call);
-    });
-
-    setPeerInstance(peer);
 
     const audio = document.createElement("audio");
     remoteAudioRef.current = audio;
@@ -1289,7 +141,9 @@ const ProfessionalChat = () => {
 
     return () => {
       socket.disconnect();
-      peer.destroy();
+      if (peerInstanceRef.current) {
+        peerInstanceRef.current.destroy();
+      }
       if (remoteAudioRef.current) {
         document.body.removeChild(remoteAudioRef.current);
       }
@@ -1299,10 +153,34 @@ const ProfessionalChat = () => {
   // Socket listeners
   useEffect(() => {
     if (!socketRef.current) return;
-
     const handleIncomingCall = (callData) => {
+      // Initialize PeerJS if not already initialized
+      if (!peerInstanceRef.current) {
+        const peer = new Peer(currentUser.id, {
+          host: "localhost",
+          port: 9000,
+          path: "/",
+          secure: false,
+        });
+
+        peer.on("open", (id) => {
+          console.log("Peer connection established with ID:", id);
+          peerInstanceRef.current = peer;
+          handleIncomingCallAfterPeerInit(callData);
+        });
+
+        peer.on("error", (err) => {
+          console.error("PeerJS error:", err);
+          antMessage.error("Failed to initialize call connection");
+        });
+      } else {
+        handleIncomingCallAfterPeerInit(callData);
+      }
+    };
+
+    const handleIncomingCallAfterPeerInit = (callData) => {
       setCallStatus({
-        type: "audio",
+        type: callData.isVideo ? "video" : "audio",
         outgoing: false,
         active: true,
         with: contacts.find((c) => c.id === callData.senderId) || {
@@ -1312,18 +190,28 @@ const ProfessionalChat = () => {
       });
     };
 
+    const handleTypingIndicator = (data) => {
+      if (data.senderId === activeContact?.id) {
+        setTypingIndicator(
+          data.isTyping ? `${activeContact.name} is typing...` : null
+        );
+      }
+    };
+
     socketRef.current.on("incoming_call", handleIncomingCall);
+    socketRef.current.on("typing_indicator", handleTypingIndicator);
 
     return () => {
       socketRef.current.off("incoming_call", handleIncomingCall);
+      socketRef.current.off("typing_indicator", handleTypingIndicator);
     };
-  }, [contacts]);
+  }, [contacts, activeContact, currentUser.id]);
 
+  // Join socket room when user connects
   useEffect(() => {
     if (!socketRef.current || !currentUser.id) return;
 
     socketRef.current.emit("join", currentUser.id);
-
     const handleNewMessage = (newMessage) => {
       if (
         !newMessage.deletedFor?.includes(currentUser.id) &&
@@ -1340,7 +228,6 @@ const ProfessionalChat = () => {
         }));
       }
     };
-
     socketRef.current.on("new_message", handleNewMessage);
 
     return () => {
@@ -1348,12 +235,36 @@ const ProfessionalChat = () => {
     };
   }, [currentUser.id, activeContact]);
 
-  // Fetch data
+  // Typing indicator handler
+  useEffect(() => {
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    if (isTyping && activeContact) {
+      socketRef.current.emit("typing_indicator", {
+        senderId: currentUser.id,
+        receiverId: activeContact.id,
+        isTyping: true,
+      });
+
+      typingTimeoutRef.current = setTimeout(() => {
+        setIsTyping(false);
+        socketRef.current.emit("typing_indicator", {
+          senderId: currentUser.id,
+          receiverId: activeContact.id,
+          isTyping: false,
+        });
+      }, 2000);
+    }
+  }, [isTyping, activeContact, currentUser.id]);
+
+  // Fetch user data
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/user/${currentUser.id}`
+          `${import.meta.env.VITE_API_URL}/user/${currentUser.id}`
         );
         setCurrentUser((prev) => ({
           ...prev,
@@ -1366,7 +277,7 @@ const ProfessionalChat = () => {
           jobTitle: response.data.jobTitle,
         }));
       } catch (error) {
-        antMessage.error("Failed to fetch user data");
+        antMessage.error("Failed to fetch user data", error);
       }
     };
 
@@ -1375,11 +286,12 @@ const ProfessionalChat = () => {
     }
   }, [currentUser.id]);
 
+  // Fetch contacts
   useEffect(() => {
     const fetchContacts = async () => {
       try {
         const userResponse = await axios.get(
-          `http://localhost:5000/user/${currentUser.id}`
+          `${import.meta.env.VITE_API_URL}/user/${currentUser.id}`
         );
         const connectionIds = [...new Set(userResponse.data.connections)];
 
@@ -1389,10 +301,14 @@ const ProfessionalChat = () => {
 
             try {
               const contactResponse = await axios.get(
-                `http://localhost:5000/user/${connId}`
+                `${import.meta.env.VITE_API_URL}/user/${connId}`
               );
               const unreadResponse = await axios.get(
-                `http://localhost:5000/api/messages/unread-count?userId=${currentUser.id}&targetUserId=${connId}`
+                `${
+                  import.meta.env.VITE_API_URL
+                }/api/messages/unread-count?userId=${
+                  currentUser.id
+                }&targetUserId=${connId}`
               );
 
               return {
@@ -1418,7 +334,7 @@ const ProfessionalChat = () => {
         });
         setUnreadCounts(counts);
       } catch (error) {
-        antMessage.error("Failed to fetch contacts");
+        antMessage.error("Failed to fetch contacts", error);
       }
     };
 
@@ -1427,6 +343,7 @@ const ProfessionalChat = () => {
     }
   }, [currentUser.id]);
 
+  // Set active contact when contactId changes
   useEffect(() => {
     if (contactId && contacts.length > 0) {
       const contact = contacts.find((c) => c.id === contactId);
@@ -1437,26 +354,30 @@ const ProfessionalChat = () => {
     }
   }, [contactId, contacts]);
 
+  // Fetch messages when active contact changes
   useEffect(() => {
     const fetchMessages = async () => {
       if (!activeContact || !currentUser.id) return;
 
       setLoading(true);
       try {
-        const response = await axios.get("http://localhost:5000/api/messages", {
-          params: {
-            userId: currentUser.id,
-            targetUserId: activeContact.id,
-          },
-        });
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/messages`,
+          {
+            params: {
+              userId: currentUser.id,
+              targetUserId: activeContact.id,
+            },
+          }
+        );
 
         const filteredMessages = response.data.filter(
-          (msg) => !msg.deletedFor.includes(currentUser.id)
+          (msg) => !msg.deletedFor?.includes(currentUser.id)
         );
 
         setMessages(filteredMessages);
       } catch (error) {
-        antMessage.error("Failed to fetch messages");
+        antMessage.error("Failed to fetch messages", error);
       } finally {
         setLoading(false);
       }
@@ -1465,6 +386,7 @@ const ProfessionalChat = () => {
     fetchMessages();
   }, [activeContact, currentUser.id]);
 
+  // Scroll to bottom when messages change
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -1476,15 +398,26 @@ const ProfessionalChat = () => {
 
   const markMessagesAsRead = async (contactId) => {
     try {
-      await axios.patch("http://localhost:5000/api/messages/mark-as-read", {
-        userId: currentUser.id,
-        targetUserId: contactId,
-      });
+      // Only pick the messages where I am the receiver and isRead is false
+      const unreadMessages = messages.filter(
+        (msg) => msg.receiver === currentUser.id && !msg.isRead
+      );
 
-      setUnreadCounts((prev) => ({
-        ...prev,
-        [contactId]: 0,
-      }));
+      if (unreadMessages.length > 0) {
+        await axios.patch(
+          `${import.meta.env.VITE_API_URL}/api/messages/mark-as-read`,
+          {
+            messageIds: unreadMessages.map((msg) => msg._id),
+            readerId: currentUser.id, // ← add this
+          }
+        );
+
+        // Locally zero out the unread count for this contact
+        setUnreadCounts((prev) => ({
+          ...prev,
+          [contactId]: 0,
+        }));
+      }
     } catch (error) {
       console.error("Error marking messages as read:", error);
     }
@@ -1497,14 +430,16 @@ const ProfessionalChat = () => {
 
   const deleteMessage = async (messageId) => {
     try {
-      await axios.patch(`http://localhost:5000/api/messages/${messageId}`, {
-        data: { userId: currentUser.id },
-      });
-      console.log(currentUser.id, messageId);
+      await axios.patch(
+        `${import.meta.env.VITE_API_URL}/api/messages/${messageId}`,
+        {
+          userId: currentUser.id,
+        }
+      );
       setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
       antMessage.success("Message deleted");
     } catch (error) {
-      antMessage.error("Failed to delete message");
+      antMessage.error("Failed to delete message", error);
     }
   };
 
@@ -1536,6 +471,7 @@ const ProfessionalChat = () => {
     setInputMessage("");
     setReplyTo(null);
     setShowEmojiPicker(false);
+    setIsTyping(false);
 
     try {
       socketRef.current.emit("send_message", {
@@ -1545,12 +481,118 @@ const ProfessionalChat = () => {
         replyTo: replyTo?._id || null,
       });
     } catch (error) {
-      antMessage.error("Failed to send message");
+      antMessage.error("Failed to send message", error);
       setMessages((prev) => prev.filter((msg) => msg._id !== tempId));
     }
   };
 
-  // New feature handlers
+  const handleSendImage = async (imageFile) => {
+    if (!imageFile) return;
+
+    setUploading(true);
+    const tempId = Date.now().toString();
+
+    const optimisticMessage = {
+      _id: tempId,
+      sender: currentUser.id,
+      receiver: activeContact.id,
+      messageType: "image",
+      image: {
+        url: URL.createObjectURL(imageFile),
+        caption: "",
+        isUploading: true,
+      },
+      content: "Shared an image",
+      isRead: false,
+      createdAt: new Date(),
+      isOptimistic: true,
+    };
+
+    setMessages((prev) => [...prev, optimisticMessage]);
+
+    const formData = new FormData();
+    formData.append("image", imageFile);
+    formData.append("senderId", currentUser.id);
+    formData.append("receiverId", activeContact.id);
+    formData.append("caption", "");
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/messages/images`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      setMessages((prev) =>
+        prev.map((msg) => (msg._id === tempId ? response.data : msg))
+      );
+    } catch (error) {
+      console.error("Error sending image:", error);
+      setMessages((prev) => prev.filter((msg) => msg._id !== tempId));
+      antMessage.error("Failed to send image");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSendVideo = async (videoFile) => {
+    if (!videoFile) return;
+
+    setUploading(true);
+    const tempId = Date.now().toString();
+
+    const optimisticMessage = {
+      _id: tempId,
+      sender: currentUser.id,
+      receiver: activeContact.id,
+      messageType: "video",
+      video: {
+        url: URL.createObjectURL(videoFile),
+        caption: "",
+        isUploading: true,
+      },
+      content: "Shared a video",
+      isRead: false,
+      createdAt: new Date(),
+      isOptimistic: true,
+    };
+
+    setMessages((prev) => [...prev, optimisticMessage]);
+
+    const formData = new FormData();
+    formData.append("video", videoFile);
+    formData.append("senderId", currentUser.id);
+    formData.append("receiverId", activeContact.id);
+    formData.append("caption", "");
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/messages/videos`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      setMessages((prev) =>
+        prev.map((msg) => (msg._id === tempId ? response.data : msg))
+      );
+      antMessage.success("Video sent successfully");
+    } catch (error) {
+      console.error("Error sending video:", error);
+      setMessages((prev) => prev.filter((msg) => msg._id !== tempId));
+      antMessage.error(error.response?.data?.message || "Failed to send video");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleShareLocation = async () => {
     if (!navigator.geolocation) {
       antMessage.error("Geolocation is not supported by your browser");
@@ -1563,29 +605,25 @@ const ProfessionalChat = () => {
         navigator.geolocation.getCurrentPosition(resolve, reject);
       });
 
-      const locationData = {
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-        duration: locationDuration,
-      };
-
-      const newMessage = {
-        senderId: currentUser.id,
-        receiverId: activeContact.id,
-        messageType: "location",
-        location: {
-          ...locationData,
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/messages/live-location`,
+        {
+          senderId: currentUser.id,
+          receiverId: activeContact.id,
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          duration: locationDuration,
           live: true,
           expiresAt: new Date(Date.now() + locationDuration * 60000),
-        },
-        content: "Shared live location",
-      };
+          content: "Shared live location",
+        }
+      );
 
-      socketRef.current.emit("send_message", newMessage);
+      setMessages((prev) => [...prev, response.data]);
       setShowLocationModal(false);
       antMessage.success("Live location shared");
     } catch (error) {
-      antMessage.error("Failed to get location");
+      antMessage.error("Failed to get location", error);
     } finally {
       setLoading(false);
     }
@@ -1598,136 +636,374 @@ const ProfessionalChat = () => {
     }
 
     try {
-      const newMessage = {
-        senderId: currentUser.id,
-        receiverId: activeContact.id,
-        messageType: "contact",
-        contacts: selectedContacts.map((id) => {
-          const contact = contacts.find((c) => c.id === id);
-          return {
-            id: contact.id,
-            name: contact.name,
-            avatar: contact.avatar,
-          };
-        }),
-        content: `Shared ${selectedContacts.length} contact(s)`,
-      };
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/messages/contacts`,
+        {
+          senderId: currentUser.id,
+          receiverId: activeContact.id,
+          messageType: "contact",
+          contacts: selectedContacts.map((id) => ({
+            id,
+            name: contacts.find((c) => c.id === id).name,
+            avatar: contacts.find((c) => c.id === id).avatar,
+          })),
+          content: `Shared ${selectedContacts.length} contact(s)`,
+        }
+      );
 
-      socketRef.current.emit("send_message", newMessage);
+      setMessages((prev) => [...prev, response.data]);
       setShowContactsModal(false);
       setSelectedContacts([]);
       antMessage.success("Contacts shared");
     } catch (error) {
-      antMessage.error("Failed to share contacts");
+      antMessage.error("Failed to share contacts", error);
     }
   };
 
-  const startRecording = () => {
-    if (isRecording) {
-      stopRecording();
+  const handleDocumentUpload = async () => {
+    if (!documentFile) {
+      antMessage.error("Please select a document");
       return;
     }
 
-    navigator.mediaDevices
-      .getUserMedia({ audio: true })
-      .then((stream) => {
-        const mediaRecorder = new MediaRecorder(stream);
-        audioRecorderRef.current = mediaRecorder;
-        const audioChunks = [];
+    setUploading(true);
+    const tempId = Date.now().toString();
 
-        mediaRecorder.ondataavailable = (e) => {
-          audioChunks.push(e.data);
-        };
+    const optimisticMessage = {
+      _id: tempId,
+      sender: currentUser.id,
+      receiver: activeContact.id,
+      messageType: "document",
+      document: {
+        name: documentFile.name,
+        size: documentFile.size,
+        isUploading: true,
+      },
+      content: `Shared document: ${documentFile.name}`,
+      isRead: false,
+      createdAt: new Date(),
+      isOptimistic: true,
+    };
 
-        mediaRecorder.onstop = () => {
-          const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
-          const audioUrl = URL.createObjectURL(audioBlob);
-          setAudioUrl(audioUrl);
+    setMessages((prev) => [...prev, optimisticMessage]);
 
-          if (waveformRef.current) {
-            const wavesurfer = WaveSurfer.create({
-              container: waveformRef.current,
-              waveColor: "#1890ff",
-              progressColor: "#096dd9",
-              cursorColor: "transparent",
-              barWidth: 2,
-              barRadius: 3,
-              barGap: 2,
-              height: 40,
-              responsive: true,
-            });
-            wavesurfer.load(audioUrl);
-          }
-        };
+    const formData = new FormData();
+    formData.append("document", documentFile);
+    formData.append("senderId", currentUser.id);
+    formData.append("receiverId", activeContact.id);
 
-        mediaRecorder.start();
-        setIsRecording(true);
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/messages/documents`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
-        // Auto-stop after 60 seconds
-        setTimeout(() => {
-          if (isRecording) {
-            mediaRecorder.stop();
-            setIsRecording(false);
-          }
-        }, 60000);
-      })
-      .catch((error) => {
-        console.error("Error accessing microphone:", error);
-        antMessage.error("Microphone access denied");
-      });
-  };
-
-  const stopRecording = () => {
-    if (audioRecorderRef.current) {
-      audioRecorderRef.current.stop();
-      setIsRecording(false);
-      audioRecorderRef.current.stream
-        .getTracks()
-        .forEach((track) => track.stop());
+      setMessages((prev) =>
+        prev.map((msg) => (msg._id === tempId ? response.data : msg))
+      );
+      setShowDocumentModal(false);
+      setDocumentFile(null);
+      antMessage.success("Document shared successfully");
+    } catch (error) {
+      console.error("Error uploading document:", error);
+      setMessages((prev) => prev.filter((msg) => msg._id !== tempId));
+      antMessage.error("Failed to upload document");
+    } finally {
+      setUploading(false);
     }
   };
 
-  const sendVoiceMessage = async () => {
-    if (!audioUrl || !activeContact) return;
+  const handleCreatePoll = async () => {
+    if (!pollQuestion || pollOptions.some((opt) => !opt.trim())) {
+      antMessage.error("Please fill all poll fields");
+      return;
+    }
 
     try {
-      // Convert audio URL to blob
-      const blob = await fetch(audioUrl).then((r) => r.blob());
-      const formData = new FormData();
-      formData.append("audio", blob, "recording.wav");
-
-      // Upload audio file
-      const uploadResponse = await axios.post(
-        "http://localhost:5000/api/upload-audio",
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/messages/polls`,
+        {
+          senderId: currentUser.id,
+          receiverId: activeContact.id,
+          question: pollQuestion,
+          options: pollOptions.map((opt) => ({ text: opt })),
+          isMultiSelect,
+          duration: pollDuration,
+        }
       );
 
-      // Send via socket
-      socketRef.current.emit("send_message", {
-        senderId: currentUser.id,
-        receiverId: activeContact.id,
-        audioURL: uploadResponse.data.url,
-        isAudioMessage: true,
-        replyTo: replyTo?._id || null,
-      });
-
-      setAudioUrl("");
-      setReplyTo(null);
+      setMessages((prev) => [...prev, response.data]);
+      setShowPollModal(false);
+      setPollQuestion("");
+      setPollOptions(["", ""]);
+      setIsMultiSelect(false);
+      setPollDuration(null);
+      antMessage.success("Poll created");
     } catch (error) {
+      antMessage.error("Failed to create poll", error);
+    }
+  };
+
+  const handleCreateEvent = async () => {
+    if (!eventTitle || !eventDate) {
+      antMessage.error("Title and date are required");
+      return;
+    }
+
+    try {
+      const eventDateTime = new Date(eventDate);
+      if (eventTime) {
+        eventDateTime.setHours(eventTime.getHours());
+        eventDateTime.setMinutes(eventTime.getMinutes());
+      }
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/messages/events`,
+        {
+          senderId: currentUser.id,
+          receiverId: activeContact.id,
+          title: eventTitle,
+          description: eventDescription,
+          date: eventDateTime,
+          location: eventLocation,
+        }
+      );
+
+      setMessages((prev) => [...prev, response.data]);
+      setShowEventModal(false);
+      setEventTitle("");
+      setEventDescription("");
+      setEventDate(null);
+      setEventTime(null);
+      setEventLocation("");
+      antMessage.success("Event created");
+    } catch (error) {
+      antMessage.error("Failed to create event", error);
+    }
+  };
+
+  const handleVoteInPoll = async (messageId, optionIndices) => {
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/messages/polls/${messageId}/vote`,
+        {
+          userId: currentUser.id,
+          optionIndices: Array.isArray(optionIndices)
+            ? optionIndices
+            : [optionIndices],
+        }
+      );
+
+      setMessages((prev) =>
+        prev.map((msg) => {
+          if (msg._id === messageId && msg.messageType === "poll") {
+            return response.data;
+          }
+          return msg;
+        })
+      );
+    } catch (error) {
+      antMessage.error("Failed to vote in poll", error);
+    }
+  };
+
+  const handleRSVPToEvent = async (messageId, status) => {
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/messages/events/${messageId}/rsvp`,
+        {
+          userId: currentUser.id,
+          status,
+        }
+      );
+
+      setMessages((prev) =>
+        prev.map((msg) => {
+          if (msg._id === messageId && msg.messageType === "event") {
+            return response.data;
+          }
+          return msg;
+        })
+      );
+    } catch (error) {
+      antMessage.error("Failed to update RSVP", error);
+    }
+  };
+
+  const handleReactToMessage = async (messageId, emoji) => {
+    try {
+      // 1) Send to server via REST to update the DB
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/messages/${messageId}/react`,
+        {
+          userId: currentUser.id,
+          emoji,
+        }
+      );
+
+      // 2) Immediately replace the message in state for the current user:
+      setMessages((prev) =>
+        prev.map((msg) => {
+          if (msg._id === messageId) {
+            return response.data;
+          }
+          return msg;
+        })
+      );
+    } catch (error) {
+      antMessage.error("Failed to react to message", error);
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: "audio/webm",
+      });
+      audioRecorderRef.current = {
+        recorder: mediaRecorder,
+        stream,
+      };
+
+      const audioChunks = [];
+      mediaRecorder.ondataavailable = (e) => {
+        audioChunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(audioChunks, { type: "audio/webm" });
+        setAudioBlob(blob);
+        stream.getTracks().forEach((track) => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      setRecordingTime(0);
+
+      recordingIntervalRef.current = setInterval(() => {
+        setRecordingTime((prev) => prev + 1);
+      }, 1000);
+
+      setTimeout(() => {
+        if (isRecording) {
+          stopRecording();
+        }
+      }, 300000);
+    } catch (error) {
+      console.error("Error accessing microphone:", error);
+      antMessage.error("Microphone access denied. Please check permissions.");
+    }
+  };
+
+  const stopRecording = () => {
+    if (audioRecorderRef.current?.recorder?.state !== "inactive") {
+      audioRecorderRef.current?.recorder?.stop();
+    }
+    if (recordingIntervalRef.current) {
+      clearInterval(recordingIntervalRef.current);
+    }
+    setIsRecording(false);
+  };
+
+  const cancelRecording = () => {
+    stopRecording();
+    setAudioBlob(null);
+    setRecordingTime(0);
+  };
+
+  const sendVoiceMessage = async () => {
+    if (!audioBlob || !activeContact) return;
+
+    const tempId = Date.now().toString();
+    const audioUrl = URL.createObjectURL(audioBlob);
+
+    const optimisticMessage = {
+      _id: tempId,
+      sender: currentUser.id,
+      receiver: activeContact.id,
+      messageType: "audio",
+      audio: {
+        url: audioUrl,
+        duration: recordingTime,
+        isUploading: true,
+      },
+      content: "Voice message",
+      isRead: false,
+      createdAt: new Date(),
+      isOptimistic: true,
+    };
+
+    setMessages((prev) => [...prev, optimisticMessage]);
+
+    try {
+      const formData = new FormData();
+      formData.append("audio", audioBlob, `voice_${Date.now()}.webm`);
+      formData.append("senderId", currentUser.id);
+      formData.append("receiverId", activeContact.id);
+      formData.append("duration", recordingTime);
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/messages/audio`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      setMessages((prev) =>
+        prev.map((msg) => (msg._id === tempId ? response.data : msg))
+      );
+
+      setAudioBlob(null);
+      setRecordingTime(0);
+      antMessage.success("Voice message sent");
+    } catch (error) {
+      console.error("Error sending voice message:", error);
+      setMessages((prev) => prev.filter((msg) => msg._id !== tempId));
       antMessage.error("Failed to send voice message");
     }
   };
 
   const initiateCall = async (isVideo) => {
-    if (!peerInstance || !activeContact) return;
+    if (!peerInstanceRef.current || !activeContact) {
+      // Initialize PeerJS if not already initialized
+      const peer = new Peer(currentUser.id, {
+        host: "localhost",
+        port: 9000,
+        path: "/",
+        secure: false,
+      });
 
+      peer.on("open", (id) => {
+        console.log("Peer connection established with ID:", id);
+        peerInstanceRef.current = peer;
+        continueCallInitiation(peer, isVideo);
+      });
+
+      peer.on("error", (err) => {
+        console.error("PeerJS error:", err);
+        antMessage.error("Failed to initialize call connection");
+      });
+    } else {
+      continueCallInitiation(peerInstanceRef.current, isVideo);
+    }
+  };
+
+  const continueCallInitiation = async (peer, isVideo) => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
         video: isVideo,
       });
-      const call = peerInstance.call(activeContact.id, stream);
+      const call = peer.call(activeContact.id, stream);
 
       setCurrentCall(call);
       setIsInCall(true);
@@ -1753,7 +1029,6 @@ const ProfessionalChat = () => {
         setCallStatus(null);
       });
 
-      // Notify the other user via socket
       socketRef.current.emit("call_initiated", {
         senderId: currentUser.id,
         senderName: currentUser.name,
@@ -1762,9 +1037,7 @@ const ProfessionalChat = () => {
       });
     } catch (error) {
       console.error("Error initiating call:", error);
-      antMessage.error(
-        "Failed to start call. Please check your microphone permissions."
-      );
+      antMessage.error("Failed to start call. Please check your permissions.");
     }
   };
 
@@ -1795,9 +1068,7 @@ const ProfessionalChat = () => {
       }));
     } catch (error) {
       console.error("Error answering call:", error);
-      antMessage.error(
-        "Failed to answer call. Please check your microphone permissions."
-      );
+      antMessage.error("Failed to answer call. Please check your permissions.");
     }
   };
 
@@ -1814,219 +1085,438 @@ const ProfessionalChat = () => {
     }
   };
 
-  const handleDocumentUpload = async () => {
-    if (!documentFile) {
-      antMessage.error("Please select a document");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("document", documentFile);
-
-    try {
-      const uploadResponse = await axios.post(
-        "http://localhost:5000/api/messages/documents",
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
-
-      const newMessage = {
-        senderId: currentUser.id,
-        receiverId: activeContact.id,
-        messageType: "document",
-        document: {
-          url: uploadResponse.data.url,
-          name: documentFile.name,
-          size: documentFile.size,
-          type: documentFile.type,
-        },
-        content: `Shared document: ${documentFile.name}`,
-      };
-
-      socketRef.current.emit("send_message", newMessage);
-      setShowDocumentModal(false);
-      setDocumentFile(null);
-      antMessage.success("Document shared");
-    } catch (error) {
-      antMessage.error("Failed to upload document");
-    }
-  };
-
-  const handleCreatePoll = async () => {
-    if (!pollQuestion || pollOptions.some((opt) => !opt.trim())) {
-      antMessage.error("Please fill all poll fields");
-      return;
-    }
-
-    try {
-      const newMessage = {
-        senderId: currentUser.id,
-        receiverId: activeContact.id,
-        messageType: "poll",
-        poll: {
-          question: pollQuestion,
-          options: pollOptions.map((opt) => ({
-            text: opt,
-            voters: [],
-          })),
-          isMultiSelect,
-          totalVotes: 0,
-          expiresAt: pollDuration
-            ? new Date(Date.now() + pollDuration * 60000)
-            : null,
-        },
-        content: `Poll: ${pollQuestion}`,
-      };
-
-      socketRef.current.emit("send_message", newMessage);
-      setShowPollModal(false);
-      setPollQuestion("");
-      setPollOptions(["", ""]);
-      setIsMultiSelect(false);
-      setPollDuration(null);
-      antMessage.success("Poll created");
-    } catch (error) {
-      antMessage.error("Failed to create poll");
-    }
-  };
-
-  const handleCreateEvent = async () => {
-    if (!eventTitle || !eventDate) {
-      antMessage.error("Title and date are required");
-      return;
-    }
-
-    try {
-      const eventDateTime = new Date(eventDate);
-      if (eventTime) {
-        eventDateTime.setHours(eventTime.getHours());
-        eventDateTime.setMinutes(eventTime.getMinutes());
-      }
-
-      const newMessage = {
-        senderId: currentUser.id,
-        receiverId: activeContact.id,
-        messageType: "event",
-        event: {
-          title: eventTitle,
-          description: eventDescription,
-          date: eventDateTime,
-          location: eventLocation,
-          attendees: [],
-          organizer: currentUser.id,
-        },
-        content: `Event: ${eventTitle} on ${eventDateTime.toLocaleString()}`,
-      };
-
-      socketRef.current.emit("send_message", newMessage);
-      setShowEventModal(false);
-      setEventTitle("");
-      setEventDescription("");
-      setEventDate(null);
-      setEventTime(null);
-      setEventLocation("");
-      antMessage.success("Event created");
-    } catch (error) {
-      antMessage.error("Failed to create event");
-    }
-  };
-
-  const handleVoteInPoll = async (messageId, optionIndices) => {
-    try {
-      await axios.post(
-        `http://localhost:5000/api/messages/polls/${messageId}/vote`,
-        {
-          userId: currentUser.id,
-          optionIndices,
-        }
-      );
-
-      setMessages((prev) =>
-        prev.map((msg) => {
-          if (msg._id === messageId && msg.messageType === "poll") {
-            const updatedPoll = { ...msg.poll };
-            optionIndices.forEach((index) => {
-              if (!updatedPoll.options[index].voters.includes(currentUser.id)) {
-                updatedPoll.options[index].voters.push(currentUser.id);
-              }
-            });
-            updatedPoll.totalVotes = updatedPoll.options.reduce(
-              (total, option) => total + option.voters.length,
-              0
-            );
-            return { ...msg, poll: updatedPoll };
-          }
-          return msg;
-        })
-      );
-    } catch (error) {
-      antMessage.error("Failed to vote in poll");
-    }
-  };
-
-  const handleRSVPToEvent = async (messageId, status) => {
-    try {
-      await axios.post(
-        `http://localhost:5000/api/messages/events/${messageId}/rsvp`,
-        {
-          userId: currentUser.id,
-          status,
-        }
-      );
-
-      setMessages((prev) =>
-        prev.map((msg) => {
-          if (msg._id === messageId && msg.messageType === "event") {
-            const updatedEvent = { ...msg.event };
-            updatedEvent.attendees = updatedEvent.attendees.filter(
-              (attendee) => attendee.userId !== currentUser.id
-            );
-            if (status !== "not_going") {
-              updatedEvent.attendees.push({
-                userId: currentUser.id,
-                status,
-              });
-            }
-            return { ...msg, event: updatedEvent };
-          }
-          return msg;
-        })
-      );
-    } catch (error) {
-      antMessage.error("Failed to update RSVP");
-    }
-  };
-
-  // Message rendering
   const renderMessageContent = (msg) => {
     switch (msg.messageType) {
-      case "location":
+      case "image":
         return (
-          <div className="location-message">
-            <EnvironmentOutlined style={{ fontSize: 24, marginRight: 8 }} />
-            <div>
-              <Text strong>Live Location</Text>
-              <div>
-                <a
-                  href={`https://maps.google.com/?q=${msg.location.latitude},${msg.location.longitude}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+          <div className="image-message-container">
+            {msg.image?.url ? (
+              <>
+                <div
+                  className="image-thumbnail"
+                  style={{
+                    width: "200px",
+                    height: "150px",
+                    position: "relative",
+                    cursor: "pointer",
+                    overflow: "hidden",
+                    borderRadius: "8px",
+                    backgroundColor: "#f0f0f0",
+                  }}
+                  onClick={() => setExpanded(true)}
                 >
-                  View on Map
-                </a>
+                  <img
+                    src={msg.image.url}
+                    alt={msg.image.caption || "Shared image"}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: imageLoaded ? "block" : "none",
+                    }}
+                    onLoad={() => setImageLoaded(true)}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "/placeholder-image.png";
+                    }}
+                  />
+
+                  {!imageLoaded && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <CircularProgress size={24} />
+                    </div>
+                  )}
+                </div>
+
+                {expanded && (
+                  <div
+                    style={{
+                      position: "fixed",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundColor: "rgba(0,0,0,0.9)",
+                      zIndex: 1000,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <img
+                      src={msg.image.url}
+                      alt={msg.image.caption || "Shared image"}
+                      style={{
+                        maxWidth: "90vw",
+                        maxHeight: "90vh",
+                        objectFit: "contain",
+                      }}
+                    />
+                    <div
+                      style={{
+                        marginTop: "16px",
+                        display: "flex",
+                        gap: "16px",
+                      }}
+                    >
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const link = document.createElement("a");
+                          link.href = msg.image.url;
+                          link.download = `image-${msg._id}.${
+                            msg.image.format || "jpg"
+                          }`;
+                          link.click();
+                        }}
+                      >
+                        Save Image
+                      </Button>
+                      <Button onClick={() => setExpanded(false)}>Close</Button>
+                    </div>
+                  </div>
+                )}
+
+                {msg.image.caption && (
+                  <div
+                    style={{
+                      marginTop: "8px",
+                      fontSize: "0.9rem",
+                      color: "#666",
+                      wordBreak: "break-word",
+                      maxWidth: "200px",
+                    }}
+                  >
+                    {msg.image.caption}
+                  </div>
+                )}
+              </>
+            ) : (
+              <div
+                style={{
+                  padding: "16px",
+                  backgroundColor: "#f8d7da",
+                  color: "#721c24",
+                  borderRadius: "8px",
+                  width: "200px",
+                }}
+              >
+                Image failed to load
               </div>
-              {msg.location.live && (
-                <Text type="secondary">
-                  Expires in{" "}
-                  {Math.round(
-                    (new Date(msg.location.expiresAt) - Date.now()) / 60000
-                  )}{" "}
-                  minutes
-                </Text>
+            )}
+          </div>
+        );
+      case "video":
+        return (
+          <div
+            className="video-message-container"
+            style={{ maxWidth: "400px" }}
+          >
+            <div className="relative">
+              <video
+                controls
+                src={msg.video?.url}
+                poster={msg.video?.thumbnail}
+                style={{
+                  width: "100%",
+                  borderRadius: "8px",
+                  aspectRatio:
+                    msg.video?.width && msg.video?.height
+                      ? `${msg.video.width}/${msg.video.height}`
+                      : "16/9",
+                  backgroundColor: "#000",
+                }}
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+              />
+
+              {!isPlaying && (
+                <div
+                  className="absolute inset-0 flex items-center justify-center cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.currentTarget.parentElement.querySelector("video").play();
+                  }}
+                >
+                  <div className="w-12 h-12 bg-black bg-opacity-50 rounded-full flex items-center justify-center"></div>
+                </div>
               )}
+            </div>
+
+            <div className="mt-2 flex items-center text-sm text-gray-500">
+              <span className="mr-2">🎥 Video</span>
+              <span>{formatFileSize(msg.video?.size)}</span>
+              {msg.video?.duration > 0 && (
+                <span className="ml-2">
+                  {new Date(msg.video.duration * 1000)
+                    .toISOString()
+                    .substr(11, 8)}
+                </span>
+              )}
+            </div>
+
+            {msg.video?.caption && (
+              <div className="mt-1 text-sm text-gray-700 break-words">
+                {msg.video.caption}
+              </div>
+            )}
+
+            <div className="mt-2">
+              <Button
+                onClick={() => {
+                  const link = document.createElement("a");
+                  link.href = msg.video.url;
+                  link.download = `video-${msg._id}.${
+                    msg.video.format || "mp4"
+                  }`;
+                  link.click();
+                }}
+                className="text-sm text-blue-600 hover:text-blue-800"
+              >
+                Download Video
+              </Button>
             </div>
           </div>
         );
+      case "audio":
+        return (
+          <div className="audio-message-container" aria-label="Audio message">
+            <div className="audio-player-wrapper">
+              <audio
+                controls
+                src={msg.audio?.url}
+                onLoadedMetadata={(e) => {
+                  if (e.target.duration && !msg.audio.duration) {
+                    console.log("Audio duration:", e.target.duration);
+                  }
+                }}
+                onError={() => {
+                  console.error("Failed to load audio");
+                }}
+                preload="metadata"
+                aria-label="Audio player"
+              />
+            </div>
+
+            <div className="audio-meta">
+              <div className="audio-details">
+                <span className="duration" aria-label="Duration">
+                  <ClockCircleOutlined style={{ marginRight: 4 }} />
+                  {formatDuration(msg.audio?.duration || 0)}
+                </span>
+
+                <span className="size" aria-label="File size">
+                  <FileOutlined style={{ marginRight: 4 }} />
+                  {formatFileSize(msg.audio?.size || 0)}
+                </span>
+
+                <span className="format" aria-label="Audio format">
+                  <SoundOutlined style={{ marginRight: 4 }} />
+                  {msg.audio?.format?.toUpperCase() || "WEBM"}
+                </span>
+              </div>
+
+              <Button
+                className="download-btn"
+                onClick={() => {
+                  const link = document.createElement("a");
+                  link.href = msg.audio?.url;
+                  link.download = `voice_${msg._id}.${
+                    msg.audio?.format || "webm"
+                  }`;
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }}
+                aria-label="Download audio"
+                title="Download audio"
+              >
+                <DownloadOutlined />
+                <span className="sr-only">Download</span>
+              </Button>
+            </div>
+          </div>
+        );
+      case "location": {
+        // Safeguard against undefined location data
+        if (
+          !msg.location ||
+          !msg.location.latitude ||
+          !msg.location.longitude
+        ) {
+          return (
+            <div className="location-message error">
+              <EnvironmentOutlined style={{ fontSize: 24, marginRight: 8 }} />
+              <Text type="danger">Location data unavailable</Text>
+            </div>
+          );
+        }
+
+        const mapUrl = `https://maps.google.com/?q=${msg.location.latitude},${msg.location.longitude}`;
+        const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${msg.location.latitude},${msg.location.longitude}&zoom=15&size=300x150&maptype=roadmap&markers=color:red%7C${msg.location.latitude},${msg.location.longitude}&key=YOUR_API_KEY`;
+
+        const expiresInMinutes = msg.location.live
+          ? Math.round((new Date(msg.location.expiresAt) - Date.now()) / 60000)
+          : null;
+
+        return (
+          <div className="location-message" style={{ maxWidth: "300px" }}>
+            <div
+              className="location-map-preview"
+              onClick={() => window.open(mapUrl, "_blank")}
+              style={{
+                position: "relative",
+                cursor: "pointer",
+                borderRadius: "8px",
+                overflow: "hidden",
+                marginBottom: "8px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+              }}
+            >
+              {/* Static map image - replace with your own implementation or API */}
+              <div
+                style={{
+                  height: "150px",
+                  background: `#f0f0f0 url(${staticMapUrl}) center/cover no-repeat`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  position: "relative",
+                }}
+              >
+                {!staticMapUrl && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: "rgba(0,0,0,0.3)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "white",
+                    }}
+                  >
+                    <EnvironmentOutlined style={{ fontSize: 32 }} />
+                  </div>
+                )}
+              </div>
+
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: "8px",
+                  left: "8px",
+                  right: "8px",
+                  background: "rgba(0,0,0,0.7)",
+                  color: "white",
+                  padding: "4px 8px",
+                  borderRadius: "4px",
+                  fontSize: "12px",
+                }}
+              >
+                <Text style={{ color: "white" }}>Tap to open in Maps</Text>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <EnvironmentOutlined
+                style={{
+                  fontSize: 20,
+                  color: "#1890ff",
+                  marginRight: "8px",
+                }}
+              />
+              <div>
+                <Text strong style={{ display: "block" }}>
+                  {msg.location.live ? "Live Location" : "Shared Location"}
+                </Text>
+
+                <Space size="small">
+                  <Button
+                    type="link"
+                    size="small"
+                    onClick={() => window.open(mapUrl, "_blank")}
+                    style={{ padding: 0 }}
+                  >
+                    Open in Maps
+                  </Button>
+
+                  <Button
+                    type="link"
+                    size="small"
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        `${msg.location.latitude}, ${msg.location.longitude}`
+                      );
+                      antMessage.success("Coordinates copied to clipboard");
+                    }}
+                    style={{ padding: 0 }}
+                  >
+                    Copy Coordinates
+                  </Button>
+                </Space>
+              </div>
+            </div>
+
+            {msg.location.live && expiresInMinutes > 0 && (
+              <div
+                style={{
+                  marginTop: "8px",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <ClockCircleOutlined
+                  style={{
+                    color: expiresInMinutes < 5 ? "#ff4d4f" : "#faad14",
+                    marginRight: "6px",
+                  }}
+                />
+                <Progress
+                  percent={Math.min(
+                    100,
+                    (expiresInMinutes / (msg.location.duration || 15)) * 100
+                  )}
+                  status={expiresInMinutes < 5 ? "exception" : "active"}
+                  showInfo={false}
+                  strokeColor={expiresInMinutes < 5 ? "#ff4d4f" : "#1890ff"}
+                  style={{ flex: 1, marginRight: "8px" }}
+                />
+                <Text type={expiresInMinutes < 5 ? "danger" : "secondary"}>
+                  {Math.floor(expiresInMinutes)} min left
+                </Text>
+              </div>
+            )}
+
+            {msg.location.live && expiresInMinutes <= 0 && (
+              <Tag color="red" style={{ marginTop: "8px" }}>
+                Location sharing ended
+              </Tag>
+            )}
+
+            {msg.location.address && (
+              <div style={{ marginTop: "8px" }}>
+                <Text type="secondary">{msg.location.address}</Text>
+              </div>
+            )}
+          </div>
+        );
+      }
       case "contact":
         return (
           <div className="contact-message">
@@ -2042,25 +1532,197 @@ const ProfessionalChat = () => {
             </div>
           </div>
         );
-      case "document":
+      case "document": {
+        // Safeguard against undefined document
+        if (!msg.document) {
+          return (
+            <div className="document-message error">
+              <FileOutlined style={{ fontSize: 24, marginRight: 8 }} />
+              <Text type="danger">Document unavailable</Text>
+            </div>
+          );
+        }
+
+        // Determine document type and icon
+        const getDocumentIcon = () => {
+          const type = msg.document?.type?.toLowerCase() || "";
+          const name = msg.document?.name?.toLowerCase() || "";
+
+          if (type.includes("pdf") || name.endsWith(".pdf")) {
+            return { icon: <FilePdfOutlined />, color: "#f40f02" };
+          }
+          if (
+            type.includes("word") ||
+            name.endsWith(".doc") ||
+            name.endsWith(".docx")
+          ) {
+            return { icon: <FileWordOutlined />, color: "#2b579a" };
+          }
+          if (
+            type.includes("excel") ||
+            name.endsWith(".xls") ||
+            name.endsWith(".xlsx")
+          ) {
+            return { icon: <FileExcelOutlined />, color: "#217346" };
+          }
+          if (
+            type.includes("powerpoint") ||
+            name.endsWith(".ppt") ||
+            name.endsWith(".pptx")
+          ) {
+            return { icon: <FilePptOutlined />, color: "#d24726" };
+          }
+          if (
+            type.includes("zip") ||
+            type.includes("compressed") ||
+            name.endsWith(".zip") ||
+            name.endsWith(".rar")
+          ) {
+            return { icon: <FileZipOutlined />, color: "#7d4b12" };
+          }
+          if (type.includes("text") || name.endsWith(".txt")) {
+            return { icon: <FileTextOutlined />, color: "#333333" };
+          }
+          return { icon: <FileOutlined />, color: "#666666" };
+        };
+
+        const { icon, color } = getDocumentIcon();
+        const fileType =
+          msg.document?.type?.split("/")?.[1]?.toUpperCase() ||
+          msg.document?.name?.split(".")?.pop()?.toUpperCase() ||
+          "FILE";
+
         return (
-          <div className="document-message">
-            <FileOutlined style={{ fontSize: 24, marginRight: 8 }} />
-            <div>
-              <Text strong>{msg.document.name}</Text>
+          <div
+            className="document-message-container"
+            style={{
+              maxWidth: "100%",
+              border: "1px solid #f0f0f0",
+              borderRadius: "8px",
+              overflow: "hidden",
+              display: "flex",
+              backgroundColor: "#fff",
+            }}
+          >
+            <div
+              className="document-preview"
+              style={{
+                width: "80px",
+                minWidth: "80px",
+                height: "100px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: `${color}10`, // Light tint of icon color
+                borderRight: `1px solid #f0f0f0`,
+              }}
+            >
+              {React.cloneElement(icon, {
+                style: {
+                  fontSize: 36,
+                  color: color,
+                },
+              })}
+            </div>
+
+            <div
+              className="document-info"
+              style={{
+                flex: 1,
+                padding: "12px",
+                minWidth: 0, // Important for text truncation
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
+            >
               <div>
-                <a
-                  href={msg.document.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <div
+                  className="document-name"
+                  style={{
+                    fontWeight: 500,
+                    fontSize: "14px",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
                 >
-                  Download
-                </a>
+                  {msg.document.name || "Document"}
+                </div>
+
+                <div
+                  className="document-meta"
+                  style={{
+                    display: "flex",
+                    gap: "12px",
+                    marginTop: "4px",
+                    fontSize: "12px",
+                    color: "#666",
+                  }}
+                >
+                  <span
+                    style={{
+                      backgroundColor: "#f0f0f0",
+                      padding: "2px 6px",
+                      borderRadius: "4px",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {fileType}
+                  </span>
+                  <span>{formatFileSize(msg.document.size || 0)}</span>
+                </div>
               </div>
-              <Text type="secondary">{formatFileSize(msg.document.size)}</Text>
+
+              {msg.document.url && (
+                <div
+                  className="document-actions"
+                  style={{
+                    display: "flex",
+                    gap: "12px",
+                    marginTop: "8px",
+                  }}
+                >
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<EyeOutlined />}
+                    onClick={() => window.open(msg.document.url, "_blank")}
+                    style={{
+                      padding: "0 8px",
+                      height: "28px",
+                      fontSize: "12px",
+                    }}
+                  >
+                    View
+                  </Button>
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<DownloadOutlined />}
+                    onClick={() => {
+                      const link = document.createElement("a");
+                      link.href = msg.document.url;
+                      link.download =
+                        msg.document.originalName || msg.document.name;
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                    }}
+                    style={{
+                      padding: "0 8px",
+                      height: "28px",
+                      fontSize: "12px",
+                    }}
+                  >
+                    Download
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         );
+      }
       case "poll":
         return (
           <div className="poll-message">
@@ -2177,9 +1839,41 @@ const ProfessionalChat = () => {
             </div>
           </div>
         );
+      case "typing":
+        return (
+          <div className="typing-indicator">
+            <div className="typing-dots">
+              <div className="dot"></div>
+              <div className="dot"></div>
+              <div className="dot"></div>
+            </div>
+          </div>
+        );
       default:
         return msg.content && <div className="message-text">{msg.content}</div>;
     }
+  };
+
+  const renderMessageReactions = (msg) => {
+    if (!msg.reactions || msg.reactions.length === 0) return null;
+
+    return (
+      <div className="message-reactions">
+        {msg.reactions.map((reaction, index) => (
+          <Tooltip
+            key={index}
+            title={`${reaction.userId === currentUser.id ? "You" : "Someone"}`}
+          >
+            <span
+              className="reaction-emoji"
+              onClick={() => handleReactToMessage(msg._id, reaction.emoji)}
+            >
+              {reaction.emoji}
+            </span>
+          </Tooltip>
+        ))}
+      </div>
+    );
   };
 
   const formatFileSize = (bytes) => {
@@ -2205,6 +1899,13 @@ const ProfessionalChat = () => {
     return Math.floor(seconds) + " seconds ago";
   };
 
+  const formatDuration = (seconds) => {
+    if (!seconds) return "0:00";
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
+  };
+
   const getRSVPColor = (status) => {
     switch (status) {
       case "going":
@@ -2223,6 +1924,18 @@ const ProfessionalChat = () => {
       overlay={
         <Menu>
           <Menu.Item
+            icon={<PictureOutlined />}
+            onClick={() => documentInputRef.current?.click()}
+          >
+            Send Image
+          </Menu.Item>
+          <Menu.Item
+            icon={<VideoCameraOutlined />}
+            onClick={() => documentInputRef.current?.click()}
+          >
+            Send Video
+          </Menu.Item>
+          <Menu.Item
             icon={<EnvironmentOutlined />}
             onClick={() => setShowLocationModal(true)}
           >
@@ -2236,7 +1949,7 @@ const ProfessionalChat = () => {
           </Menu.Item>
           <Menu.Item
             icon={<FileOutlined />}
-            onClick={() => documentInputRef.current?.click()}
+            onClick={() => setShowDocumentModal(true)}
           >
             Share Document
           </Menu.Item>
@@ -2264,6 +1977,8 @@ const ProfessionalChat = () => {
       />
     </Dropdown>
   );
+
+  const emojiList = ["👍", "❤️", "😂", "😮", "😢", "🙏"];
 
   return (
     <div className="professional-chat-container">
@@ -2431,13 +2146,30 @@ const ProfessionalChat = () => {
                             >
                               Reply
                             </Menu.Item>
-                            <Menu.Item
-                              icon={<CloseOutlined />}
-                              danger
-                              onClick={() => deleteMessage(msg._id)}
+                            {msg.sender === currentUser.id && (
+                              <Menu.Item
+                                icon={<DeleteOutlined />}
+                                danger
+                                onClick={() => deleteMessage(msg._id)}
+                              >
+                                Delete
+                              </Menu.Item>
+                            )}
+                            <Menu.SubMenu
+                              title="React"
+                              icon={<SmileOutlined />}
                             >
-                              Delete
-                            </Menu.Item>
+                              {emojiList.map((emoji) => (
+                                <Menu.Item
+                                  key={emoji}
+                                  onClick={() =>
+                                    handleReactToMessage(msg._id, emoji)
+                                  }
+                                >
+                                  {emoji}
+                                </Menu.Item>
+                              ))}
+                            </Menu.SubMenu>
                           </Menu>
                         }
                         trigger={["contextMenu"]}
@@ -2458,6 +2190,7 @@ const ProfessionalChat = () => {
                           )}
 
                           {renderMessageContent(msg)}
+                          {renderMessageReactions(msg)}
 
                           <div className="message-meta">
                             <Text type="secondary" className="timestamp">
@@ -2476,6 +2209,16 @@ const ProfessionalChat = () => {
                       </Dropdown>
                     </div>
                   ))}
+                  {typingIndicator && (
+                    <div className="message received">
+                      <div className="message-content">
+                        {renderMessageContent({
+                          messageType: "typing",
+                          isTyping: true,
+                        })}
+                      </div>
+                    </div>
+                  )}
                   <div ref={messagesEndRef} />
                 </>
               ) : (
@@ -2517,15 +2260,18 @@ const ProfessionalChat = () => {
 
             {/* Message input */}
             <div className="message-input-container">
-              {audioUrl ? (
+              {audioBlob ? (
                 <div className="voice-message-preview">
-                  <div className="waveform-container" ref={waveformRef} />
+                  <div className="recording-info">
+                    <AudioOutlined />
+                    <span>{formatDuration(recordingTime)}</span>
+                  </div>
                   <Space>
                     <Button
                       type="text"
                       danger
                       icon={<CloseOutlined />}
-                      onClick={() => setAudioUrl("")}
+                      onClick={cancelRecording}
                     />
                     <Button
                       type="primary"
@@ -2534,12 +2280,25 @@ const ProfessionalChat = () => {
                     />
                   </Space>
                 </div>
+              ) : isRecording ? (
+                <div className="recording-indicator">
+                  <div className="pulse-animation"></div>
+                  <span>Recording... {formatDuration(recordingTime)}</span>
+                  <Button
+                    type="primary"
+                    danger
+                    shape="circle"
+                    icon={<AudioOutlined />}
+                    onClick={stopRecording}
+                  />
+                </div>
               ) : (
                 <>
                   <Button
                     type="text"
                     icon={<PaperClipOutlined />}
                     className="input-action-btn"
+                    onClick={() => documentInputRef.current?.click()}
                   />
 
                   {renderAdditionalMessageOptions()}
@@ -2548,6 +2307,11 @@ const ProfessionalChat = () => {
                     value={inputMessage}
                     onChange={(e) => {
                       setInputMessage(e.target.value);
+                      if (e.target.value && !isTyping) {
+                        setIsTyping(true);
+                      } else if (!e.target.value && isTyping) {
+                        setIsTyping(false);
+                      }
                     }}
                     placeholder="Type a message..."
                     autoSize={{ minRows: 1, maxRows: 4 }}
@@ -2685,6 +2449,16 @@ const ProfessionalChat = () => {
               >
                 Videos
               </Button>
+              <Button
+                type="text"
+                icon={<FileOutlined />}
+                onClick={() => {
+                  setMediaType("documents");
+                  setShowMediaViewer(true);
+                }}
+              >
+                Documents
+              </Button>
             </Space>
 
             <Divider />
@@ -2705,7 +2479,13 @@ const ProfessionalChat = () => {
 
       {/* Media Viewer Modal */}
       <Modal
-        title={`Shared ${mediaType === "images" ? "Photos" : "Videos"}`}
+        title={`Shared ${
+          mediaType === "images"
+            ? "Photos"
+            : mediaType === "videos"
+            ? "Videos"
+            : "Documents"
+        }`}
         visible={showMediaViewer}
         onCancel={() => setShowMediaViewer(false)}
         footer={null}
@@ -2713,19 +2493,38 @@ const ProfessionalChat = () => {
       >
         <div className="media-grid">
           {messages
-            .filter(
-              (msg) =>
-                (mediaType === "images" && msg.imageUrl) ||
-                (mediaType === "videos" && msg.videoUrl)
-            )
+            .filter((msg) => {
+              if (mediaType === "images") return msg.image?.url;
+              if (mediaType === "videos") return msg.video?.url;
+              if (mediaType === "documents") return msg.document?.url;
+              return false;
+            })
             .map((msg) => (
               <div key={msg._id} className="media-item">
                 {mediaType === "images" ? (
-                  <img src={msg.imageUrl} alt="Shared content" />
-                ) : (
+                  <img src={msg.image.url} alt="Shared content" />
+                ) : mediaType === "videos" ? (
                   <video controls>
-                    <source src={msg.videoUrl} type="video/mp4" />
+                    <source src={msg.video.url} type="video/mp4" />
                   </video>
+                ) : (
+                  <div className="document-item">
+                    {msg.document?.type.includes("pdf") ? (
+                      <FilePdfOutlined style={{ fontSize: 24 }} />
+                    ) : msg.document?.type.includes("word") ? (
+                      <FileWordOutlined style={{ fontSize: 24 }} />
+                    ) : msg.document?.type.includes("excel") ? (
+                      <FileExcelOutlined style={{ fontSize: 24 }} />
+                    ) : msg.document?.type.includes("powerpoint") ? (
+                      <FilePptOutlined style={{ fontSize: 24 }} />
+                    ) : (
+                      <FileOutlined style={{ fontSize: 24 }} />
+                    )}
+                    <Text>{msg.document.name}</Text>
+                    <Text type="secondary">
+                      {formatFileSize(msg.document.size)}
+                    </Text>
+                  </div>
                 )}
               </div>
             ))}
@@ -2855,6 +2654,7 @@ const ProfessionalChat = () => {
           ref={documentInputRef}
           style={{ display: "none" }}
           onChange={(e) => setDocumentFile(e.target.files[0])}
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
         />
         <Button
           type="primary"
@@ -2935,7 +2735,6 @@ const ProfessionalChat = () => {
           </Form.Item>
         </Form>
       </Modal>
-
       {/* Event Creation Modal */}
       <Modal
         title="Create Event"
@@ -2984,6 +2783,24 @@ const ProfessionalChat = () => {
           </Form.Item>
         </Form>
       </Modal>
+
+      {/* Hidden file input for media uploads */}
+      <input
+        type="file"
+        ref={documentInputRef}
+        style={{ display: "none" }}
+        accept="image/*,video/*"
+        onChange={(e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+
+          if (file.type.startsWith("image/")) {
+            handleSendImage(file);
+          } else if (file.type.startsWith("video/")) {
+            handleSendVideo(file);
+          }
+        }}
+      />
     </div>
   );
 };

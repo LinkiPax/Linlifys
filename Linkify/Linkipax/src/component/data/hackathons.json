@@ -1,0 +1,28 @@
+{
+    "hackathons": [
+        {
+            "id": 1,
+            "name": "AI Innovation Challenge",
+            "prize": "10,000",
+            "deadline": "2023-12-15",
+            "themes": [
+                "AI",
+                "Machine Learning",
+                "NLP"
+            ],
+            "description": "Build cutting-edge AI solutions for real-world problems."
+        },
+        {
+            "id": 2,
+            "name": "Web3 Hackathon",
+            "prize": "5,000",
+            "deadline": "2023-11-30",
+            "themes": [
+                "Blockchain",
+                "Smart Contracts",
+                "DeFi"
+            ],
+            "description": "Create decentralized applications for the future of finance."
+        }
+    ]
+}

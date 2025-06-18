@@ -14,19 +14,44 @@ const messageSchema = new mongoose.Schema(
     },
     messageType: {
       type: String,
-      enum: ["text", "audio", "location", "document", "poll", "event", "contact"], // <-- Make sure "contact" is included here
+      enum: ["text", "audio", "image", "video", "location", "document", "poll", "event", "contact"],
       default: "text",
     },
     content: {
       type: String,
     },
-    audioURL: {
-      type: String,
+    // Audio message fields
+    audio: {
+      url: String,
+      duration: Number,
+      format: String,
+      size: Number
+    },
+    // Image message fields
+    image: {
+      url: String,
+      thumbnail: String, // smaller version for preview
+      width: Number,
+      height: Number,
+      size: Number, // in bytes
+      format: String, // e.g., "jpg", "png", etc.
+      caption: String,
+    },
+    // Video message fields
+    video: {
+      url: String,
+      thumbnail: String, // preview image
+      duration: Number, // in seconds
+      width: Number,
+      height: Number,
+      size: Number, // in bytes
+      format: String, // e.g., "mp4", "mov", etc.
+      caption: String,
     },
     contacts: [
       {
         id: {
-          type: mongoose.Schema.Types.ObjectId, // assuming contact ID is a Mongo ObjectId
+          type: mongoose.Schema.Types.ObjectId,
           ref: "User",
         },
         name: String,
@@ -41,11 +66,13 @@ const messageSchema = new mongoose.Schema(
       expiresAt: Date,
     },
     document: {
-      url: String,
-      name: String,
-      size: Number,
-      type: String,
-      thumbnail: String,
+      url: { type: String },
+      publicId: { type: String },
+      name: { type: String },
+      originalName: { type: String },
+      size: { type: Number },
+      type: { type: String},
+      extension: { type: String},
     },
     poll: {
       question: String,
@@ -80,6 +107,13 @@ const messageSchema = new mongoose.Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
+      },
+    ],
+    reactions: [
+      {
+        userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        emoji: { type: String },
+        createdAt: { type: Date, default: Date.now },
       },
     ],
   },

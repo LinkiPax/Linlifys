@@ -23,7 +23,7 @@ const TrendingTopicsCard = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        "http://localhost:5000/api/trending-topics"
+        `${import.meta.env.VITE_API_URL}/api/trending-topics`
       );
       setTopics(response.data);
     } catch (err) {

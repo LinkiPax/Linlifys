@@ -19,7 +19,7 @@ import {
   FiPlus,
   FiChevronDown,
   FiChevronUp,
-} from "react-icons/fi"; 
+} from "react-icons/fi";
 import { format, parseISO } from "date-fns";
 import "./Experience.css"; // Create this CSS file for custom styles
 
@@ -37,7 +37,7 @@ const Experience = ({ userId }) => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState({
     page: false,
-    action: false,  
+    action: false,
   });
   const [editExperience, setEditExperience] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -51,7 +51,7 @@ const Experience = ({ userId }) => {
       setLoading((prev) => ({ ...prev, page: true }));
       try {
         const { data } = await axios.get(
-          `http://localhost:5000/experience/${userId}`
+          `${import.meta.env.VITE_API_URL}/experience/${userId}`
         );
         setExperiences(data);
       } catch (error) {
@@ -100,7 +100,7 @@ const Experience = ({ userId }) => {
     setLoading((prev) => ({ ...prev, action: true }));
     try {
       const { data } = await axios.post(
-        `http://localhost:5000/experience/${userId}`,
+        `${import.meta.env.VITE_API_URL}/experience/${userId}`,
         newExperience
       );
       setExperiences([...experiences, data]);
@@ -136,7 +136,9 @@ const Experience = ({ userId }) => {
     setLoading((prev) => ({ ...prev, action: true }));
     try {
       const { data } = await axios.put(
-        `http://localhost:5000/experience/${userId}/${editExperience._id}`,
+        `${import.meta.env.VITE_API_URL}/experience/${userId}/${
+          editExperience._id
+        }`,
         editExperience
       );
       setExperiences(
@@ -159,7 +161,9 @@ const Experience = ({ userId }) => {
 
     setLoading((prev) => ({ ...prev, action: true }));
     try {
-      await axios.delete(`http://localhost:5000/experience/${userId}/${id}`);
+      await axios.delete(
+        `${import.meta.env.VITE_API_URL}/experience/${userId}/${id}`
+      );
       setExperiences(experiences.filter((exp) => exp._id !== id));
       setSuccessMessage("Experience deleted successfully!");
       setError(null);
@@ -403,7 +407,6 @@ const Experience = ({ userId }) => {
                   }}
                   className="mb-2"
                 />
-
               </Col>
             </Row>
 

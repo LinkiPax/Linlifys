@@ -121,7 +121,7 @@ module.exports = router;
 //   // Initialize socket and peer connections
 //   useEffect(() => {
 //     // Initialize socket connection
-//     const socket = io("http://localhost:5000", { withCredentials: true });
+//     const socket = io("${import.meta.env.VITE_API_URL}", { withCredentials: true });
 //     socketRef.current = socket;
 
 //     // Initialize PeerJS
@@ -225,7 +225,7 @@ module.exports = router;
 //     const fetchUserData = async () => {
 //       try {
 //         const response = await axios.get(
-//           `http://localhost:5000/user/${currentUser.id}`
+//           `${import.meta.env.VITE_API_URL}/user/${currentUser.id}`
 //         );
 //         setCurrentUser((prev) => ({
 //           ...prev,
@@ -252,7 +252,7 @@ module.exports = router;
 //     const fetchContacts = async () => {
 //       try {
 //         const userResponse = await axios.get(
-//           `http://localhost:5000/user/${currentUser.id}`
+//           `${import.meta.env.VITE_API_URL}/user/${currentUser.id}`
 //         );
 //         const connectionIds = [...new Set(userResponse.data.connections)];
 
@@ -262,10 +262,10 @@ module.exports = router;
 
 //             try {
 //               const contactResponse = await axios.get(
-//                 `http://localhost:5000/user/${connId}`
+//                 `${import.meta.env.VITE_API_URL}/user/${connId}`
 //               );
 //               const unreadResponse = await axios.get(
-//                 `http://localhost:5000/api/messages/unread-count?userId=${currentUser.id}&targetUserId=${connId}`
+//                 `${import.meta.env.VITE_API_URL}/api/messages/unread-count?userId=${currentUser.id}&targetUserId=${connId}`
 //               );
 
 //               return {
@@ -319,7 +319,7 @@ module.exports = router;
 
 //       setLoading(true);
 //       try {
-//         const response = await axios.get("http://localhost:5000/api/messages", {
+//         const response = await axios.get("${import.meta.env.VITE_API_URL}/api/messages", {
 //           params: {
 //             userId: currentUser.id,
 //             targetUserId: activeContact.id,
@@ -352,7 +352,7 @@ module.exports = router;
 
 //   const markMessagesAsRead = async (contactId) => {
 //     try {
-//       await axios.patch("http://localhost:5000/api/messages/mark-as-read", {
+//       await axios.patch("${import.meta.env.VITE_API_URL}/api/messages/mark-as-read", {
 //         userId: currentUser.id,
 //         targetUserId: contactId,
 //       });
@@ -569,7 +569,7 @@ module.exports = router;
 
 //       // Upload audio file
 //       const uploadResponse = await axios.post(
-//         "http://localhost:5000/api/upload-audio",
+//         "${import.meta.env.VITE_API_URL}/api/upload-audio",
 //         formData,
 //         { headers: { "Content-Type": "multipart/form-data" } }
 //       );
@@ -604,7 +604,7 @@ module.exports = router;
 
 //   const deleteMessage = async (messageId) => {
 //     try {
-//       await axios.patch(`http://localhost:5000/api/messages/${messageId}`, {
+//       await axios.patch(`${import.meta.env.VITE_API_URL}/api/messages/${messageId}`, {
 //         userId: currentUser.id,
 //       });
 
@@ -621,7 +621,7 @@ module.exports = router;
 
 //     try {
 //       const response = await axios.get(
-//         "http://localhost:5000/api/messages/search",
+//         "${import.meta.env.VITE_API_URL}/api/messages/search",
 //         {
 //           params: {
 //             userId: currentUser.id,

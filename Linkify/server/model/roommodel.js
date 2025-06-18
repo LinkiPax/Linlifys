@@ -1,13 +1,27 @@
 const mongoose = require('mongoose');
 
-const UserSchema = new mongoose.Schema({
-  userId: { type: String },
-  username: { type: String, required: true },
+const roomSchema = new mongoose.Schema({
+  roomId: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  users: [{
+    userId: String,
+    username: String,
+    socketId: String,
+  }],
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  iceServers: [{
+    urls: String,
+  }],
 });
 
-const RoomSchema = new mongoose.Schema({
-  roomId: { type: String, required: true, unique: true },
-  users: [UserSchema],
-});
-
-module.exports = mongoose.model('Room', RoomSchema);
+module.exports = mongoose.model('Room', roomSchema);

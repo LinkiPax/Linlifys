@@ -1,0 +1,92 @@
+{
+    "startups": [
+        {
+            "id": 1,
+            "name": "NeuroTech AI",
+            "tagline": "Revolutionizing brain-computer interfaces",
+            "description": "Developing non-invasive neural implants for medical applications using AI-driven signal processing.",
+            "founders": [
+                "Dr. Sarah Chen",
+                "Mark Williams"
+            ],
+            "stage": "Series A",
+            "funding": "$4.2M",
+            "investors": [
+                "YC",
+                "Sequoia Capital"
+            ],
+            "techStack": [
+                "AI/ML",
+                "Neuroscience",
+                "IoT"
+            ],
+            "website": "https://neurotech.ai",
+            "contact": "contact@neurotech.ai",
+            "logo": "neurotech-logo.png",
+            "valuation": "$28M",
+            "traction": "Pilots with 3 major hospitals",
+            "lookingFor": [
+                "Lead Engineer",
+                "Neuroscience Researchers"
+            ]
+        },
+        {
+            "id": 2,
+            "name": "GreenPack",
+            "tagline": "Sustainable packaging solutions",
+            "description": "Manufacturing 100% biodegradable packaging materials from agricultural waste.",
+            "founders": [
+                "Priya Patel",
+                "James Zhang"
+            ],
+            "stage": "Seed",
+            "funding": "$1.1M",
+            "investors": [
+                "500 Startups",
+                "AngelList Syndicate"
+            ],
+            "techStack": [
+                "Material Science",
+                "Biotech"
+            ],
+            "website": "https://greenpack.io",
+            "contact": "hello@greenpack.io",
+            "logo": "greenpack-logo.png",
+            "valuation": "$8M",
+            "traction": "200+ e-commerce clients",
+            "lookingFor": [
+                "COO",
+                "Biomaterials Engineer"
+            ]
+        },
+        {
+            "id": 3,
+            "name": "EdVerse",
+            "tagline": "Immersive education in the metaverse",
+            "description": "VR platform for K-12 education with AI-powered personalized learning paths.",
+            "founders": [
+                "David Kim",
+                "Maria Garcia"
+            ],
+            "stage": "Pre-Seed",
+            "funding": "$250K",
+            "investors": [
+                "EdTech Ventures"
+            ],
+            "techStack": [
+                "VR/AR",
+                "Unity",
+                "Three.js"
+            ],
+            "website": "https://edverse.xyz",
+            "contact": "team@edverse.xyz",
+            "logo": "edverse-logo.png",
+            "valuation": "$3.5M",
+            "traction": "10 pilot schools",
+            "lookingFor": [
+                "VR Developers",
+                "Curriculum Designers"
+            ]
+        }
+    ]
+}

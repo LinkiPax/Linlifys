@@ -1,0 +1,34 @@
+{
+    "jobs": [
+        {
+            "id": 1,
+            "title": "Frontend Developer (React)",
+            "company": "TechStart Inc.",
+            "location": "Remote",
+            "skills": [
+                "React",
+                "JavaScript",
+                "CSS"
+            ],
+            "type": "Full-time",
+            "salary": "$80k - $100k",
+            "match": 92,
+            "description": "Join our early-stage startup to build AI-powered UIs."
+        },
+        {
+            "id": 2,
+            "title": "Backend Engineer (Node.js)",
+            "company": "ScaleUp Labs",
+            "location": "Bangalore",
+            "skills": [
+                "Node.js",
+                "MongoDB",
+                "AWS"
+            ],
+            "type": "Full-time",
+            "salary": "$90k - $120k",
+            "match": 85,
+            "description": "Work on scalable microservices for fintech solutions."
+        }
+    ]
+}
