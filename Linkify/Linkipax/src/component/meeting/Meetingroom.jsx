@@ -40,8 +40,6 @@ class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     console.error("MeetingApp Error:", error, errorInfo);
-    // TODO: Integrate with error tracking service (e.g., Sentry)
-    // Sentry.captureException(error, { extra: errorInfo });
   }
 
   render() {
@@ -99,6 +97,7 @@ const MeetingApp = () => {
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [activeSpeaker, setActiveSpeaker] = useState(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState("disconnected");
 
   const localStream = useRef(null);
   const screenStream = useRef(null);
@@ -124,76 +123,58 @@ const MeetingApp = () => {
     );
   };
 
-  useEffect(() => {
+  const initializeSocket = async () => {
     console.log("Initializing socket connection...");
-    socketRef.current = io(API_URL, {
-      transports: ["websocket"],
-      withCredentials: true,
-      secure: true,
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-      timeout: 20000,
-    });
+    try {
+      socketRef.current = io(API_URL, {
+        transports: ["websocket"],
+        withCredentials: true,
+        secure: true,
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        timeout: 20000,
+      });
 
-    socketRef.current.on("connect", () => {
-      console.log("Socket connected with ID:", socketRef.current.id);
-      setIsConnecting(false);
-    });
-
-    socketRef.current.on("reconnect", async (attempt) => {
-      console.log("Socket reconnected after attempt:", attempt);
-      if (joined && meetingId) {
-        if (!localStream.current) {
-          const mediaSuccess = await startVideo();
-          if (!mediaSuccess) {
-            setError(
-              "Failed to access media on reconnect. Joining without media."
-            );
-          }
-        }
-        socketRef.current.emit("join-meeting", {
-          meetingId,
-          username,
-          userId: userId.current,
-          isMicOn: localStream.current ? isMicOn : false,
-          isVideoOn: localStream.current ? isVideoOn : false,
+      return new Promise((resolve) => {
+        socketRef.current.on("connect", () => {
+          setConnectionStatus("connected");
+          console.log("Socket connected with ID:", socketRef.current.id);
+          setIsConnecting(false);
+          resolve(true);
         });
-      }
-    });
 
-    socketRef.current.on("disconnect", () => {
-      console.log("Socket disconnected");
-      setIsConnecting(true);
-    });
+        socketRef.current.on("connect_error", (err) => {
+          setConnectionStatus("disconnected");
+          console.error("Socket connection error:", err);
+          setError("Failed to connect to server. Please try again.");
+          resolve(false);
+        });
 
-    socketRef.current.on("connect_error", (err) => {
-      console.error("Socket connection error:", err);
-      const message = err.message.includes("xhr poll error")
-        ? "Server is unreachable. Please try again later."
-        : "Failed to connect to server. Please check your network.";
-      setError(message);
-      setIsConnecting(false);
-    });
+        socketRef.current.on("disconnect", () => {
+          setConnectionStatus("disconnected");
+          console.log("Socket disconnected");
+          setError("Disconnected from server. Attempting to reconnect...");
+        });
 
-    return () => {
-      console.log("Cleaning up socket connection...");
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-        setTimeout(() => {
-          socketRef.current = null;
-        }, 0);
-      }
-      cleanupMediaStreams();
-      userId.current = uuidv4();
-    };
-  }, []);
+        socketRef.current.on("reconnecting", () => {
+          setConnectionStatus("reconnecting");
+        });
 
-  useEffect(() => {
-    if (!socketRef.current) {
-      console.log("Socket not initialized yet");
-      return;
+        socketRef.current.on("reconnect", () => {
+          setConnectionStatus("connected");
+          console.log("Socket reconnected");
+          setError("");
+        });
+      });
+    } catch (err) {
+      console.error("Socket initialization error:", err);
+      return false;
     }
+  };
+
+  const setupSocketListeners = () => {
+    if (!socketRef.current) return;
 
     const socket = socketRef.current;
 
@@ -223,11 +204,12 @@ const MeetingApp = () => {
             isScreenSharing: false,
           },
         ]);
-        addMessage(`${username || "Unknown"} joined the meeting`, "system");
         if (localStream.current) {
           callUser(socketId, id);
         } else {
-          setError("Cannot connect to new user: No media stream available.");
+          console.error(
+            "Cannot connect to new user: No media stream available."
+          );
         }
       }
     };
@@ -235,7 +217,6 @@ const MeetingApp = () => {
     const handleUserLeft = ({ id, username }) => {
       console.log("User left:", { id, username });
       setParticipants((prev) => prev.filter((p) => p.id !== id));
-      addMessage(`${username || "Unknown"} left the meeting`, "system");
       removePeer(id);
     };
 
@@ -246,7 +227,6 @@ const MeetingApp = () => {
 
     const handleScreenShareStarted = ({ userId: sharerId }) => {
       console.log("Screen share started by:", sharerId);
-      addMessage("Screen sharing started", "system");
       setActiveSpeaker(sharerId);
       setParticipants((prev) =>
         prev.map((p) =>
@@ -257,7 +237,6 @@ const MeetingApp = () => {
 
     const handleScreenShareStopped = ({ userId: sharerId }) => {
       console.log("Screen share stopped by:", sharerId);
-      addMessage("Screen sharing stopped", "system");
       setActiveSpeaker(null);
       setParticipants((prev) =>
         prev.map((p) =>
@@ -269,37 +248,49 @@ const MeetingApp = () => {
     const handleExistingUsers = (users) => {
       console.log("Existing users:", users);
       if (!localStream.current) {
-        setError("Cannot connect to existing users: No media stream.");
+        console.error("Cannot connect to existing users: No media stream.");
         return;
       }
-      setParticipants(
-        users
-          .filter((user) => user.userId !== userId.current && user.socketId)
-          .map((user) => ({
-            id: user.userId,
-            username: user.username || "Unknown",
-            socketId: user.socketId,
-            isMicOn: user.isMicOn ?? false,
-            isVideoOn: user.isVideoOn ?? false,
-            isScreenSharing: false,
-          }))
-      );
+
+      const validUsers = users
+        .filter(
+          (user) =>
+            user.userId && user.userId !== userId.current && user.socketId
+        )
+        .map((user) => ({
+          id: user.userId,
+          username: user.username || "Unknown",
+          socketId: user.socketId,
+          isMicOn: user.isMicOn ?? false,
+          isVideoOn: user.isVideoOn ?? false,
+          isScreenSharing: false,
+        }));
+
+      setParticipants(validUsers);
+
       users.forEach((user) => {
-        if (user.userId !== userId.current && user.socketId) {
+        if (user.userId && user.userId !== userId.current && user.socketId) {
           callUser(user.socketId, user.userId);
         }
       });
     };
 
     const handleSignal = ({ from, signal, userId: remoteUserId }) => {
-      console.log("Handling signal from:", from);
+      console.log("Handling signal from:", from, "for user:", remoteUserId);
+
+      if (!remoteUserId) {
+        console.error("No remoteUserId in signal");
+        return;
+      }
+
       const peerObj = peersRef.current.find((p) => p.userId === remoteUserId);
       if (peerObj && !peerObj.peer.destroyed) {
         peerObj.peer.signal(signal);
         return;
       }
+
       if (!localStream.current) {
-        setError("Cannot answer peer: No media stream available.");
+        console.error("Cannot answer peer: No media stream available.");
         return;
       }
 
@@ -316,10 +307,10 @@ const MeetingApp = () => {
       });
 
       peer.on("signal", (answerSignal) => {
-        if (!socket.connected) return;
-        socket.emit("signal", {
+        if (!socketRef.current?.connected) return;
+        socketRef.current.emit("signal", {
           to: from,
-          from: socket.id,
+          from: socketRef.current.id,
           signal: answerSignal,
           userId: userId.current,
         });
@@ -334,7 +325,6 @@ const MeetingApp = () => {
 
       peer.on("error", (err) => {
         console.error("Answering peer error:", err);
-        setError("Peer connection error. Please try again.");
         removePeer(remoteUserId);
       });
 
@@ -344,8 +334,8 @@ const MeetingApp = () => {
       });
 
       peer.on("icecandidate", (event) => {
-        if (event.candidate && socket.connected) {
-          socket.emit("ice-candidate", {
+        if (event.candidate && socketRef.current?.connected) {
+          socketRef.current.emit("ice-candidate", {
             to: from,
             candidate: event.candidate,
             userId: userId.current,
@@ -357,7 +347,7 @@ const MeetingApp = () => {
         console.log("Peer connected with:", remoteUserId);
       });
 
-      peersRef.current.push({ peer, userId: remoteUserId });
+      peersRef.current.push({ peer, userId: remoteUserId, socketId: from });
       peer.signal(signal);
       logPeers();
     };
@@ -403,7 +393,40 @@ const MeetingApp = () => {
       socket.off("existing-users", handleExistingUsers);
       socket.off("user-status-update", handleUserStatusUpdate);
     };
-  }, [joined, username, meetingId, isMicOn, isVideoOn]);
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const setupSocket = async () => {
+      try {
+        const connected = await initializeSocket();
+        if (!connected && isMounted) {
+          setError("Failed to connect to server. Please refresh the page.");
+        } else if (connected) {
+          setupSocketListeners();
+        }
+      } catch (err) {
+        console.error("Socket setup error:", err);
+        if (isMounted) {
+          setError("Failed to initialize connection. Please refresh the page.");
+        }
+      }
+    };
+
+    setupSocket();
+
+    return () => {
+      isMounted = false;
+      console.log("Cleaning up socket connection...");
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+      cleanupMediaStreams();
+      userId.current = uuidv4();
+    };
+  }, []);
 
   useEffect(() => {
     if (chatContainerRef.current) {
@@ -436,20 +459,25 @@ const MeetingApp = () => {
 
   const callUser = (socketId, userId) => {
     console.log("Attempting to call user:", { socketId, userId });
+
+    if (!socketId || !userId) {
+      console.error("Invalid parameters for callUser:", { socketId, userId });
+      return;
+    }
+
     peersRef.current = peersRef.current.filter((p) => !p.peer.destroyed);
     if (peersRef.current.some((p) => p.userId === userId)) {
       console.log("Peer already exists for user:", userId);
       return;
     }
-    if (!socketRef.current.connected) {
+
+    if (!socketRef.current?.connected) {
       console.error("Socket not connected for signaling");
       setError("Cannot connect to peer: Server disconnected.");
       return;
     }
-    if (
-      !localStream.current ||
-      !localStream.current.getTracks().some((track) => track.enabled)
-    ) {
+
+    if (!localStream.current?.getTracks().some((track) => track.enabled)) {
       console.error("No active tracks in local stream");
       setError("No active media tracks available.");
       return;
@@ -468,7 +496,7 @@ const MeetingApp = () => {
     });
 
     peer.on("signal", (signal) => {
-      if (!socketRef.current.connected) return;
+      if (!socketRef.current?.connected) return;
       socketRef.current.emit("signal", {
         to: socketId,
         from: socketRef.current.id,
@@ -496,7 +524,7 @@ const MeetingApp = () => {
     });
 
     peer.on("icecandidate", (event) => {
-      if (event.candidate && socketRef.current.connected) {
+      if (event.candidate && socketRef.current?.connected) {
         socketRef.current.emit("ice-candidate", {
           to: socketId,
           candidate: event.candidate,
@@ -509,7 +537,7 @@ const MeetingApp = () => {
       console.log("Peer connected with:", userId);
     });
 
-    peersRef.current.push({ peer, userId });
+    peersRef.current.push({ peer, userId, socketId });
     logPeers();
   };
 
@@ -523,7 +551,6 @@ const MeetingApp = () => {
         }
       } catch (err) {
         console.error("Error destroying peer:", err);
-        setError("Failed to close peer connection.");
       }
       peersRef.current.splice(peerIndex, 1);
       if (userVideoRefs.current[userId]) {
@@ -543,6 +570,7 @@ const MeetingApp = () => {
       "480p": { width: { ideal: 640 }, height: { ideal: 480 } },
     };
     const qualities = ["1080p", "720p", "480p"];
+
     for (const quality of qualities) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -553,11 +581,13 @@ const MeetingApp = () => {
             autoGainControl: true,
           },
         });
+
         if (localStream.current) {
           localStream.current.getTracks().forEach((track) => {
             if (track.readyState === "live") track.stop();
           });
         }
+
         localStream.current = stream;
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = stream;
@@ -570,6 +600,7 @@ const MeetingApp = () => {
         console.warn(`Failed to get stream at ${quality}:`, err);
       }
     }
+
     try {
       const audioStream = await navigator.mediaDevices.getUserMedia({
         audio: {
@@ -578,14 +609,17 @@ const MeetingApp = () => {
           autoGainControl: true,
         },
       });
+
       if (!audioStream.getAudioTracks().length) {
         throw new Error("No audio tracks available");
       }
+
       if (localStream.current) {
         localStream.current.getTracks().forEach((track) => {
           if (track.readyState === "live") track.stop();
         });
       }
+
       localStream.current = audioStream;
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = audioStream;
@@ -616,7 +650,7 @@ const MeetingApp = () => {
       track.enabled = !track.enabled;
     });
     setIsMicOn(!isMicOn);
-    if (socketRef.current.connected) {
+    if (socketRef.current?.connected) {
       socketRef.current.emit("user-status-update", {
         roomId: meetingId,
         userId: userId.current,
@@ -640,7 +674,7 @@ const MeetingApp = () => {
       track.enabled = !track.enabled;
     });
     setIsVideoOn(!isVideoOn);
-    if (socketRef.current.connected) {
+    if (socketRef.current?.connected) {
       socketRef.current.emit("user-status-update", {
         roomId: meetingId,
         userId: userId.current,
@@ -660,16 +694,15 @@ const MeetingApp = () => {
     addMessage("Meeting recording stopped", "system");
   };
 
-  
-
   const handleCreateRoom = async () => {
     setLoading(true);
     try {
       const response = await axios.post(`${API_URL}/api/room/create`);
-      if (!response.data || typeof response.data.roomId !== "string") {
+      console.log("Room creation response:", response.data.room.roomId);
+      if (!response.data || typeof response.data.room.roomId !== "string") {
         throw new Error("Invalid room creation response");
       }
-      setMeetingId(response.data.roomId);
+      setMeetingId(response.data.room.roomId);
       setRoomCreated(true);
       setError("");
     } catch (err) {
@@ -697,18 +730,28 @@ const MeetingApp = () => {
       setError("Meeting ID and username are required");
       return;
     }
-    
-    if (!socketRef.current.connected) {
-      setError("Cannot join meeting: Server not connected.");
-      return;
-    }
+
     setLoading(true);
+    setError("");
+
     try {
+      if (!socketRef.current || !socketRef.current.connected) {
+        const socketConnected = await initializeSocket();
+        if (!socketConnected) {
+          throw new Error("Failed to connect to server");
+        }
+        setupSocketListeners();
+      }
+
       const response = await axios.post(`${API_URL}/api/room/join`, {
         meetingId,
         username,
         userId: userId.current,
+        socketId: socketRef.current.id,
+        isMicOn: true,
+        isVideoOn: true,
       });
+
       if (response.data.success) {
         const mediaSuccess = await startVideo();
         if (!mediaSuccess) {
@@ -721,6 +764,7 @@ const MeetingApp = () => {
           meetingId,
           username,
           userId: userId.current,
+          socketId: socketRef.current.id,
           isMicOn: mediaSuccess ? isMicOn : false,
           isVideoOn: mediaSuccess ? isVideoOn : false,
         });
@@ -734,7 +778,9 @@ const MeetingApp = () => {
       }
     } catch (err) {
       console.error("Error joining meeting:", err);
-      setError("Failed to join the meeting. Please check your network.");
+      setError(
+        err.message || "Failed to join the meeting. Please check your network."
+      );
     } finally {
       setLoading(false);
     }
@@ -746,13 +792,16 @@ const MeetingApp = () => {
         roomId: meetingId,
         userId: userId.current,
       });
-      if (socketRef.current.connected) {
+
+      if (socketRef.current?.connected) {
         socketRef.current.emit("leave-meeting", {
           meetingId,
           username,
           userId: userId.current,
+          socketId: socketRef.current.id,
         });
       }
+
       cleanupMediaStreams();
       setJoined(false);
       setParticipants([]);
@@ -769,20 +818,28 @@ const MeetingApp = () => {
   };
 
   const cleanupMediaStreams = () => {
+    console.log("Cleaning up media streams");
     [localStream, screenStream].forEach((streamRef) => {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => {
-          if (track.readyState === "live") track.stop();
+          try {
+            if (track.readyState === "live") track.stop();
+          } catch (err) {
+            console.error("Error stopping track:", err);
+          }
         });
         streamRef.current = null;
       }
     });
-    peersRef.current.forEach(({ peer }) => {
+
+    peersRef.current.forEach(({ peer, userId }) => {
       try {
-        if (!peer.destroyed) peer.destroy();
+        if (!peer.destroyed) {
+          peer.destroy();
+          console.log("Destroyed peer connection for user:", userId);
+        }
       } catch (err) {
         console.error("Error destroying peer:", err);
-        setError("Failed to clean up some peer connections.");
       }
     });
     peersRef.current = [];
@@ -791,16 +848,17 @@ const MeetingApp = () => {
 
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
-    if (!socketRef.current.connected) {
+    if (!socketRef.current?.connected) {
       setError("Cannot send message: Server disconnected.");
       return;
     }
+
+    addMessage(newMessage, "You");
     socketRef.current.emit("send-message", {
       roomId: meetingId,
       username,
       message: newMessage,
     });
-    addMessage(newMessage, "You");
     setNewMessage("");
     setShowEmojiPicker(false);
   };
@@ -813,7 +871,7 @@ const MeetingApp = () => {
 
   const shareScreen = async () => {
     try {
-      if (!socketRef.current.connected) {
+      if (!socketRef.current?.connected) {
         throw new Error("Cannot update screen share: Server disconnected");
       }
       if (isScreenSharing) {
@@ -836,6 +894,7 @@ const MeetingApp = () => {
           roomId: meetingId,
           userId: userId.current,
         });
+
         peersRef.current.forEach(({ peer }) => {
           if (peer.destroyed || !localStream.current) return;
           const videoTrack = localStream.current.getVideoTracks()[0];
@@ -845,7 +904,6 @@ const MeetingApp = () => {
           if (sender && videoTrack) {
             sender.replaceTrack(videoTrack).catch((err) => {
               console.error("Error replacing track:", err);
-              setError("Failed to restore video for some peers.");
             });
           }
         });
@@ -854,17 +912,21 @@ const MeetingApp = () => {
           video: true,
           audio: true,
         });
+
         if (!stream.getVideoTracks().length) {
           throw new Error("No video track in screen share stream");
         }
+
         screenStream.current = stream;
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = stream;
         }
+
         socketRef.current.emit("start-screen-share", {
           roomId: meetingId,
           userId: userId.current,
         });
+
         setIsScreenSharing(true);
         setActiveSpeaker(userId.current);
 
@@ -874,12 +936,13 @@ const MeetingApp = () => {
           }
           setIsScreenSharing(false);
           setActiveSpeaker(null);
-          if (socketRef.current.connected) {
+          if (socketRef.current?.connected) {
             socketRef.current.emit("stop-screen-share", {
               roomId: meetingId,
               userId: userId.current,
             });
           }
+
           peersRef.current.forEach(({ peer }) => {
             if (peer.destroyed || !localStream.current) return;
             const videoTrack = localStream.current.getVideoTracks()[0];
@@ -889,7 +952,6 @@ const MeetingApp = () => {
             if (sender && videoTrack) {
               sender.replaceTrack(videoTrack).catch((err) => {
                 console.error("Error replacing track:", err);
-                setError("Failed to restore video for some peers.");
               });
             }
           });
@@ -904,7 +966,6 @@ const MeetingApp = () => {
           if (sender) {
             sender.replaceTrack(videoTrack).catch((err) => {
               console.error("Error replacing track:", err);
-              setError("Failed to share screen with some peers.");
             });
           } else {
             peer.addTrack(videoTrack, stream);
@@ -1384,6 +1445,7 @@ const MeetingApp = () => {
                 <FiLogOut /> Leave
               </Button>
             </div>
+
             <div className="flex space-x-2">
               <OverlayTrigger
                 placement="top"

@@ -20,7 +20,7 @@ import Resume from "./Surprise/Resume";
 import PeopleProfile from "./component/Profile/PeopleProfile";
 import ChatPage from "./component/messages/ChatPage";
 import MeetingApp from "./component/meeting/Meetingroom";
-import StatusEditorPage from "./component/Status/StatusEditor";
+import StatusEditorPage from "./component/Status/StatusEditor"; 
 import Short from "./component/Shorts/Short";
 import ShortUpload from "./component/Shorts/ShortsUpload";
 import Setting from "./component/Setting/Setting";

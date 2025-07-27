@@ -1,4 +1,3 @@
-const generateRoomId = require('../utils/idGenerators');
 const Room = require('../model/roommodel');
 const { v4: uuidv4 } = require('uuid');
 
@@ -13,15 +12,18 @@ const createRoom = async (req, res) => {
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:global.stun.twilio.com:3478?transport=udp' },
+        // Add TURN servers if available for better connectivity
       ],
     });
 
     res.status(201).json({
       success: true,
       message: 'Room created successfully',
-      roomId: newRoom.roomId,
-      iceServers: newRoom.iceServers,
-      createdAt: newRoom.createdAt,
+      room: {
+        roomId: newRoom.roomId,
+        iceServers: newRoom.iceServers,
+        createdAt: newRoom.createdAt,
+      },
     });
   } catch (error) {
     console.error('Error creating room:', error);
@@ -34,12 +36,13 @@ const createRoom = async (req, res) => {
 };
 
 const joinRoom = async (req, res) => {
-  const { meetingId: roomId, userId, username } = req.body;
+  const { meetingId: roomId, userId, username, socketId, isMicOn = true, isVideoOn = true } = req.body;
 
-  if (!roomId || !userId || !username) {
+
+  if (!roomId || !userId || !username || !socketId) {
     return res.status(400).json({
       success: false,
-      message: 'roomId, userId, and username are required',
+      message: 'roomId, userId, username, and socketId are required',
     });
   }
 
@@ -60,17 +63,25 @@ const joinRoom = async (req, res) => {
       });
     }
 
-    const userExists = room.users.some((user) => user.userId === userId);
-    if (!userExists) {
-      room.users.push({ userId, username });
-      await room.save();
+    // Update existing user or add new user
+    const userIndex = room.users.findIndex(user => user.userId === userId);
+    if (userIndex >= 0) {
+      // Update socketId if user rejoins
+      room.users[userIndex].socketId = socketId;
+    } else {
+      room.users.push({ userId, username, socketId });
     }
+
+    await room.save();
 
     res.status(200).json({
       success: true,
-      message: userExists ? 'User rejoined the room' : 'Joined room successfully',
-      users: room.users,
-      iceServers: room.iceServers,
+      message: 'Joined room successfully',
+      room: {
+        roomId: room.roomId,
+        users: room.users.filter(u => u.userId !== userId), // Don't return self
+        iceServers: room.iceServers,
+      },
     });
   } catch (error) {
     console.error('Error joining room:', error);
@@ -85,6 +96,13 @@ const joinRoom = async (req, res) => {
 const leaveRoom = async (req, res) => {
   const { roomId, userId } = req.body;
 
+  if (!roomId || !userId) {
+    return res.status(400).json({
+      success: false,
+      message: 'roomId and userId are required',
+    });
+  }
+
   try {
     const room = await Room.findOne({ roomId });
     if (!room) {
@@ -94,7 +112,9 @@ const leaveRoom = async (req, res) => {
       });
     }
 
-    room.users = room.users.filter((user) => user.userId !== userId);
+    room.users = room.users.filter(user => user.userId !== userId);
+    
+    // Deactivate room if empty
     if (room.users.length === 0) {
       room.isActive = false;
     }
@@ -104,6 +124,7 @@ const leaveRoom = async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Left room successfully',
+      remainingUsers: room.users.length,
     });
   } catch (error) {
     console.error('Error leaving room:', error);
@@ -117,6 +138,13 @@ const leaveRoom = async (req, res) => {
 
 const getRoomInfo = async (req, res) => {
   const { roomId } = req.params;
+
+  if (!roomId) {
+    return res.status(400).json({
+      success: false,
+      message: 'roomId is required',
+    });
+  }
 
   try {
     const room = await Room.findOne({ roomId });
@@ -132,8 +160,9 @@ const getRoomInfo = async (req, res) => {
       room: {
         roomId: room.roomId,
         users: room.users,
-        createdAt: room.createdAt,
         isActive: room.isActive,
+        createdAt: room.createdAt,
+        iceServers: room.iceServers,
       },
     });
   } catch (error) {

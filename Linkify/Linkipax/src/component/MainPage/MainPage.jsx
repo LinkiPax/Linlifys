@@ -618,7 +618,6 @@ const MainPage = () => {
       <MainNavbar />
 
       <div className="content-sections">
-        // Replace your current hero section with this code
         <section className="hero-section" aria-labelledby="hero-title">
           <canvas ref={heroCanvasRef} className="hero-canvas" />
 

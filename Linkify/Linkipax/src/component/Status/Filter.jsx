@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Row, Col, Form, Card } from 'react-bootstrap';
-import './FilterEditor.css'; // Add custom CSS for styling
+import './AdvancedFilterEditor.css'; // Add custom CSS for styling
 
 const FilterEditor = ({ setSelectedFilter }) => {
   const [filterSettings, setFilterSettings] = useState({

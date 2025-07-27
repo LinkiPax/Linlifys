@@ -12,7 +12,7 @@ let ioInstance = null;
 const initializeSocket = (server) => {
   const io = socketio(server, {
     cors: {
-      origin: ['https://localhost:5173', 'https://192.168.165.51:5173','https://192.168.234.51:5173'],
+      origin: ['https://localhost:5173', 'https://192.168.165.51:5173','https://192.168.137.51:5173'],
       methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
       credentials: true
     },
