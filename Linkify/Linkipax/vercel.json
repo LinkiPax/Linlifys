@@ -3,13 +3,17 @@
   "builds": [
     {
       "src": "Linkipax/package.json",
-      "use": "@vercel/static-build"
+      "use": "@vercel/static-build",
+      "config": {
+        "buildCommand": "npm run build",
+        "distDir": "dist"
+      }
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "Linkipax/dist/$1"
+      "dest": "/index.html"
     }
   ]
 }
