@@ -2,18 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "Linkify/Linkipax/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "installCommand": "npm install --legacy-peer-deps",
-        "buildCommand": "npm run build"
-      }
+      "src": "Linkipax/package.json",
+      "use": "@vercel/static-build"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "Linkify/Linkipax/dist/$1"
+      "dest": "Linkipax/dist/$1"
     }
   ]
 }
