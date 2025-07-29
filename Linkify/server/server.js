@@ -25,7 +25,7 @@ const server = https.createServer(options,app);
 
 // Middleware Setup
 app.use(cors({ 
-  origin: ['https://localhost:5173', 'https://192.168.165.51:5173', 'https://10.206.136.51:5173'],
+  origin: ['https://localhost:5173', 'https://192.168.165.51:5173', 'https://10.178.119.51:5173'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   credentials: true      
 }));

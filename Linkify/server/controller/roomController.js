@@ -36,13 +36,13 @@ const createRoom = async (req, res) => {
 };
 
 const joinRoom = async (req, res) => {
-  const { meetingId: roomId, userId, username, socketId, isMicOn = true, isVideoOn = true } = req.body;
-
+  // Accept both meetingId and roomId for compatibility
+  const { meetingId, roomId = meetingId, userId, username, socketId, isMicOn = true, isVideoOn = true } = req.body;
 
   if (!roomId || !userId || !username || !socketId) {
     return res.status(400).json({
       success: false,
-      message: 'roomId, userId, username, and socketId are required',
+      message: 'roomId/meetingId, userId, username, and socketId are required',
     });
   }
 
@@ -66,10 +66,23 @@ const joinRoom = async (req, res) => {
     // Update existing user or add new user
     const userIndex = room.users.findIndex(user => user.userId === userId);
     if (userIndex >= 0) {
-      // Update socketId if user rejoins
-      room.users[userIndex].socketId = socketId;
+      room.users[userIndex] = { 
+        ...room.users[userIndex],
+        socketId,
+        isMicOn,
+        isVideoOn,
+        lastActive: new Date()
+      };
     } else {
-      room.users.push({ userId, username, socketId });
+      room.users.push({ 
+        userId, 
+        username, 
+        socketId,
+        isMicOn,
+        isVideoOn,
+        joinedAt: new Date(),
+        lastActive: new Date()
+      });
     }
 
     await room.save();
@@ -92,7 +105,6 @@ const joinRoom = async (req, res) => {
     });
   }
 };
-
 const leaveRoom = async (req, res) => {
   const { roomId, userId } = req.body;
 
