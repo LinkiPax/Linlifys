@@ -61,5 +61,5 @@ createRoot(document.getElementById("root")).render(
         </Router>
       </NotificationProvider>
     </Provider>
-  </StrictMode>
+  </StrictMode>    
 );
