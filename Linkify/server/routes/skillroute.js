@@ -85,6 +85,7 @@ router.post('/:userId', [
 });
 
 // Get Skills with levels
+// Get Skills with levels
 router.get('/:userId', async (req, res) => {
   const { userId } = req.params;
 
@@ -95,17 +96,11 @@ router.get('/:userId', async (req, res) => {
 
     const skillsDoc = await Skill.findOne({ userId });
     
-    if (!skillsDoc) {
-      return res.status(404).json({ 
-        message: "Skills not found.",
-        skills: [],
-        skillLevels: {}
-      });
-    }
-
+    // Return empty skills with 200 status instead of 404
     res.json({ 
-      skills: skillsDoc.skills,
-      skillLevels: skillsDoc.skillLevels || {}
+      message: skillsDoc ? "Skills found" : "No skills added yet",
+      skills: skillsDoc?.skills || [], 
+      skillLevels: skillsDoc?.skillLevels || {}
     });
   } catch (error) {
     console.error("Error fetching skills:", error);
@@ -115,7 +110,6 @@ router.get('/:userId', async (req, res) => {
     });
   }
 });
-
 // Get skill suggestions
 router.get('/suggestions', async (req, res) => {
   const { query = '' } = req.query;

@@ -1,188 +1,209 @@
-/* =======================
-   Login.css - Polished Royal Dark Theme
-   ======================= */
-   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Sora:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Sora:wght@500;700&display=swap');
 
-   body, html {
-     margin: 0;
-     padding: 0;
-     height: 100%;
-     font-family: 'Inter', sans-serif;
-     background-color: #000000;
-   }
-   
-   .login-container {
-     display: flex;
-     justify-content: center;
-     align-items: center;
-     height: 100vh;
-     background: radial-gradient(circle at top left, #0f0f0f, #000);
-   }
-   
-   .video-container {
-     flex: 1;
-     position: relative;
-     height: 100%;
-     overflow: hidden;
-   }
-   
-   .video-container video {
-     width: 100%;
-     height: 100%;
-     object-fit: cover;
-     filter: brightness(0.3);
-   }
-   
-   .video-content {
-     position: absolute;
-     top: 50%;
-     left: 50%;
-     transform: translate(-50%, -50%);
-     color: white;
-     text-align: center;
-     z-index: 2;
-     padding: 2rem;
-     max-width: 90%;
-   }
-   
-   .video-content h1.logo {
-     font-family: 'Sora', sans-serif;
-     font-size: clamp(2rem, 5vw, 3.5rem);
-     font-weight: 700;
-     background: linear-gradient(145deg, #f0c27b, #4b1248);
-     -webkit-background-clip: text;
-     -webkit-text-fill-color: transparent;
-     margin: 0;
-     animation: fadeIn 2s ease-in-out;
-   }
-   
-   .video-content p.quote-box {
-     font-family: 'Sora', sans-serif;
-     font-size: 1.1rem;
-     font-style: italic;
-     color: rgba(255,255,255,0.8);
-     margin-top: 1rem;
-     animation: fadeIn 2s ease-in-out;
-   }
-   
-   .form-container {
-     flex: 1;
-     background: rgba(0, 0, 0, 0.6);
-     backdrop-filter: blur(20px);
-     -webkit-backdrop-filter: blur(20px);
-     display: flex;
-     justify-content: center;
-     align-items: center;
-     padding: 2rem;
-     border-left: 1px solid rgba(255, 255, 255, 0.1);
-   }
-   
-   .login-form {
-     background: rgba(255, 255, 255, 0.05);
-     border-radius: 20px;
-     padding: 3rem;
-     box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
-     width: 100%;
-     max-width: 400px;
-     position: relative;
-     overflow: hidden;
-   }
-   
-   .login-form::after {
-     content: '';
-     position: absolute;
-     top: 0;
-     left: -100%;
-     width: 200%;
-     height: 100%;
-     background: linear-gradient(120deg, transparent, rgba(255,255,255,0.08), transparent);
-     animation: border-shine 3s infinite linear;
-   }
-   
-   @keyframes border-shine {
-     0% { left: -100%; }
-     50% { left: 0%; }
-     100% { left: 100%; }
-   }
-   
-   .login-form h2 {
-     color: white;
-     font-size: 2rem;
-     margin-bottom: 1.5rem;
-     font-family: 'Sora', sans-serif;
-     text-align: center;
-   }
-   
-   .login-form input {
-     width: 100%;
-     padding: 1rem;
-     margin-bottom: 1.2rem;
-     border: none;
-     border-radius: 10px;
-     background: rgba(255, 255, 255, 0.1);
-     color: white;
-     font-size: 1rem;
-     outline: none;
-     transition: background 0.3s ease;
-   }
-   
-   .login-form input::placeholder {
-     color: rgba(255, 255, 255, 0.5);
-   }
-   
-   .login-form input:focus {
-     background: rgba(255, 255, 255, 0.15);
-   }
-   
-   .login-form button {
-     width: 100%;
-     padding: 1rem;
-     border: none;
-     border-radius: 10px;
-     background: linear-gradient(145deg, #f0c27b, #4b1248);
-     color: white;
-     font-size: 1rem;
-     font-weight: bold;
-     cursor: pointer;
-     transition: background 0.3s ease;
-   }
-   
-   .login-form button:hover {
-     background: linear-gradient(145deg, #4b1248, #f0c27b);
-   }
-   
-   @media (max-width: 768px) {
-     .login-container {
-       flex-direction: column;
-       height: auto;
-     }
-   
-     .form-container {
-       padding: 2rem 1rem;
-       border-left: none;
-       border-top: 1px solid rgba(255, 255, 255, 0.05);
-     }
-   
-     .video-content h1.logo {
-       font-size: 2.4rem;
-     }
-   
-     .login-form {
-       padding: 2rem 1.5rem;
-     }
-   
-     .video-container {
-       height: 250px;
-     }
-   
-     .video-content {
-       padding: 1rem;
-       max-width: 90%;
-     }
-   }
-   
-   @keyframes fadeIn {
-     from { opacity: 0; }
-     to { opacity: 1; }
-   }
-   
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Inter', sans-serif;
+  background-color: #000000;
+}
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: radial-gradient(circle at top left, #0f0f0f, #000);
+}
+
+.video-container {
+  flex: 1;
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+.video-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.3);
+}
+
+.video-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  text-align: center;
+  z-index: 2;
+  padding: 2rem;
+  max-width: 90%;
+}
+
+.video-content h1.logo-top {
+  font-family: 'Sora', sans-serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  background: linear-gradient(145deg, #f0c27b, #4b1248);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+  animation: fadeIn 2s ease-in-out;
+}
+
+.video-content .welcome-text h2 {
+  font-size: 2rem;
+  margin-top: 1rem;
+  font-weight: 600;
+}
+
+.video-content .welcome-text p {
+  color: rgba(255,255,255,0.8);
+  font-size: 1rem;
+  margin-top: 0.5rem;
+}
+
+.form-container {
+  flex: 1;
+  background: #0d0d0d;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.login-form {
+  background: #111;
+  border-radius: 20px;
+  padding: 3rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+}
+
+.login-form h2 {
+  color: white;
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  font-family: 'Sora', sans-serif;
+  text-align: center;
+}
+
+.login-form .subtitle {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.95rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.login-form input {
+  width: 100%;
+  padding: 1rem;
+  margin-bottom: 1.2rem;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 1rem;
+  outline: none;
+  transition: background 0.3s ease;
+}
+
+.login-form input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.login-form input:focus {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.login-form button {
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #f0c27b, #4b1248);
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.login-form button:hover {
+  background: linear-gradient(145deg, #4b1248, #f0c27b);
+}
+
+a.link-text {
+  color: #f0c27b;
+  text-decoration: none;
+}
+
+a.link-text:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .form-container {
+    padding: 2rem 1rem;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .video-container {
+    height: 250px;
+  }
+
+  .video-content {
+    padding: 1rem;
+    max-width: 90%;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.login-form input {
+  width: 100%;
+  padding: 1rem;
+  margin-bottom: 1.2rem;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  caret-color: white;
+  font-size: 1rem;
+  outline: none;
+  transition: background 0.3s ease;
+}
+
+.login-form input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+/* Force input text and background for Bootstrap Form.Control */
+.form-control-login {
+  color: white !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border: none !important;
+  border-radius: 10px !important;
+}
+
+.form-control-login::placeholder {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.form-control-login:focus {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  color: white !important;
+  box-shadow: none !important;
+}

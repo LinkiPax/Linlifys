@@ -2,8 +2,9 @@ const { connections } = require("mongoose");
 const UserDetails = require("../model/adddatamodel");
 const User = require("../model/userModel"); // Assuming this is your User model from API 1
 const multer = require("multer");
+const cloudinary=require('cloudinary').v2;
 require('dotenv').config();
-
+const { unlinkAsync } = require('../cloudinary');
 // Multer Setup for File Uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -18,27 +19,57 @@ const upload = multer({ storage });
 
 // Add user details
 const addUserDetails = async (req, res) => {
-  const { userId,  socialLinks, interests, location, occupation, achievements, hobbies } = req.body;
-  console.log(req.file);
-  const backgroundImage =`${process.env.SERVER_BASE_URL}/${req.file.path}`;
+  const { userId, socialLinks, interests, location, occupation, achievements, hobbies } = req.body;
+  
   try {
+    let backgroundImage = {
+      public_id: "default_background",
+      secure_url: "https://via.placeholder.com/1200x400"
+    };
+    
+    if (req.file) {
+      try {
+        // Upload to Cloudinary
+        const result = await cloudinary.uploader.upload(req.file.path, {
+          folder: "background_images"
+        });
+        
+        // Update backgroundImage object with Cloudinary response
+        backgroundImage = {
+          public_id: result.public_id,
+          secure_url: result.secure_url
+        };
+        
+        // Delete the local file after successful upload
+        await unlinkAsync(req.file.path);
+      } catch (uploadError) {
+        console.error("Cloudinary upload error:", uploadError);
+        // Delete the local file if upload failed
+        if (req.file.path) await unlinkAsync(req.file.path);
+        throw uploadError;
+      }
+    }
+
     const userDetails = new UserDetails({
       userId,
       backgroundImage, 
-      socialLinks,
-      interests,
+      socialLinks: socialLinks ? JSON.parse(socialLinks) : {},
+      interests: interests ? JSON.parse(interests) : [],
       location,
       occupation,
-      achievements,
-      hobbies,
-      experience: [], // Assuming this is an empty array for now
+      achievements: achievements ? JSON.parse(achievements) : [],
+      hobbies: hobbies ? JSON.parse(hobbies) : [],
     });
 
     const savedDetails = await userDetails.save();
     res.status(201).json(savedDetails);
   } catch (error) {
     console.error("Error adding user details:", error);
-    res.status(500).json({ message: "Error adding user details", error });
+    res.status(500).json({ 
+      success: false,
+      message: "Error adding user details",
+      error: error.message 
+    });
   }
 };
 

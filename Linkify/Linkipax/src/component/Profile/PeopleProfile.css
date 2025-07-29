@@ -1,51 +1,383 @@
+.profile-header-card {
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
 .profile-banner {
-    background-size: cover;
-    background-position: center;
-    width: 100%;
+  background-size: cover;
+  background-position: center;
+  width: 100%;
+  height: 280px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px 12px 0 0;
+}
+
+.profile-banner::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 150px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.95) 100%);
 }
 
 .profile-picture-container {
-    transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.profile-picture-container img {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  border: 5px solid white !important;
+  transition: all 0.3s ease;
+}
+
+.profile-picture-container:hover img {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
 }
 
 .timeline {
-    position: relative;
-    padding-left: 30px;
+  position: relative;
+  padding-left: 40px;
+  margin-top: 20px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 20px;
+  width: 2px;
+  background: linear-gradient(to bottom, #e9ecef, #0d6efd, #e9ecef);
 }
 
 .timeline-item {
-    position: relative;
-    padding-bottom: 20px;
+  position: relative;
+  padding-bottom: 30px;
 }
 
 .timeline-point {
-    position: absolute;
-    left: -30px;
-    top: 0;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background-color: #0d6efd;
-    border: 3px solid white;
+  position: absolute;
+  left: -40px;
+  top: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #0d6efd;
+  border: 4px solid white;
+  box-shadow: 0 0 0 2px #e9ecef;
+  z-index: 1;
 }
 
 .timeline-content {
-    padding: 10px 15px;
-    background-color: #f8f9fa;
-    border-radius: 6px;
+  padding: 20px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+  border-left: 3px solid #0d6efd;
+  transition: all 0.3s ease;
+}
+
+.timeline-content:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
 }
 
 .activity-item {
-    display: flex;
-    gap: 15px;
-    padding: 15px 0;
-    border-bottom: 1px solid #eee;
+  display: flex;
+  gap: 15px;
+  padding: 15px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.activity-item:hover {
+  background-color: rgba(0, 0, 0, 0.01);
 }
 
 .activity-avatar img {
-    border: 2px solid #dee2e6;
+  border: 3px solid white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .activity-actions {
-    display: flex;
-    gap: 15px; }
+  display: flex;
+  gap: 15px;
+}
+
+.activity-actions .btn {
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.activity-actions .btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+
+/* Card styling */
+.card {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+  transform: translateY(-5px);
+}
+
+/* Badge styling */
+.badge {
+  font-weight: 500;
+  padding: 8px 14px;
+  transition: all 0.2s ease;
+  font-size: 0.85rem;
+}
+
+.interest-badge {
+  background-color: rgba(13, 110, 253, 0.1) !important;
+  color: #0d6efd !important;
+}
+
+.hobby-badge {
+  background-color: rgba(108, 117, 125, 0.1) !important;
+  color: #6c757d !important;
+}
+
+.badge:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Progress bar styling */
+.skill-progress {
+  height: 8px;
+  border-radius: 4px;
+}
+
+.progress-bar {
+  border-radius: 4px;
+  background: linear-gradient(to right, #0d6efd, #6c5ce7);
+}
+
+/* Social icons styling */
+.social-icon {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  color: #495057 !important;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease !important;
+  background-color: rgba(0, 0, 0, 0.02) !important;
+}
+
+.social-icon:hover {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+  border-color: rgba(0, 0, 0, 0.2) !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Profile tabs styling */
+.profile-tabs .nav-link {
+  border: none;
+  color: #6c757d;
+  font-weight: 500;
+  padding: 12px 20px;
+  transition: all 0.3s ease;
+}
+
+.profile-tabs .nav-link:hover {
+  color: #0d6efd;
+  transform: translateY(-2px);
+}
+
+.profile-tabs .nav-link.active {
+  color: #0d6efd;
+  background-color: transparent;
+  border-bottom: 3px solid #0d6efd;
+}
+
+/* Achievement list styling */
+.achievement-list {
+  border-radius: 12px;
+}
+
+.achievement-item {
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.achievement-item:hover {
+  background-color: rgba(13, 110, 253, 0.05);
+  transform: translateX(5px);
+}
+
+.achievement-icon {
+  font-size: 1.2rem;
+}
+
+/* Project card styling */
+.project-card {
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.project-image-container {
+  height: 180px;
+  overflow: hidden;
+}
+
+.project-image {
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.project-card:hover .project-image {
+  transform: scale(1.05);
+}
+
+/* More options menu */
+.more-options-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: white;
+  border-radius: 8px;
+  padding: 10px 0;
+  min-width: 200px;
+  z-index: 10;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.more-options-menu .btn {
+  padding: 8px 15px;
+  text-align: left;
+  width: 100%;
+  color: #495057;
+  transition: all 0.2s ease;
+}
+
+.more-options-menu .btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #0d6efd;
+}
+
+/* Message modal styling */
+.message-modal .modal-content {
+  border-radius: 16px;
+  border: none;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.message-textarea {
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  resize: none;
+  padding: 15px;
+  transition: all 0.3s ease;
+}
+
+.message-textarea:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .profile-banner {
+    height: 200px;
+  }
+  
+  .profile-picture-container img {
+    width: 120px !important;
+    height: 120px !important;
+    top: -60px !important;
+    left: 20px !important;
+  }
+  
+  .timeline {
+    padding-left: 30px;
+  }
+  
+  .timeline-point {
+    left: -30px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .profile-tabs .nav-link {
+    padding: 10px 15px;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .profile-header-card {
+    border-radius: 0;
+  }
+  
+  .profile-banner {
+    border-radius: 0;
+  }
+  
+  .profile-picture-container img {
+    left: 50% !important;
+    transform: translateX(-50%);
+  }
+}
+
+/* Profile Image Positioning */
+.profile-picture-container {
+  position: relative;
+  z-index: 2;
+  width: 150px;
+}
+
+.profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: relative;
+  display: block;
+}
+
+/* Responsive fixes */
+@media (max-width: 768px) {
+  .profile-picture-container {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    margin-top: -75px !important;
+  }
+  
+  .profile-image {
+    width: 1500px;
+    height: 150px;
+  }
+}
+
+@media (max-width: 576px) {
+  .profile-picture-container {
+    margin-left: 50% !important;
+    transform: translateX(-50%);
+    margin-top: -60px !important;
+  }
+}
+

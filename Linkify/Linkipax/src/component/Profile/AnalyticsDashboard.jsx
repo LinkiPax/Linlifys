@@ -30,7 +30,7 @@ ChartJS.register(
   ArcElement
 );
 
-const API_BASE_URL = "${import.meta.env.VITE_API_URL}/post-impression";
+const API_BASE_URL = `${import.meta.env.VITE_API_URL}/post-impression`;
 
 const AnalyticsDashboard = ({ profileId }) => {
   // State declarations
@@ -80,6 +80,7 @@ const AnalyticsDashboard = ({ profileId }) => {
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/posts/user/${profileId}`
       );
+      console.log(response);
       setPosts(response.data);
       if (response.data.length > 0) {
         setSelectedPostId(response.data[0]._id);
@@ -111,9 +112,31 @@ const AnalyticsDashboard = ({ profileId }) => {
           },
         }
       );
-      setAnalyticsData(response.data.data);
+      console.log(response);
+      setAnalyticsData(response.data?.data || {
+        timeSeries: [],
+        totals: { impressions: 0, engagement: 0, uniqueUsers: 0 },
+        interactions: {},
+        devices: [],
+        referrers: [],
+        os: [],
+        browsers: [],
+        countries: [],
+        cities: [],
+      });
     } catch (error) {
       console.error("Error fetching analytics data:", error);
+      setAnalyticsData({
+        timeSeries: [],
+        totals: { impressions: 0, engagement: 0, uniqueUsers: 0 },
+        interactions: {},
+        devices: [],
+        referrers: [],
+        os: [],
+        browsers: [],
+        countries: [],
+        cities: [],
+      });
     } finally {
       setLoading((prev) => ({ ...prev, analytics: false }));
     }
@@ -130,15 +153,23 @@ const AnalyticsDashboard = ({ profileId }) => {
           params: { timeRange },
         }
       );
+      console.log(response);
       setAnalyticsData((prev) => ({
         ...prev,
-        devices: response.data.data.devices,
-        referrers: response.data.data.referrers,
-        os: response.data.data.os,
-        browsers: response.data.data.browsers,
+        devices: response.data?.data?.devices || [],
+        referrers: response.data?.data?.referrers || [],
+        os: response.data?.data?.os || [],
+        browsers: response.data?.data?.browsers || [],
       }));
     } catch (error) {
       console.error("Error fetching demographics data:", error);
+      setAnalyticsData((prev) => ({
+        ...prev,
+        devices: [],
+        referrers: [],
+        os: [],
+        browsers: [],
+      }));
     } finally {
       setLoading((prev) => ({ ...prev, demographics: false }));
     }
@@ -155,13 +186,19 @@ const AnalyticsDashboard = ({ profileId }) => {
           params: { timeRange, limit: 10 },
         }
       );
+      console.log(response);
       setAnalyticsData((prev) => ({
         ...prev,
-        countries: response.data.data.countries,
-        cities: response.data.data.cities,
+        countries: response.data?.data?.countries || [],
+        cities: response.data?.data?.cities || [],
       }));
     } catch (error) {
       console.error("Error fetching geography data:", error);
+      setAnalyticsData((prev) => ({
+        ...prev,
+        countries: [],
+        cities: [],
+      }));
     } finally {
       setLoading((prev) => ({ ...prev, geography: false }));
     }
@@ -196,9 +233,11 @@ const AnalyticsDashboard = ({ profileId }) => {
           limit: 5,
         },
       });
-      setTopPosts(response.data.data);
+      console.log(response);
+      setTopPosts(response.data?.data || []);
     } catch (error) {
       console.error("Error fetching top posts:", error);
+      setTopPosts([]);
     }
   };
 
@@ -210,12 +249,13 @@ const AnalyticsDashboard = ({ profileId }) => {
           params: { timeRange },
         }
       );
-      setUserEngagement(response.data.data);
+      console.log(response);
+      setUserEngagement(response.data?.data || null);
     } catch (error) {
       console.error("Error fetching user engagement:", error);
+      setUserEngagement(null);
     }
   };
-
   // Effects
   useEffect(() => {
     fetchUserPosts();
@@ -357,8 +397,8 @@ const AnalyticsDashboard = ({ profileId }) => {
   // Component rendering functions
   const renderTimeSeriesData = () => {
     const data = {
-      labels: analyticsData.timeSeries.map((item) => item.date),
-      values: analyticsData.timeSeries.map((item) => item[metric]),
+      labels: analyticsData.timeSeries?.map((item) => item.date) || [],
+      values: analyticsData.timeSeries?.map((item) => item[metric]) || [],
     };
 
     const metricLabels = {
@@ -408,7 +448,7 @@ const AnalyticsDashboard = ({ profileId }) => {
           <div className="chart-skeleton">
             <div className="loading-animation"></div>
           </div>
-        ) : analyticsData.devices.length > 0 ? (
+        ) : analyticsData.devices?.length > 0 ? (
           renderPieChart(analyticsData.devices, "Devices")
         ) : (
           <div className="no-data">No device data available</div>
@@ -421,7 +461,7 @@ const AnalyticsDashboard = ({ profileId }) => {
           <div className="chart-skeleton">
             <div className="loading-animation"></div>
           </div>
-        ) : analyticsData.referrers.length > 0 ? (
+        ) : analyticsData.referrers?.length > 0 ? (
           renderPieChart(analyticsData.referrers, "Referrers")
         ) : (
           <div className="no-data">No referrer data available</div>
@@ -434,7 +474,7 @@ const AnalyticsDashboard = ({ profileId }) => {
           <div className="chart-skeleton">
             <div className="loading-animation"></div>
           </div>
-        ) : analyticsData.os.length > 0 ? (
+        ) : analyticsData.os?.length > 0 ? (
           renderPieChart(analyticsData.os, "Operating Systems")
         ) : (
           <div className="no-data">No OS data available</div>
@@ -447,7 +487,7 @@ const AnalyticsDashboard = ({ profileId }) => {
           <div className="chart-skeleton">
             <div className="loading-animation"></div>
           </div>
-        ) : analyticsData.browsers.length > 0 ? (
+        ) : analyticsData.browsers?.length > 0 ? (
           renderPieChart(analyticsData.browsers, "Browsers")
         ) : (
           <div className="no-data">No browser data available</div>
@@ -464,7 +504,7 @@ const AnalyticsDashboard = ({ profileId }) => {
           <div className="chart-skeleton">
             <div className="loading-animation"></div>
           </div>
-        ) : analyticsData.countries.length > 0 ? (
+        ) : analyticsData.countries?.length > 0 ? (
           <Bar
             data={{
               labels: analyticsData.countries.map((item) => item._id),
@@ -497,7 +537,7 @@ const AnalyticsDashboard = ({ profileId }) => {
           <div className="chart-skeleton">
             <div className="loading-animation"></div>
           </div>
-        ) : analyticsData.cities.length > 0 ? (
+        ) : analyticsData.cities?.length > 0 ? (
           <Bar
             data={{
               labels: analyticsData.cities.map(
@@ -530,8 +570,8 @@ const AnalyticsDashboard = ({ profileId }) => {
 
   const renderInteractions = () => {
     const data = {
-      labels: Object.keys(analyticsData.interactions),
-      values: Object.values(analyticsData.interactions),
+      labels: Object.keys(analyticsData.interactions || {}),
+      values: Object.values(analyticsData.interactions || {}),
     };
 
     return (
@@ -556,28 +596,28 @@ const AnalyticsDashboard = ({ profileId }) => {
     <div className="stats-overview">
       <div className="stat-card primary">
         <h3>Total Impressions</h3>
-        <p className="stat-value">{analyticsData.totals.impressions}</p>
+        <p className="stat-value">{analyticsData.totals?.impressions || 0}</p>
         <p className="stat-description">Views of this post</p>
       </div>
       <div className="stat-card success">
         <h3>Unique Users</h3>
-        <p className="stat-value">{analyticsData.totals.uniqueUsers}</p>
+        <p className="stat-value">{analyticsData.totals?.uniqueUsers || 0}</p>
         <p className="stat-description">Distinct viewers</p>
       </div>
       <div className="stat-card warning">
         <h3>Engagement Score</h3>
         <p className="stat-value">
-          {analyticsData.totals.engagement.toFixed(0)}
+          {(analyticsData.totals?.engagement || 0).toFixed(0)}
         </p>
         <p className="stat-description">Total engagement</p>
       </div>
       <div className="stat-card danger">
         <h3>Engagement Rate</h3>
         <p className="stat-value">
-          {analyticsData.totals.impressions > 0
+          {analyticsData.totals?.impressions > 0
             ? (
-                (analyticsData.totals.engagement /
-                  analyticsData.totals.impressions) *
+                ((analyticsData.totals?.engagement || 0) /
+                  (analyticsData.totals?.impressions || 1)) *
                 100
               ).toFixed(1)
             : 0}
@@ -591,7 +631,7 @@ const AnalyticsDashboard = ({ profileId }) => {
   const renderTopPosts = () => (
     <div className="top-posts-container">
       <h3>Your Top Performing Posts</h3>
-      {topPosts.length > 0 ? (
+      {topPosts?.length > 0 ? (
         <div className="top-posts-list">
           {topPosts.map((post) => (
             <div key={post._id || post.postId} className="top-post-item">
@@ -600,9 +640,9 @@ const AnalyticsDashboard = ({ profileId }) => {
                 {post.postDetails?.content?.length > 50 && "..."}
               </div>
               <div className="post-stats">
-                <span>Impressions: {post.impressions}</span>
-                <span>Engagement: {post.engagements}</span>
-                <span>Unique Users: {post.uniqueUsers}</span>
+                <span>Impressions: {post.impressions || 0}</span>
+                <span>Engagement: {post.engagements || 0}</span>
+                <span>Unique Users: {post.uniqueUsers || 0}</span>
               </div>
             </div>
           ))}
@@ -620,23 +660,21 @@ const AnalyticsDashboard = ({ profileId }) => {
         <div className="engagement-stats">
           <div className="engagement-stat">
             <h4>Total Interactions</h4>
-            <p>{userEngagement.stats.totalInteractions}</p>
+            <p>{userEngagement.stats?.totalInteractions || 0}</p>
           </div>
           <div className="engagement-stat">
             <h4>Average Engagement</h4>
-            <p>{userEngagement.stats.avgEngagement.toFixed(1)}</p>
+            <p>{(userEngagement.stats?.avgEngagement || 0).toFixed(1)}</p>
           </div>
           <div className="engagement-chart">
             <h4>Activity Trend</h4>
             <Line
               data={{
-                labels: userEngagement.activityTrend.map((item) => item.date),
+                labels: userEngagement.activityTrend?.map((item) => item.date) || [],
                 datasets: [
                   {
                     label: "Daily Activity",
-                    data: userEngagement.activityTrend.map(
-                      (item) => item.count
-                    ),
+                    data: userEngagement.activityTrend?.map((item) => item.count) || [],
                     borderColor: "rgba(52, 152, 219, 1)",
                     backgroundColor: "rgba(52, 152, 219, 0.2)",
                     fill: true,
@@ -661,11 +699,11 @@ const AnalyticsDashboard = ({ profileId }) => {
           <div className="interaction-types">
             <h4>Interaction Types</h4>
             <ul>
-              {userEngagement.stats.interactionTypes.map((type) => (
+              {userEngagement.stats?.interactionTypes?.map((type) => (
                 <li key={type._id}>
                   {type._id}: {type.count}
                 </li>
-              ))}
+              )) || <li>No interaction data</li>}
             </ul>
           </div>
         </div>
@@ -704,7 +742,7 @@ const AnalyticsDashboard = ({ profileId }) => {
             onChange={(e) =>
               setImpressionData({
                 ...impressionData,
-                duration: parseInt(e.target.value),
+                duration: parseInt(e.target.value) || 0,
               })
             }
           />

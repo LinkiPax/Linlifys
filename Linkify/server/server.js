@@ -10,7 +10,7 @@ const https = require('https');
 const { ApolloServer } = require("apollo-server-express");
 const { typeDefs, resolvers } = require("./GraphQL/messageschema");
 const path = require('path');
-const { initializeSocket } = require('./socket/socketnadle'); // New socket handler
+const { initializeSocket ,getIO} = require('./socket/socketnadle'); // New socket handler
 const fs = require('fs');
 
 const options = {
@@ -25,7 +25,7 @@ const server = https.createServer(options,app);
 
 // Middleware Setup
 app.use(cors({ 
-  origin: ['https://localhost:5173', 'https://192.168.165.51:5173', 'https://192.168.137.51:5173'],
+  origin: ['https://localhost:5173', 'https://192.168.165.51:5173', 'https://10.206.136.51:5173'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   credentials: true      
 }));
@@ -59,7 +59,7 @@ connectDB();
 
 // Initialize Socket.IO 
 initializeSocket(server);
-
+app.set('io', getIO());
 // Apollo GraphQL Setup
 const apolloServer = new ApolloServer({ typeDefs, resolvers });
 const startApolloServer = async () => {

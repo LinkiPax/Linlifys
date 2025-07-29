@@ -202,7 +202,9 @@ const ProfileHeader = ({ userId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showShareModal, setShowShareModal] = useState(false);
-  const [backgroundImage, setBackgroundImage] = useState("");
+  const [backgroundImage, setBackgroundImage] = useState(
+  "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -227,33 +229,40 @@ const ProfileHeader = ({ userId }) => {
     fetchProfile();
   }, [userId]);
 
-  const handleBackgroundChange = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+ const handleBackgroundChange = async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
 
-    const formData = new FormData();
-    formData.append("backgroundImage", file);
-    formData.append("userId", userId);
+  const formData = new FormData();
+  formData.append("backgroundImage", file);
+  formData.append("userId", userId);
+  // Add other fields if needed
+  formData.append("socialLinks", JSON.stringify(profile?.socialLinks || {}));
+  formData.append("interests", JSON.stringify(profile?.interests || []));
+  formData.append("achievements", JSON.stringify(profile?.achievements || []));
+  formData.append("hobbies", JSON.stringify(profile?.hobbies || []));
 
-    try {
-      await axios.post(
-        `${import.meta.env.VITE_API_URL}/profile/user-details`,
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-      const { data } = await axios.get(
-        `${import.meta.env.VITE_API_URL}/profile/merged-user-details/${userId}`
-      );
-      setBackgroundImage(
-        `${import.meta.env.VITE_API_URL}/${data.backgroundImage}`
-      );
-    } catch (error) {
-      console.error("Error updating background:", error);
-    }
-  };
-
+  try {
+    const response = await axios.post(
+      `${import.meta.env.VITE_API_URL}/profile/user-details`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
+    
+    // Update the background image with the secure_url
+    setBackgroundImage(response.data.backgroundImage.secure_url);
+    
+    // Refresh the profile data
+    const { data } = await axios.get(
+      `${import.meta.env.VITE_API_URL}/profile/merged-user-details/${userId}`
+    );
+    setProfile(data);
+  } catch (error) {
+    console.error("Error updating background:", error);
+  }
+};
   const shareProfile = () => {
     if (!profile) return;
 

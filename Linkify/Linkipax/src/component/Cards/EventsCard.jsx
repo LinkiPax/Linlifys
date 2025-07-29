@@ -53,12 +53,14 @@ const EventsCard = ({ user }) => {
   const [uploading, setUploading] = useState(false);
   const [socket, setSocket] = useState(null);
   // Configure axios instance with user ID header
-  const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL,
-    headers: {
-      "X-User-ID": localStorage.getItem("userId"), // Store userId after login
-    },
-  });
+  // Configure axios instance with user ID header
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+  headers: {
+    "X-User-ID": localStorage.getItem("userId"),
+    "Content-Type": "application/json"
+  }
+});
   useEffect(() => {
     const socketInstance = io(import.meta.env.VITE_API_URL);
     setSocket(socketInstance);
@@ -75,6 +77,7 @@ const EventsCard = ({ user }) => {
           axios.get(`${import.meta.env.VITE_API_URL}/api/events`),
           axios.get(`${import.meta.env.VITE_API_URL}/api/events/trending`),
         ]);
+        console.log(eventsRes);
         setEvents(eventsRes.data);
         setTrendingEvents(trendingRes.data);
       } catch (err) {
@@ -142,51 +145,45 @@ const EventsCard = ({ user }) => {
   };
 
   const handleCreateEvent = async (e) => {
-    e.preventDefault();
-    setUploading(true);
+  e.preventDefault();
+  setUploading(true);
 
-    try {
-      const formData = new FormData();
-      formData.append("title", newEvent.title);
-      formData.append("description", newEvent.description);
-      formData.append("date", newEvent.date);
-      formData.append("time", newEvent.time);
-      formData.append("location", newEvent.location);
-      formData.append("durationHours", newEvent.durationHours);
-      formData.append("creator", userId);
-      if (newEvent.image) {
-        formData.append("image", newEvent.image);
-      }
-
-      const config = {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      };
-
-      const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/events`,
-        formData,
-        config
-      );
-
-      setShowCreateModal(false);
-      setNewEvent({
-        title: "",
-        description: "",
-        date: "",
-        time: "",
-        location: "",
-        durationHours: 24,
-        image: null,
-      });
-    } catch (err) {
-      console.error("Error creating event:", err);
-      setError("Failed to create event. Please try again.");
-    } finally {
-      setUploading(false);
+  try {
+    const formData = new FormData();
+    formData.append("title", newEvent.title);
+    formData.append("description", newEvent.description);
+    formData.append("date", newEvent.date);
+    formData.append("time", newEvent.time);
+    formData.append("location", newEvent.location);
+    formData.append("durationHours", newEvent.durationHours);
+    if (newEvent.image) {
+      formData.append("image", newEvent.image);
     }
-  };
+
+    // Use the configured api instance
+    const res = await api.post("/api/events", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data" // Override for file upload
+      }
+    });
+
+    setShowCreateModal(false);
+    setNewEvent({
+      title: "",
+      description: "",
+      date: "",
+      time: "",
+      location: "",
+      durationHours: 24,
+      image: null,
+    });
+  } catch (err) {
+    console.error("Error creating event:", err);
+    setError(err.response?.data?.message || "Failed to create event. Please try again.");
+  } finally {
+    setUploading(false);
+  }
+};
 
   const handleVote = async (eventId, type) => {
     try {
