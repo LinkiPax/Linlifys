@@ -2,7 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const { exec } = require('child_process');
-const Resume = require('../model/resumemodel'); // Adjust the path as needed
+const Resume = require('../model/Resumemodel'); // Adjust the path as needed
 
 const router = express.Router();
 
