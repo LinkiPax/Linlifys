@@ -57,6 +57,7 @@
     "tailwind-merge": "^3.3.1",
     "three": "^0.178.0",
     "three-globe": "^2.43.0",
+    "three-mesh-bvh": "^0.8.0",
     "uuid": "^11.0.5",
     "wavesurfer.js": "^7.9.5"
   },
