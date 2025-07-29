@@ -1,6 +1,6 @@
 const { connections } = require("mongoose");
 const UserDetails = require("../model/adddatamodel");
-const User = require("../model/userModel"); // Assuming this is your User model from API 1
+const User = require("../model/usermodel"); // Assuming this is your User model from API 1
 const multer = require("multer");
 const cloudinary=require('cloudinary').v2;
 require('dotenv').config();

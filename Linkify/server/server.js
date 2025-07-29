@@ -6,26 +6,26 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
-const https = require('https');
+const https = require('http');
 const { ApolloServer } = require("apollo-server-express");
 const { typeDefs, resolvers } = require("./GraphQL/messageschema");
 const path = require('path');
 const { initializeSocket ,getIO} = require('./socket/socketnadle'); // New socket handler
 const fs = require('fs');
 
-const options = {
-  key: fs.readFileSync('./localhost+1-key.pem'),
-  cert: fs.readFileSync('./localhost+1.pem'),
-  requestCert: false,
-  rejectUnauthorized: false // For development only!
-}; 
+// const options = {
+//   key: fs.readFileSync('./localhost+1-key.pem'),
+//   cert: fs.readFileSync('./localhost+1.pem'),
+//   requestCert: false,
+//   rejectUnauthorized: false // For development only!
+// }; 
 // Initialize Express app and HTTP server 
 const app = express();
-const server = https.createServer(options,app);
+const server = https.createServer(app);
 
-// Middleware Setup
+// Middleware Setup 
 app.use(cors({ 
-  origin: ['https://localhost:5173', 'https://192.168.165.51:5173', 'https://10.101.21.51:5173'],
+  origin: [process.env.FRONTEND_ORIGIN],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   credentials: true      
 }));
