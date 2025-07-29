@@ -1,19 +1,16 @@
 {
   "version": 2,
+  "public": false,
   "builds": [
     {
-      "src": "Linkipax/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "buildCommand": "npm run build",
-        "distDir": "dist"
-      }
+      "src": "Linkipax/index.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "Linkipax/index.js"
     }
   ]
 }
