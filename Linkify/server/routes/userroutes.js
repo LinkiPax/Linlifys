@@ -20,8 +20,8 @@ const setCookie = (res, token) => {
     
     const cookieOptions = {
         httpOnly: true,
-        secure: isProduction, // true in production
-        sameSite: isProduction ? 'none' : 'lax', // 'none' for cross-site
+        secure: true, // true in production
+        sameSite: 'None', // 'none' for cross-site
         maxAge: 3600 * 1000, // 1 hour
         path: '/',
         domain: isProduction ? '.onrender.com' : undefined
