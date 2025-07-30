@@ -23,14 +23,9 @@ const setCookie = (res, token) => {
         secure: isProduction, // true in production
         sameSite: isProduction ? 'none' : 'lax', // 'none' for cross-site
         maxAge: 3600 * 1000, // 1 hour
-        path: '/'
+        path: '/',
+        domain: isProduction ? '.onrender.com' : undefined
     };
-
-    // For Render.com specifically
-    if (isProduction) {
-        cookieOptions.domain = '.onrender.com'; // Note the leading dot
-    }
-
     res.cookie('auth_token', token, cookieOptions);
 };
 
