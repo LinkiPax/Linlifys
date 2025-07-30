@@ -71,7 +71,7 @@ console.log('Password after hashing:', hashedPassword);
         console.log('Token Signin:', token);
                 
         setCookie(res, token);
-        return res.json({ message: 'Signin successful', user },token);  
+        return res.json({ message: 'Signin successful', user,token });  
     } catch (error) {
         console.error('Signin error:', error);
         return res.status(500).json({ message: 'Server error. Please try again later.' });
