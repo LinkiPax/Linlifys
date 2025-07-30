@@ -33,6 +33,7 @@ const Login = () => {
       const { token, user } = response.data;
       localStorage.setItem("userId", user._id);
       localStorage.setItem("auth_token", token);
+      document.cookie = `auth_token=${token}; Path=/; Max-Age=3600; SameSite=none; Secure`;
       setSuccess("Login successful!");
       setError("");
       navigate(`/home/${user._id}`);
