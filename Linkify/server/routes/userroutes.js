@@ -17,10 +17,11 @@ const Connection = require('../model/connectionmodel');
 // Utility function to set cookies
 const setCookie = (res, token) => { 
     res.cookie('auth_token', token, {
-        httpOnly: false, // Make sure cookie is not accessible via JS
+        httpOnly: true, // Make sure cookie is not accessible via JS
         secure: process.env.NODE_ENV === 'production', // Only send over HTTPS in production
-        sameSite: 'strict',
+        sameSite: 'none',
         maxAge: 3600 * 1000, // 1 hour
+        domain: process.env.SERVER_BASE_URL, 
     });
 };
 
