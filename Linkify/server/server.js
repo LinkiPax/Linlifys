@@ -27,7 +27,8 @@ const server = https.createServer(app);
 app.use(cors({ 
   origin: [process.env.FRONTEND_ORIGIN],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  credentials: true      
+  credentials: true,
+  exposedHeaders: ['set-cookie']      
 }));
 app.options('*', cors());
 

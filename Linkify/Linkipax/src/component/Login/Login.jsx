@@ -32,7 +32,7 @@ const Login = () => {
       );
       const { token, user } = response.data;
       localStorage.setItem("userId", user._id);
-      localStorage.setItem("token", token);
+      localStorage.setItem("auth_token", token);
       setSuccess("Login successful!");
       setError("");
       navigate(`/home/${user._id}`);
