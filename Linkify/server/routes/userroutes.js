@@ -24,7 +24,6 @@ const setCookie = (res, token) => {
         sameSite: 'None', // 'none' for cross-site
         maxAge: 3600 * 1000, // 1 hour
         path: '/',
-        domain: isProduction ? '.onrender.com' : undefined
     };
     res.cookie('auth_token', token, cookieOptions);
 };
