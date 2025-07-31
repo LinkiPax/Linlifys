@@ -740,7 +740,7 @@ const MainPage = () => {
           aria-labelledby="video-showcase-title"
         >
           <img
-            src="/aurora.d2a6947c3dcfb777c25f.webp"
+            src="\dist\aurora.d2a6947c3dcfb777c25f.webp"
             alt="Aurora Background"
             className="video-bg-image"
             loading="lazy"
