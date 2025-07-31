@@ -26,7 +26,7 @@ import { GlitchPass } from "three/addons/postprocessing/GlitchPass.js";
 import { World } from "../../components/ui/globe";
 import { AnimatedTooltip } from "../../components/ui/animated-tooltip";
 import { WorldMap } from "../../components/ui/world-map";
-
+import aroraImage from "../../../public/aurora.d2a6947c3dcfb777c25f.webp"
 import { debounce } from "lodash";
 
 const MainPage = () => {
@@ -740,7 +740,7 @@ const MainPage = () => {
           aria-labelledby="video-showcase-title"
         >
           <img
-            src="dist\aurora.d2a6947c3dcfb777c25f.webp"
+            src={aroraImage}
             alt="Aurora Background"
             className="video-bg-image"
             loading="lazy"
