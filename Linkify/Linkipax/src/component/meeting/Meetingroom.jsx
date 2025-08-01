@@ -119,7 +119,6 @@ const MeetingApp = () => {
   const meetingIdRef = useRef(null);
   const userVideoRefs = useRef({});
   const userId = useRef(uuidv4());
-  // const peerConnectionStats = useRef({});
 
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
   const PEER_CONFIG = {
@@ -144,6 +143,15 @@ const MeetingApp = () => {
       peerRef.current.on("open", (id) => {
         console.log("PeerJS connected with ID:", id);
         setConnectionStatus("connected");
+        
+        // After peer is open, call existing users if any
+        if (joined && participants.length > 0) {
+          participants.forEach(user => {
+            if (user.id !== userId.current && !peersRef.current[user.id]) {
+              setTimeout(() => callUser(user.id), 500);
+            }
+          });
+        }
       });
 
       peerRef.current.on("error", (err) => {
@@ -169,13 +177,18 @@ const MeetingApp = () => {
       peerRef.current.on("call", (call) => {
         console.log("Incoming call from:", call.peer);
         
-        if (!localStream.current) {
+        // Get the current active stream to answer with
+        const streamToAnswer = isScreenSharing && screenStream.current 
+          ? screenStream.current 
+          : localStream.current;
+
+        if (!streamToAnswer) {
           console.error("No local stream to answer call");
           call.close();
           return;
         }
 
-        call.answer(localStream.current);
+        call.answer(streamToAnswer);
         
         // Set up ICE candidate exchange
         call.on("icecandidate", (candidate) => {
@@ -425,7 +438,12 @@ const MeetingApp = () => {
       return;
     }
 
-    if (!localStream.current) {
+    // Get the current active stream (screen share or local stream)
+    const streamToSend = isScreenSharing && screenStream.current 
+      ? screenStream.current 
+      : localStream.current;
+
+    if (!streamToSend) {
       console.error("No local stream to send");
       return;
     }
@@ -433,7 +451,7 @@ const MeetingApp = () => {
     console.log(`Calling user ${targetUserId}...`);
     
     try {
-      const call = peerRef.current.call(targetUserId, localStream.current);
+      const call = peerRef.current.call(targetUserId, streamToSend);
       
       // Set up ICE candidate exchange
       call.on("icecandidate", (candidate) => {
@@ -505,35 +523,7 @@ const MeetingApp = () => {
     setParticipants(prev => prev.filter(p => p.id !== userId));
   };
 
-  // Get media constraints with improved quality settings
-  const getMediaConstraints = () => {
-    const baseConstraints = {
-      audio: {
-        echoCancellation: true,
-        noiseSuppression: true,
-        autoGainControl: true,
-        channelCount: 1,
-      },
-      video: false,
-    };
-
-    if (isVideoOn) {
-      const resolutions = {
-        "480p": { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 15 } },
-        "720p": { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24 } },
-        "1080p": { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } },
-      };
-
-      baseConstraints.video = {
-        ...resolutions[videoQuality],
-        facingMode: "user",
-      };
-    }
-
-    return baseConstraints;
-  };
-
-  // Improved media stream handling
+  // Start media with proper constraints
   const startMedia = async () => {
     try {
       // First stop any existing streams
@@ -541,7 +531,22 @@ const MeetingApp = () => {
         localStream.current.getTracks().forEach(track => track.stop());
       }
 
-      const constraints = getMediaConstraints();
+      const constraints = {
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          channelCount: 1,
+        },
+        video: isVideoOn ? {
+          ...(videoQuality === "480p" ? { width: { ideal: 640 }, height: { ideal: 480 } } : 
+               videoQuality === "720p" ? { width: { ideal: 1280 }, height: { ideal: 720 } } :
+               { width: { ideal: 1920 }, height: { ideal: 1080 } }),
+          facingMode: "user",
+          frameRate: { ideal: 24 }
+        } : false
+      };
+
       console.log("Requesting media with constraints:", constraints);
       
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -549,6 +554,12 @@ const MeetingApp = () => {
       localStream.current = stream;
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
+      }
+      
+      // Ensure audio tracks are enabled
+      const audioTracks = stream.getAudioTracks();
+      if (audioTracks.length > 0) {
+        audioTracks[0].enabled = isMicOn;
       }
       
       // Monitor stream health
@@ -677,10 +688,14 @@ const MeetingApp = () => {
   const updateAllPeerStreams = () => {
     if (!localStream.current) return;
     
+    const streamToSend = isScreenSharing && screenStream.current 
+      ? screenStream.current 
+      : localStream.current;
+
     Object.values(peersRef.current).forEach(({ call }) => {
       try {
-        const videoTrack = localStream.current.getVideoTracks()[0];
-        const audioTrack = localStream.current.getAudioTracks()[0];
+        const videoTrack = streamToSend.getVideoTracks()[0];
+        const audioTrack = streamToSend.getAudioTracks()[0];
         
         if (videoTrack) {
           const videoSender = call.peerConnection
@@ -732,7 +747,10 @@ const MeetingApp = () => {
           video: {
             displaySurface: "monitor",
             logicalSurface: true,
-            cursor: "always"
+            cursor: "always",
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            frameRate: { ideal: 15 }
           },
           audio: true,
         });
@@ -753,14 +771,25 @@ const MeetingApp = () => {
         
         // Replace video track in all peer connections
         const videoTrack = stream.getVideoTracks()[0];
+        const audioTrack = stream.getAudioTracks()[0] || localStream.current?.getAudioTracks()[0];
+        
         Object.values(peersRef.current).forEach(({ call }) => {
-          const sender = call.peerConnection
+          const videoSender = call.peerConnection
             .getSenders()
             .find(s => s.track?.kind === "video");
             
-          if (sender && videoTrack) {
-            sender.replaceTrack(videoTrack)
+          const audioSender = call.peerConnection
+            .getSenders()
+            .find(s => s.track?.kind === "audio");
+            
+          if (videoSender && videoTrack) {
+            videoSender.replaceTrack(videoTrack)
               .catch(err => console.error("Error replacing screen share track:", err));
+          }
+          
+          if (audioSender && audioTrack) {
+            audioSender.replaceTrack(audioTrack)
+              .catch(err => console.error("Error replacing audio track:", err));
           }
         });
         
