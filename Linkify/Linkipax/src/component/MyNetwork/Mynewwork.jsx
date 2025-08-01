@@ -276,7 +276,7 @@ const MyNetwork = () => {
                                 `https://ui-avatars.com/api/?name=${user.name}&size=150`
                               }
                               alt="Profile"
-                              className="rounded-circle mb-3 profile-image"
+                              className="rounded-circle mb-3 profile-image-my"
                               width="100"
                               height="100"
                             />
