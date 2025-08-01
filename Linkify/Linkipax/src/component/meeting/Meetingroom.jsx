@@ -528,24 +528,30 @@ const MeetingApp = () => {
     try {
       // First stop any existing streams
       if (localStream.current) {
-        localStream.current.getTracks().forEach(track => track.stop());
-      }
+      localStream.current.getTracks().forEach(track => {
+        track.stop();
+        track.dispatchEvent(new Event('ended')); // Ensure all listeners are notified
+      });
+    }
 
       const constraints = {
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-          channelCount: 1,
-        },
-        video: isVideoOn ? {
-          ...(videoQuality === "480p" ? { width: { ideal: 640 }, height: { ideal: 480 } } : 
-               videoQuality === "720p" ? { width: { ideal: 1280 }, height: { ideal: 720 } } :
-               { width: { ideal: 1920 }, height: { ideal: 1080 } }),
-          facingMode: "user",
-          frameRate: { ideal: 24 }
-        } : false
-      };
+         audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+        channelCount: 1,
+        sampleRate: 48000,
+        sampleSize: 16,
+        volume: 1.0
+      },
+      video: {
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        frameRate: { ideal: 24, max: 30 },
+        facingMode: "user",
+        resizeMode: "crop-and-scale"
+      }
+    };
 
       console.log("Requesting media with constraints:", constraints);
       
