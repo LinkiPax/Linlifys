@@ -277,8 +277,7 @@ const MyNetwork = () => {
                               }
                               alt="Profile"
                               className="rounded-circle mb-3 profile-image-my"
-                              width="100"
-                              height="100"
+                              
                             />
                             <Badge
                               bg="success"
