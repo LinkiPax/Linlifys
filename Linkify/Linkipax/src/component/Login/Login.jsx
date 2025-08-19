@@ -1,6 +1,6 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import React, { useState, useRef, useEffect } from "react";
-import { Form, Button, Alert } from "react-bootstrap";
+import { Form, Button, Alert, Spinner } from "react-bootstrap";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import "./Login.css";
@@ -10,6 +10,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false); // Added loading state
   const navigate = useNavigate();
   const videoRef = useRef(null);
 
@@ -24,6 +25,10 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // Start loading
+    setError("");
+    setSuccess("");
+    
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/user/Signin`,
@@ -42,6 +47,8 @@ const Login = () => {
       setError(
         error.response?.data?.message || "An error occurred during login"
       );
+    } finally {
+      setLoading(false); // Stop loading regardless of outcome
     }
   };
 
@@ -89,6 +96,7 @@ const Login = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   className="input-field"
+                  disabled={loading} // Disable fields during loading
                 />
               </Form.Group>
 
@@ -100,6 +108,7 @@ const Login = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   className="input-field"
+                  disabled={loading} // Disable fields during loading
                 />
               </Form.Group>
 
@@ -107,8 +116,23 @@ const Login = () => {
                 variant="primary"
                 type="submit"
                 className="w-100 mt-3 login-button"
+                disabled={loading} // Disable button during loading
               >
-                Sign in
+                {loading ? (
+                  <>
+                    <Spinner
+                      as="span"
+                      animation="border"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                      className="me-2"
+                    />
+                    Signing in...
+                  </>
+                ) : (
+                  "Sign in"
+                )}
               </Button>
               <p className="mt-3 text-center">
                 <a href="/forgot-password" className="link-text">
