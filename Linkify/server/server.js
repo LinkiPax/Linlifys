@@ -6,22 +6,22 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
-const https = require('http');
+const https = require('https');
 const { ApolloServer } = require("apollo-server-express");
 const { typeDefs, resolvers } = require("./GraphQL/messageschema");
 const path = require('path');
 const { initializeSocket ,getIO} = require('./socket/socketnadle'); // New socket handler
 const fs = require('fs');
 
-// const options = {
-//   key: fs.readFileSync('./localhost+1-key.pem'),
-//   cert: fs.readFileSync('./localhost+1.pem'),
-//   requestCert: false,
-//   rejectUnauthorized: false // For development only!
-// }; 
+const options = {
+  key: fs.readFileSync('./localhost+1-key.pem'),
+  cert: fs.readFileSync('./localhost+1.pem'),
+  requestCert: false,
+  rejectUnauthorized: false // For development only!
+}; 
 // Initialize Express app and HTTP server 
 const app = express();
-const server = https.createServer(app);
+const server = https.createServer(options, app);
 
 // Middleware Setup 
 app.use(cors({ 
@@ -29,7 +29,8 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   credentials: true,
   exposedHeaders: ['set-cookie'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Set-Cookie']     
+  allowedHeaders: ['Content-Type', 'Authorization', 'Set-Cookie'],
+  optionsSuccessStatus: 200,
 }));
 app.options('*', cors());
 
@@ -96,6 +97,10 @@ app.use('/api/short', require('./routes/shortRoutes'));
 app.use("/connections", require('./routes/connectionroute'));
 app.use('/api/groups', require('./routes/grouproute'));
 app.use('/jpbs', require('./routes/Jobsroutes'));
+app.get('/test', (req, res) => {
+  console.log('Request body:', req.body);
+  res.json({ success: true });
+});
 // Health Check
 app.get('/health', (req, res) => {
   res.status(200).send('Server is healthy');
@@ -122,9 +127,9 @@ process.on('SIGINT', async () => {
   });
 });
  
-
+ 
 // Start Server
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5001;
 
 server.listen(port, '0.0.0.0', () => {
   console.log(`Server running at https://0.0.0.0:${port}`);
