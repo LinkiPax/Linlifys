@@ -6,7 +6,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
-const https = require('https');
+const https = require('http');
 const { ApolloServer } = require("apollo-server-express");
 const { typeDefs, resolvers } = require("./GraphQL/messageschema");
 const path = require('path');
@@ -24,33 +24,16 @@ const app = express();
 // const server = https.createServer(options, app);
 const server = https.createServer(app);
 // Middleware Setup 
-const frontendOrigin = process.env.FRONTEND_ORIGIN || "http://localhost:5173";
-
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || origin === frontendOrigin) {
-        callback(null, true);
-      } else {
-        console.log("❌ Blocked by CORS:", origin);
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization", "Set-Cookie"],
-    exposedHeaders: ["set-cookie"],
-    optionsSuccessStatus: 200,
-  })
-);
-
-// ✅ handle preflight OPTIONS with same config
-app.options("*", cors({
-  origin: frontendOrigin,
+app.use(cors({ 
+  origin: [process.env.FRONTEND_ORIGIN],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization", "Set-Cookie"],
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  exposedHeaders: ['set-cookie'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Set-Cookie'],
+  optionsSuccessStatus: 200,
 }));
+app.options('*', cors());
+
 app.use(express.json()); 
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
