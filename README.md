@@ -59,4 +59,11 @@ This project currently does not specify an open source license. Please check wit
 
 ---
 
+## Founders
+
+- Prerit Nag
+- Sarthak Nag
+
+
 This README was generated based on available public information. For further details, explore the codebase or reach out to the repository owner.
+
