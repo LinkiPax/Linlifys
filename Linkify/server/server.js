@@ -24,16 +24,33 @@ const app = express();
 // const server = https.createServer(options, app);
 const server = https.createServer(app);
 // Middleware Setup 
-app.use(cors({ 
-  origin: [process.env.FRONTEND_ORIGIN],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  credentials: true,
-  exposedHeaders: ['set-cookie'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Set-Cookie'],
-  optionsSuccessStatus: 200,
-}));
-app.options('*', cors());
+const frontendOrigin = process.env.FRONTEND_ORIGIN || "http://localhost:5173";
 
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || origin === frontendOrigin) {
+        callback(null, true);
+      } else {
+        console.log("❌ Blocked by CORS:", origin);
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization", "Set-Cookie"],
+    exposedHeaders: ["set-cookie"],
+    optionsSuccessStatus: 200,
+  })
+);
+
+// ✅ handle preflight OPTIONS with same config
+app.options("*", cors({
+  origin: frontendOrigin,
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization", "Set-Cookie"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+}));
 app.use(express.json()); 
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
