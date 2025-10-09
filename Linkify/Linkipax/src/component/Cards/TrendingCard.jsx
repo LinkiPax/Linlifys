@@ -8,6 +8,7 @@ import {
   FiHash,
   FiMoreVertical,
   FiExternalLink,
+  FiRefreshCw
 } from "react-icons/fi";
 import "./TrendingTopicsCard.css";
 import { Button } from "react-bootstrap";
@@ -22,6 +23,7 @@ const TrendingTopicsCard = () => {
   const fetchTrendingTopics = async () => {
     try {
       setLoading(true);
+      setError(null);
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/trending-topics`
       );
@@ -38,7 +40,8 @@ const TrendingTopicsCard = () => {
     navigate(`/search?topic=${encodeURIComponent(topic.title)}`);
   };
 
-  const toggleExpandTopic = (topicId) => {
+  const toggleExpandTopic = (topicId, e) => {
+    e.stopPropagation();
     setExpandedTopic(expandedTopic === topicId ? null : topicId);
   };
 
@@ -49,45 +52,58 @@ const TrendingTopicsCard = () => {
     return "secondary";
   };
 
+  const getTrendIcon = (change) => {
+    return change > 0 ? "↗" : "↘";
+  };
+
   useEffect(() => {
     fetchTrendingTopics();
   }, []);
 
   return (
-    <Card className="trending-topics-card">
-      <Card.Header className="d-flex justify-content-between align-items-center">
+    <Card className="trending-topics-card glassmorphism-card">
+      <Card.Header className="trending-card-header d-flex justify-content-between align-items-center">
         <div className="d-flex align-items-center">
-          <FiTrendingUp className="trending-icon me-2" />
-          <h5 className="mb-0">Trending Now</h5>
+          <div className="trending-icon-container">
+            <FiTrendingUp className="trending-icon me-2" />
+          </div>
+          <h5 className="mb-0 trending-title">Trending Now</h5>
         </div>
         <Button
-          variant="link"
+          
           size="sm"
           onClick={fetchTrendingTopics}
-          aria-label="Refresh trends"
+          disabled={loading}
+          className="d-flex align-items-center rounded-pill btn btn-light btn-sm bg-white"
         >
+          <FiRefreshCw className={`me-1 ${loading ? "spinning" : ""}`} />
           Refresh
         </Button>
       </Card.Header>
 
       <Card.Body className="p-0">
         {loading ? (
-          <div className="text-center py-4">
+          <div className="text-center py-5">
             <Spinner animation="border" variant="primary" />
-            <p className="mt-2">Loading trending topics...</p>
+            <p className="mt-2 loading-text">Loading trending topics...</p>
           </div>
         ) : error ? (
-          <div className="alert alert-danger m-3">{error}</div>
+          <div className="alert alert-warning m-3 error-alert">
+            <div className="d-flex align-items-center">
+              <span className="alert-icon">⚠️</span>
+              <span>{error}</span>
+            </div>
+          </div>
         ) : topics.length > 0 ? (
           <div className="topics-list">
             <AnimatePresence>
-              {topics.map((topic) => (
+              {topics.map((topic, index) => (
                 <motion.div
                   key={topic.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
                 >
                   <div
                     className={`topic-item ${
@@ -101,16 +117,14 @@ const TrendingTopicsCard = () => {
                       <div className="topic-info">
                         <div className="topic-rank">
                           <span className="rank-number">{topic.rank}</span>
-                          <FiTrendingUp
-                            className={`trend-icon ${
-                              topic.change > 0 ? "up" : "down"
-                            }`}
-                          />
+                          <span className={`trend-indicator ${topic.change > 0 ? "up" : "down"}`}>
+                            {getTrendIcon(topic.change)}
+                          </span>
                         </div>
                         <div className="topic-main">
                           <div className="topic-title">
                             <FiHash className="hashtag-icon" />
-                            {topic.title}
+                            <span className="title-text">{topic.title}</span>
                           </div>
                           <div className="topic-meta">
                             <span className="post-count">
@@ -130,7 +144,10 @@ const TrendingTopicsCard = () => {
                       </div>
 
                       <div className="topic-trend">
-                        <Badge bg={getTrendBadge(topic.trend)}>
+                        <Badge 
+                          bg={getTrendBadge(topic.trend)} 
+                          className="trend-badge"
+                        >
                           +{topic.trend}%
                         </Badge>
                       </div>
@@ -144,7 +161,7 @@ const TrendingTopicsCard = () => {
                         <Button
                           variant="link"
                           size="sm"
-                          onClick={() => toggleExpandTopic(topic.id)}
+                          onClick={(e) => toggleExpandTopic(topic.id, e)}
                           className="more-button"
                         >
                           <FiMoreVertical />
@@ -160,16 +177,17 @@ const TrendingTopicsCard = () => {
                         className="expanded-options"
                       >
                         <Button
-                          variant="outline-secondary"
+                          variant="outline-primary"
                           size="sm"
                           onClick={() => navigate(`/topic/${topic.id}`)}
+                          className="action-btn"
                         >
                           <FiExternalLink className="me-1" /> View Topic
                         </Button>
                         <Button
-                          variant="outline-primary"
+                          variant="outline-secondary"
                           size="sm"
-                          className="ms-2"
+                          className="ms-2 action-btn"
                           onClick={() =>
                             navigate(
                               `/search?q=${encodeURIComponent(
@@ -188,10 +206,10 @@ const TrendingTopicsCard = () => {
             </AnimatePresence>
           </div>
         ) : (
-          <div className="text-center py-4 no-topics">
-            <FiTrendingUp size={48} className="text-muted mb-3" />
-            <h5>No trending topics</h5>
-            <p className="text-muted">
+          <div className="text-center py-5 no-topics">
+            <FiTrendingUp size={48} className="text-muted mb-3 no-topics-icon" />
+            <h5 className="no-topics-title">No trending topics</h5>
+            <p className="text-muted no-topics-text">
               Check back later for trending discussions
             </p>
           </div>
@@ -199,11 +217,12 @@ const TrendingTopicsCard = () => {
       </Card.Body>
 
       {topics.length > 0 && (
-        <Card.Footer className="text-center">
+        <Card.Footer className="text-center trending-card-footer">
           <Button
-            variant="link"
+            variant="outline-primary"
             size="sm"
             onClick={() => navigate("/trending")}
+            className="view-all-btn"
           >
             View All Trending Topics
           </Button>

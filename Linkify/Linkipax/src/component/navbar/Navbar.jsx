@@ -44,6 +44,7 @@ const NavbarComponent = () => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const searchRef = useRef(null);
   const userId = localStorage.getItem("userId");
   // Notification context
@@ -91,6 +92,7 @@ const NavbarComponent = () => {
     const fetchData = async () => {
       try {
         const token = Cookies.get("auth_token");
+        {console.log(token)}
         if (!token) {
           navigate("/");
           return;
@@ -142,25 +144,53 @@ const NavbarComponent = () => {
     }
   };
 
+  
   // Fetch search suggestions
   useEffect(() => {
-    if (searchQuery.trim() && isSearchFocused) {
-      const debounceTimer = setTimeout(async () => {
-        try {
-          const response = await axios.get(
-            `${
-              import.meta.env.VITE_API_URL
-            }/search/suggestions?q=${searchQuery}`
-          );
-          setSearchSuggestions(response.data);
-          setShowSuggestions(true);
-        } catch (error) {
-          console.error("Error fetching suggestions:", error);
-        }
-      }, 300);
-      return () => clearTimeout(debounceTimer);
+    const fetchSuggestions = async () => {
+      if (searchQuery.trim().length < 2) {
+        setSearchSuggestions([]);
+        setShowSuggestions(false);
+        return;
+      }
+
+      setLoadingSuggestions(true);
+      try {
+        const token = Cookies.get("auth_token");
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/search/suggestions`,
+          {
+            params: { q: searchQuery, limit: 5 },
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setSearchSuggestions(response.data);
+        setShowSuggestions(true);
+      } catch (error) {
+        console.error("Error fetching suggestions:", error);
+        setSearchSuggestions([]);
+      } finally {
+        setLoadingSuggestions(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(fetchSuggestions, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery]);
+
+  // Handle selecting a suggestion
+  const handleSuggestionSelect = (suggestion) => {
+    if (suggestion.type === "user") {
+      navigate(`/profile/${suggestion._id}`);
+    } else if (suggestion.type === "post") {
+      navigate(`/post/${suggestion._id}`);
+    } else if (suggestion.type === "job") {
+      navigate(`/jobs/${suggestion._id}`);
     }
-  }, [searchQuery, isSearchFocused]);
+    setSearchQuery("");
+    setShowSuggestions(false);
+  };
+
 
   // Notification dropdown item click handler
   const handleNotificationClick = (notificationId) => {
@@ -204,64 +234,72 @@ const NavbarComponent = () => {
         </Navbar.Toggle>
 
         <Navbar.Collapse id="main-navbar">
-          {/* Search Bar - Center */}
-          <div className="search-container" ref={searchRef}>
-            <Form onSubmit={handleSearch} className="search-form">
-              <InputGroup className="search-input-group">
-                <InputGroup.Text className="search-icon">
-                  <FontAwesomeIcon icon={faSearch} />
-                </InputGroup.Text>
-                <Form.Control
-                  type="search"
-                  placeholder="Search people, jobs, posts..."
-                  className="search-field"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={() => setIsSearchFocused(true)}
-                  onBlur={() =>
-                    setTimeout(() => setIsSearchFocused(false), 200)
-                  }
-                />
-                {searchQuery && (
-                  <Button
-                    variant="link"
-                    className="clear-search"
-                    onClick={() => setSearchQuery("")}
-                  >
-                    <FontAwesomeIcon icon={faTimes} />
-                  </Button>
-                )}
-                <Button
-                  variant="primary"
-                  className="search-button"
-                  type="submit"
-                  disabled={!searchQuery.trim()}
-                >
-                  Search
-                </Button>
-              </InputGroup>
-            </Form>
+        {/* Search Bar - Center */}
+<div className="search-container" ref={searchRef}>
+  <Form onSubmit={handleSearch} className="search-form">
+    <div className="search-input-wrapper">
+      <InputGroup className="search-input-group">
+        <InputGroup.Text className="search-icon">
+          <FontAwesomeIcon icon={faSearch} />
+        </InputGroup.Text>
+        <Form.Control
+          type="search"
+          placeholder="Search people, jobs, posts..."
+          className="search-field"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onFocus={() => setIsSearchFocused(true)}
+          onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
+        />
+        {searchQuery && (
+          <Button
+            variant="link"
+            className="clear-search"
+            onClick={() => setSearchQuery("")}
+          >
+            <FontAwesomeIcon icon={faTimes} />
+          </Button>
+        )}
+      </InputGroup>
+      <Button
+        variant="primary"
+        className="search-button"
+        type="submit"
+        disabled={!searchQuery.trim()}
+      >
+        Search
+      </Button>
+    </div>
+  </Form>
 
-            {/* Search Suggestions */}
-            {showSuggestions && searchSuggestions.length > 0 && (
-              <div className={`search-suggestions ${darkMode ? "dark" : ""}`}>
-                {searchSuggestions.map((item, index) => (
-                  <div
-                    key={index}
-                    className="suggestion-item"
-                    onClick={() => {
-                      navigate(item.path);
-                      setShowSuggestions(false);
-                    }}
-                  >
-                    <FontAwesomeIcon icon={item.icon} className="me-2" />
-                    {item.name}
-                  </div>
-                ))}
-              </div>
-            )}
+  {/* Search Suggestions */}
+  {showSuggestions && searchSuggestions.length > 0 && (
+    <div className={`search-suggestions ${darkMode ? "dark" : ""}`}>
+      <div className="suggestions-header">
+        <small>Search Suggestions</small>
+      </div>
+      {searchSuggestions.map((item, index) => (
+        <div
+          key={index}
+          className="suggestion-item"
+          onClick={() => {
+            navigate(item.path);
+            setShowSuggestions(false);
+            setSearchQuery("");
+          }}
+        >
+          <div className="suggestion-icon">
+            <FontAwesomeIcon icon={item.icon} />
           </div>
-
+          <div className="suggestion-text">
+            <div className="suggestion-name">{item.name}</div>
+            <div className="suggestion-type">{item.type}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
           {/* Main Navigation */}
           <Nav className="main-navigation">
             {navItems.map((item, index) => (

@@ -125,3 +125,123 @@
     margin-bottom: 12px;
   }
 }
+.connections-card {
+  border-radius: 16px;
+  overflow: hidden;
+  border: none;
+}
+
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%) !important;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.suggestions-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.suggestions-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.suggestions-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.suggestions-list::-webkit-scrollbar-thumb {
+  background: #c5c5c5;
+  border-radius: 10px;
+}
+
+.suggestions-list::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+.suggestion-item {
+  transition: all 0.2s ease;
+  border-bottom: 1px solid #f0f0f0 !important;
+}
+
+.suggestion-item:last-child {
+  border-bottom: none !important;
+}
+
+.suggestion-item:hover {
+  background-color: #f8f9fa !important;
+}
+
+.profile-avatar {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.user-name {
+  color: #2c3e50;
+  transition: color 0.2s ease;
+  cursor: pointer;
+}
+
+.user-name:hover {
+  color: #4e54c8;
+}
+
+.more-btn {
+  border-radius: 50% !important;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.message-modal .modal-content {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.message-modal .modal-header {
+  background-color: #f8f9fa;
+}
+
+.toast-with-action {
+  min-width: 350px;
+}
+
+.connections-card .btn {
+  transition: all 0.2s ease;
+}
+
+.connections-card .btn-primary {
+  background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
+  border: none;
+}
+
+.connections-card .btn-primary:hover {
+  background: linear-gradient(135deg, #3a3f99 0%, #757ae9 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(78, 84, 200, 0.3);
+}
+
+.connections-card .btn-outline-primary {
+  color: #4e54c8;
+  border-color: #4e54c8;
+}
+
+.connections-card .btn-outline-primary:hover {
+  background-color: #4e54c8;
+  border-color: #4e54c8;
+}
+
+.rounded-pill {
+  border-radius: 50rem !important;
+}

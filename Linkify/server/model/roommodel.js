@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema({
   },
   isVideoOn: {
     type: Boolean,
-    default: false,
+    default: true,
   },
   isScreenSharing: {
     type: Boolean,

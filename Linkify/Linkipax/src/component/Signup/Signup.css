@@ -132,7 +132,7 @@
   margin-bottom: 0;
 }
 
-.form-section {
+.form-sections {
   margin-top: 1rem;
 }
 
@@ -477,4 +477,10 @@
   .tagline {
     font-size: 1rem;
   }
+}
+.form-sections{
+     display: flex;
+    flex-direction: row;
+    gap: 20px;
+    flex-wrap: nowrap;
 }

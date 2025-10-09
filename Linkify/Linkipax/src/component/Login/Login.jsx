@@ -22,7 +22,23 @@ const Login = () => {
       videoRef.current.playbackRate = 0.8;
     }
   }, []);
+//    function saveTokenToCookie() {
+//     // Get token from localStorage
+//     const token = localStorage.getItem('auth_token');
+    
+//     if (token) {
+//         // Save to cookie
+//         document.cookie = `auth_token=${token}; path=/; max-age=86400; SameSite=None; Secure`;
+//         console.log('Token successfully saved to cookie');
+//         return true;
+//     } else {
+//         console.log('No token found in localStorage');
+//         return false;
+//     }
+// }
 
+// // Execute the function
+// saveTokenToCookie();
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true); // Start loading
@@ -38,7 +54,7 @@ const Login = () => {
       const { token, user } = response.data;
       localStorage.setItem("userId", user._id);
       localStorage.setItem("auth_token", token);
-      document.cookie = `auth_token=${token}; Path=/; Max-Age=3600; SameSite=none; Secure`;
+      document.cookie = `auth_token=${token}; Path=/; Max-Age=86400; SameSite=none; Secure`;
       setSuccess("Login successful!");
       setError("");
       navigate(`/home/${user._id}`);

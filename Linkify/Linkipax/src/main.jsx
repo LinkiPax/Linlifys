@@ -28,6 +28,7 @@ import MainPage from "./component/MainPage/MainPage";
 import Jobs from "./component/Jobs/Jobs";
 import Startup from "./component/Jobs/Startup";
 import Hackathons from "./component/Jobs/Hackathons";
+import CreatePostCard from "./component/Cards/CreatePostCard";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider store={store}>
@@ -57,7 +58,8 @@ createRoot(document.getElementById("root")).render(
             <Route path="/jobs" element={<Jobs />} />
             <Route path="/hackathons" element={<Hackathons />} />
             <Route path="/startup" element={<Startup />} />
-          </Routes>
+            <Route path="/create/post" element={<CreatePostCard userId={localStorage.getItem("userId")} />} />
+            </Routes>
         </Router>
       </NotificationProvider>
     </Provider>

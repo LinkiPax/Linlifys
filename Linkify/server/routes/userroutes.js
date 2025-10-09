@@ -19,13 +19,13 @@ const setCookie = (res, token) => {
     const isProduction = process.env.NODE_ENV === 'production';
     
     const cookieOptions = {
-        httpOnly: true,
-        secure: true, // true in production
-        sameSite: 'None', // 'none' for cross-site
+        httpOnly: false, // true in production
+        secure: false, // true in production
+        sameSite: 'none', // 'none' for cross-site
         maxAge: 3600 * 1000, // 1 hour
         path: '/',
     };
-    res.cookie('auth_token', token, cookieOptions);
+    res.cookie('auth_token',token, cookieOptions);
 };
 
 // POST: Signin (Login)

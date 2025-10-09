@@ -90,7 +90,7 @@ const HomePage = () => {
             {/* Middle Column */}
             <Col md={6} className="px-2">
               <Status userProfilePic={userProfile?.profilePicture} />
-              <CreatePostCard userId={userId} />
+              {/* <CreatePostCard userId={userId} /> */}
               <div className="scrollable-postcards">
                 {posts.length > 0 ? (
                   posts.map((post) => <Postcard key={post._id} post={post} />)

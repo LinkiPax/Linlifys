@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import "./MainPage.css";
 import MainNavbar from "./MainNavbar";
 import {
@@ -26,20 +27,38 @@ import { GlitchPass } from "three/addons/postprocessing/GlitchPass.js";
 import { World } from "../../components/ui/globe";
 import { AnimatedTooltip } from "../../components/ui/animated-tooltip";
 import { WorldMap } from "../../components/ui/world-map";
-import aroraImage from "../../../public/aurora.d2a6947c3dcfb777c25f.webp"
+import aroraImage from "../../../public/aurora.d2a6947c3dcfb777c25f.webp";
 import { debounce } from "lodash";
 
 const MainPage = () => {
+  const navigate = useNavigate();
   const [videoSrc, setVideoSrc] = useState("/videos/demo1.mp4");
   const [isPlaying, setIsPlaying] = useState(true);
   const [isProfessional, setIsProfessional] = useState(true);
   const [volume, setVolume] = useState(0.5);
   const [progress, setProgress] = useState(0);
   const [heroMode, setHeroMode] = useState("merged");
+  const [colorIndex, setColorIndex] = useState(0);
   const videoRef = useRef(null);
   const threeContainerRef = useRef(null);
   const animationFrameRef = useRef(null);
   const heroCanvasRef = useRef(null);
+
+  const colorThemes = [
+    { hue: "260deg", name: "purple" },
+    { hue: "180deg", name: "teal" },
+    { hue: "330deg", name: "pink" },
+    { hue: "60deg", name: "yellow" },
+    { hue: "120deg", name: "green" },
+  ];
+
+  useEffect(() => {
+    const colorInterval = setInterval(() => {
+      setColorIndex((prevIndex) => (prevIndex + 1) % colorThemes.length);
+    }, 100000000); // Change every 10 seconds
+
+    return () => clearInterval(colorInterval);
+  }, []);
 
   const globeConfig = {
     pointSize: 2,
@@ -64,15 +83,15 @@ const MainPage = () => {
   const teamMembers = [
     {
       id: 1,
-      name: "John Doe",
+      name: "Sarthak Nag",
       designation: "Founder & CEO",
-      image: "https://randomuser.me/api/portraits/men/32.jpg",
+      image: "https://avatars.githubusercontent.com/u/73744585?v=4",
     },
     {
       id: 2,
-      name: "Jane Smith",
+      name: "Prerit Nag",
       designation: "CTO",
-      image: "https://randomuser.me/api/portraits/women/44.jpg",
+      image: "https://avatars.githubusercontent.com/u/73744585?v=4",
     },
     {
       id: 3,
@@ -154,6 +173,7 @@ const MainPage = () => {
       color: "#3b82f6",
     },
   ];
+  
   useEffect(() => {
     if (!heroCanvasRef.current) return;
 
@@ -412,6 +432,9 @@ const MainPage = () => {
         opacity: 0.8,
       });
 
+      // Initialize particle targets array
+      particleTargets.current = [];
+      
       for (let i = 0; i < particleCount; i++) {
         const particle = new THREE.Mesh(particleGeometry, particleMaterial);
         const angle = (i / particleCount) * Math.PI * 2;
@@ -464,6 +487,15 @@ const MainPage = () => {
 
     const updateParticleTargets = useCallback(() => {
       currentColor.current.set(isProfessional ? 0x00aaff : 0xffaa00);
+      
+      // Ensure particleTargets array is properly initialized
+      if (!particleTargets.current || particleTargets.current.length === 0) {
+        particleTargets.current = new Array(particleCount);
+        for (let i = 0; i < particleCount; i++) {
+          particleTargets.current[i] = new THREE.Vector3();
+        }
+      }
+      
       for (let i = 0; i < particleCount; i++) {
         const angle = (i / particleCount) * Math.PI * 2;
         const radius = 4 + Math.random() * 2;
@@ -478,7 +510,13 @@ const MainPage = () => {
               Math.sin(angle) * radius * (1 + Math.random() * 0.5),
               (Math.random() - 0.5) * 4
             );
-        particleTargets.current[i].copy(newPos);
+        
+        // Check if the target exists before copying
+        if (particleTargets.current[i]) {
+          particleTargets.current[i].copy(newPos);
+        } else {
+          particleTargets.current[i] = newPos.clone();
+        }
       }
     }, [isProfessional]);
 
@@ -488,12 +526,17 @@ const MainPage = () => {
       }
 
       particlesRef.current.rotation.y += 0.002;
+      
       particlesRef.current.children.forEach((child, i) => {
         if (child.isMesh && particleTargets.current[i]) {
           const pulse = Math.sin(Date.now() * 0.002 + i) * 0.05 + 1;
           child.scale.set(pulse, pulse, pulse);
           const target = particleTargets.current[i];
-          child.position.lerp(target, 0.05);
+          
+          // Check if target exists before using it
+          if (target) {
+            child.position.lerp(target, 0.05);
+          }
 
           if (mouseRef.current.initialized) {
             child.position.x += mouseRef.current.x * 0.001;
@@ -568,7 +611,7 @@ const MainPage = () => {
   useThreeSetup(threeContainerRef, isProfessional);
 
   const features = [
-    { name: "Dashboard", video: "/videos/demo1.mp4" },
+    { name: "Dashboard", video: "\Screen Recording 2025-10-03 132223.mp4" },
     { name: "Team", video: "/videos/demo2.mp4" },
     { name: "Features", video: "/videos/demo3.mp4" },
   ];
@@ -628,7 +671,7 @@ const MainPage = () => {
                   <span
                     className="gradient-text smoke-text"
                     data-text="One Platform,"
-                    style={{ "--hue": "260deg" }}
+                    style={{ "--hue": colorThemes[colorIndex].hue }}
                   >
                     One Platform,
                   </span>
@@ -636,7 +679,9 @@ const MainPage = () => {
                   <span
                     className="gradient-text smoke-text"
                     data-text="Two Worlds"
-                    style={{ "--hue": "180deg" }}
+                    style={{ 
+                      "--hue": colorThemes[(colorIndex + 1) % colorThemes.length].hue 
+                    }}
                   >
                     Two Worlds
                   </span>
@@ -651,6 +696,7 @@ const MainPage = () => {
                 <div className="button-container">
                   <button
                     className="get-started-button cosmic-button"
+                    onClick={() => navigate("/signup")}
                     onMouseEnter={() => setHeroMode("merged")}
                     onMouseLeave={() => setHeroMode("merged")}
                     onMouseMove={(e) => {
@@ -867,12 +913,47 @@ const MainPage = () => {
                 </div>
               </div>
 
-              <div
-                id="three-canvas-container"
-                ref={threeContainerRef}
-                style={{ width: "100%", height: "300px" }}
-                aria-hidden="true"
-              />
+              <div className="chat-demo">
+                <h3>Real-time Translation Chat</h3>
+                <p className="in-progress-label">Feature in development</p>
+                <div className="chat-container">
+                  <div className="chat-message received">
+                    <div className="message-content">
+                      <p>Hello! How are you doing today?</p>
+                    </div>
+                    <div className="message-translation">
+                      <span className="language-label">English → Spanish</span>
+                      <p>¡Hola! ¿Cómo estás hoy?</p>
+                    </div>
+                  </div>
+                  <div className="chat-message sent">
+                    <div className="message-content">
+                      <p>I'm doing great! Just finished a project.</p>
+                    </div>
+                    <div className="message-translation">
+                      <span className="language-label">Spanish → English</span>
+                      <p>¡Me va muy bien! Acabo de terminar un proyecto.</p>
+                    </div>
+                  </div>
+                  <div className="chat-message received">
+                    <div className="message-content">
+                      <p>That's awesome! What kind of project was it?</p>
+                    </div>
+                    <div className="message-translation">
+                      <span className="language-label">English → Spanish</span>
+                      <p>¡Eso es genial! ¿Qué tipo de proyecto era?</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="chat-input">
+                  <input 
+                    type="text" 
+                    placeholder="Type your message here..." 
+                    disabled
+                  />
+                  <button disabled>Send</button>
+                </div>
+              </div>
             </div>
 
             <div className="toggle-image-container">
@@ -964,10 +1045,6 @@ const MainPage = () => {
             </div>
 
             <div className="meeting-room-cta">
-              <div className="status-badge">
-                <span className="badge-pulse"></span>
-                <span>Beta Release in Progress</span>
-              </div>
               <p className="release-timeline">
                 Full release with all features coming in Q3 2025
               </p>
@@ -1166,37 +1243,37 @@ const MainPage = () => {
                   <a href="#">Security</a>
                   <a href="#">Cookies</a>
                 </div>
+            </div>
+          </div>
+
+          <div className="footer-bottom">
+            <div className="newsletter">
+              <h4>Stay Updated</h4>
+              <div className="newsletter-form">
+                <input
+                  type="email"
+                  placeholder="Your email address"
+                  aria-label="Email address for newsletter"
+                />
+                <button aria-label="Subscribe to newsletter">
+                  <FaEnvelope /> Subscribe
+                </button>
               </div>
             </div>
 
-            <div className="footer-bottom">
-              <div className="newsletter">
-                <h4>Stay Updated</h4>
-                <div className="newsletter-form">
-                  <input
-                    type="email"
-                    placeholder="Your email address"
-                    aria-label="Email address for newsletter"
-                  />
-                  <button aria-label="Subscribe to newsletter">
-                    <FaEnvelope /> Subscribe
-                  </button>
-                </div>
-              </div>
-
-              <div className="footer-legal">
-                <p>© 2025 Linkipax. All rights reserved.</p>
-                <div className="footer-locale">
-                  <span>🌐 English</span>
-                  <span>📍 United States</span>
-                </div>
+            <div className="footer-legal">
+              <p>© 2025 Linkipax. All rights reserved.</p>
+              <div className="footer-locale">
+                <span>🌐 English</span>
+                <span>📍 United States</span>
               </div>
             </div>
           </div>
-        </footer>
-      </div>
+        </div>
+      </footer>
     </div>
-  );
+  </div>
+);
 };
 
 export default MainPage;

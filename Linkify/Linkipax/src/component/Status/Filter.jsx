@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Button, Row, Col, Form, Card } from 'react-bootstrap';
-import './AdvancedFilterEditor.css'; // Add custom CSS for styling
+import './FilterEditor.css';
 
-const FilterEditor = ({ setSelectedFilter }) => {
+const FilterEditor = ({ selectedFilter, setSelectedFilter }) => {
   const [filterSettings, setFilterSettings] = useState({
     grayscale: 0,
     sepia: 0,
@@ -16,35 +16,10 @@ const FilterEditor = ({ setSelectedFilter }) => {
     dropShadow: '0px 0px 0px #000000'
   });
 
-  const applyFilter = (filter) => {
-    setSelectedFilter((prev) => ({
-      ...prev,
-      [filter]: filterSettings[filter]
-    }));
-  };
-
-  const resetFilters = () => {
-    setSelectedFilter(null);
-    setFilterSettings({
-      grayscale: 0,
-      sepia: 0,
-      blur: 0,
-      brightness: 100,
-      contrast: 100,
-      saturate: 100,
-      hueRotate: 0,
-      invert: 0,
-      opacity: 100,
-      dropShadow: '0px 0px 0px #000000'
-    });
-  };
-
   const handleSliderChange = (filter, value) => {
-    setFilterSettings((prev) => ({ ...prev, [filter]: value }));
-    setSelectedFilter((prev) => ({
-      ...prev,
-      [filter]: value,
-    }));
+    const newSettings = { ...filterSettings, [filter]: value };
+    setFilterSettings(newSettings);
+    setSelectedFilter(newSettings);
   };
 
   const handleDropShadowChange = (e) => {
@@ -57,25 +32,26 @@ const FilterEditor = ({ setSelectedFilter }) => {
       if (name === 'shadowBlur') parts[2] = `${value}px`;
       if (name === 'shadowColor') parts[3] = value;
       newSettings.dropShadow = parts.join(' ');
+      setSelectedFilter(newSettings);
       return newSettings;
     });
   };
 
-  const getFilterStyle = () => {
-    return {
-      filter: `
-        grayscale(${filterSettings.grayscale}%)
-        sepia(${filterSettings.sepia}%)
-        blur(${filterSettings.blur}px)
-        brightness(${filterSettings.brightness}%)
-        contrast(${filterSettings.contrast}%)
-        saturate(${filterSettings.saturate}%)
-        hue-rotate(${filterSettings.hueRotate}deg)
-        invert(${filterSettings.invert}%)
-        opacity(${filterSettings.opacity}%)
-      `,
-      boxShadow: filterSettings.dropShadow
+  const resetFilters = () => {
+    const defaultSettings = {
+      grayscale: 0,
+      sepia: 0,
+      blur: 0,
+      brightness: 100,
+      contrast: 100,
+      saturate: 100,
+      hueRotate: 0,
+      invert: 0,
+      opacity: 100,
+      dropShadow: '0px 0px 0px #000000'
     };
+    setFilterSettings(defaultSettings);
+    setSelectedFilter(defaultSettings);
   };
 
   const presetFilters = [
@@ -94,18 +70,9 @@ const FilterEditor = ({ setSelectedFilter }) => {
   };
 
   return (
-    <Card className="filter-editor">
+    <Card className="filter-editor-card">
       <Card.Body>
-        <Card.Title>Advanced Filter Editor</Card.Title>
-
-        {/* Filter Preview */}
-        <div className="filter-preview mb-4" style={getFilterStyle()}>
-          <img
-            src="https://via.placeholder.com/300" // Replace with your image URL
-            alt="Filter Preview"
-            className="preview-image img-fluid"
-          />
-        </div>
+        <Card.Title>Filters</Card.Title>
 
         {/* Preset Filters */}
         <div className="preset-filters mb-4">
@@ -276,10 +243,10 @@ const FilterEditor = ({ setSelectedFilter }) => {
         {/* Action Buttons */}
         <div className="d-flex justify-content-between mt-4">
           <Button variant="primary" onClick={() => setSelectedFilter(filterSettings)}>
-            Apply All Filters
+            Apply Filters
           </Button>
           <Button variant="danger" onClick={resetFilters}>
-            Reset All Filters
+            Reset Filters
           </Button>
         </div>
       </Card.Body>

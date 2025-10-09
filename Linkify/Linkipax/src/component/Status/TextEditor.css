@@ -1,68 +1,202 @@
-.text-editor {
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+.text-editor-card {
+  border: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.editor-header {
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.editor-header h5 {
+  margin: 0;
+  color: #333;
+  display: flex;
+  align-items: center;
+}
+
+.text-input {
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.text-input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.quick-styles {
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 15px;
+}
+
+.style-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.style-buttons .btn {
+  border-radius: 20px;
+  font-size: 0.75rem;
+  padding: 4px 12px;
+}
+
+.text-controls {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.control-group {
+  margin-bottom: 15px;
+}
+
+.control-group:last-child {
+  margin-bottom: 0;
+}
+
+.control-group .form-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #495057;
+}
+
+.font-size-slider {
+  width: 100%;
+}
+
+.color-picker-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.color-picker {
+  width: 100%;
+  height: 38px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.color-picker-icon {
+  position: absolute;
+  right: 10px;
+  color: #6c757d;
+  pointer-events: none;
+}
+
+.text-style-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.text-style-controls .btn-group {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.text-style-controls .btn {
+  border: 1px solid #dee2e6;
+  flex: 1;
+}
+
+.preview-section {
+  border-top: 1px solid #e9ecef;
+  padding-top: 15px;
+}
+
+.text-preview {
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #dee2e6;
+  background: white;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.action-buttons .btn {
+  flex: 1;
+}
+
+.editor-footer {
+  border-top: 1px solid #e9ecef;
+  padding-top: 10px;
+  text-align: center;
+}
+
+/* Scrollbar styling */
+.text-editor-card::-webkit-scrollbar {
+  width: 6px;
+}
+
+.text-editor-card::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.text-editor-card::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.text-editor-card::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .text-editor-card {
+    max-height: none;
   }
   
-  .text-toolbar {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-    flex-wrap: wrap;
+  .text-style-controls {
+    flex-direction: column;
   }
   
-  .text-toolbar .btn {
-    display: flex;
-    align-items: center;
+  .action-buttons {
+    flex-direction: column;
   }
   
-  .color-picker, .font-size-picker {
-    width: 100px;
-  }
-  
-  .text-preview {
-    margin-top: 20px;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #f8f9fa;
-    min-height: 50px;
-    display: flex;
-    align-items: center;
+  .style-buttons {
     justify-content: center;
   }
-  .text-editor {
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-  
-  .text-toolbar {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-    flex-wrap: wrap;
-  }
-  
-  .text-toolbar .btn {
-    display: flex;
-    align-items: center;
-  }
-  
-  .color-picker, .font-size-picker {
-    width: 100px;
-  }
-  
-  .text-preview {
-    margin-top: 20px;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #f8f9fa;
-    min-height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+}
+
+/* Font family preview in dropdown */
+option {
+  font-family: inherit;
+}
+
+/* Animation for live preview */
+.text-preview {
+  transition: all 0.3s ease;
+}
+
+/* Button hover effects */
+.btn-outline-secondary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary {
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}

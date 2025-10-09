@@ -9,7 +9,22 @@ import {
   ProgressBar,
   Card,
   Image,
+  Row,
+  Col,
+  Toast,
+  ToastContainer,
 } from "react-bootstrap";
+import { 
+  FiUser, 
+  FiUpload, 
+  FiCheck, 
+  FiAward, 
+  FiBriefcase, 
+  FiBook,
+  FiXCircle,
+  FiInfo
+} from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./PersonalDetails.css";
 
@@ -26,9 +41,23 @@ function PersonalDetails() {
   const [success, setSuccess] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [toasts, setToasts] = useState([]);
   const fileInputRef = useRef(null);
   const { userId } = useParams();
   const navigate = useNavigate();
+
+  const addToast = (title, message, variant = "info", duration = 5000) => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, title, message, variant }]);
+    
+    if (duration > 0) {
+      setTimeout(() => removeToast(id), duration);
+    }
+  };
+
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -44,11 +73,13 @@ function PersonalDetails() {
 
     if (!file.type.match("image.*")) {
       setError("Please select an image file (JPEG, PNG, GIF)");
+      addToast("Invalid File", "Please select an image file (JPEG, PNG, GIF)", "danger");
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
       setError("Image size should be less than 5MB");
+      addToast("File Too Large", "Image size should be less than 5MB", "danger");
       return;
     }
 
@@ -64,6 +95,7 @@ function PersonalDetails() {
     try {
       setIsUploading(true);
       setUploadProgress(0);
+      addToast("Uploading", "Your profile picture is being uploaded", "info");
 
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/user/upload-profile-pic/${userId}`,
@@ -84,10 +116,12 @@ function PersonalDetails() {
 
       setProfilePicture(response.data.profilePicture);
       setSuccess("Profile picture uploaded successfully!");
+      addToast("Success", "Profile picture uploaded successfully!", "success");
       setIsUploading(false);
     } catch (err) {
       console.error("Upload error:", err);
       setError(err.response?.data?.message || "Failed to upload image");
+      addToast("Upload Failed", err.response?.data?.message || "Failed to upload image", "danger");
       setIsUploading(false);
       setUploadProgress(0);
     }
@@ -100,6 +134,7 @@ function PersonalDetails() {
 
     if (!userId) {
       setError("User ID is missing! Redirecting to home...");
+      addToast("Error", "User ID is missing! Redirecting to home...", "danger");
       setTimeout(() => navigate("/home"), 3000);
       return;
     }
@@ -117,138 +152,242 @@ function PersonalDetails() {
       );
 
       setSuccess("Details updated successfully!");
+      addToast("Profile Updated", "Your profile has been updated successfully!", "success");
+      
       setTimeout(() => navigate(`/home/${userId}`), 1500);
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong!");
+      addToast("Update Failed", err.response?.data?.message || "Something went wrong!", "danger");
     }
   };
 
   return (
-    <Container className="personal-details-container">
-      <div className="text-center mb-4">
-        <h1 className="logo">Linkipax</h1>
-        <h2>Complete Your Profile</h2>
-        <p className="text-muted">Let's get to know you better</p>
-      </div>
-
-      <Card className="p-4 shadow-sm">
-        <Form onSubmit={handleSubmit}>
-          <Form.Group className="mb-4 text-center">
-            <div className="profile-picture-container mb-3">
-              {previewImage ? (
-                <Image
-                  src={previewImage}
-                  roundedCircle
-                  className="profile-preview"
-                />
-              ) : (
-                <div className="profile-placeholder">
-                  <i
-                    className="bi bi-person-circle"
-                    style={{ fontSize: "100px" }}
-                  ></i>
-                </div>
-              )}
-            </div>
-
-            <Form.Label
-              htmlFor="profile-upload"
-              className="btn btn-outline-primary"
-            >
-              {profilePicture
-                ? "Change Profile Picture"
-                : "Upload Profile Picture"}
-            </Form.Label>
-            <Form.Control
-              type="file"
-              id="profile-upload"
-              ref={fileInputRef}
-              onChange={handleImageChange}
-              accept="image/*"
-              className="d-none"
-            />
-
-            {isUploading && (
-              <ProgressBar
-                now={uploadProgress}
-                label={`${uploadProgress}%`}
-                className="mt-2"
-                animated
-              />
-            )}
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>Full Name</Form.Label>
-            <Form.Control
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              placeholder="Enter your full name"
-              required
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>Bio</Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={3}
-              name="bio"
-              value={formData.bio}
-              onChange={handleInputChange}
-              placeholder="Tell us about yourself"
-              required
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>Job Title</Form.Label>
-            <Form.Control
-              type="text"
-              name="jobTitle"
-              value={formData.jobTitle}
-              onChange={handleInputChange}
-              placeholder="Your current position"
-              required
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-4">
-            <Form.Label>Company</Form.Label>
-            <Form.Control
-              type="text"
-              name="company"
-              value={formData.company}
-              onChange={handleInputChange}
-              placeholder="Where you work"
-              required
-            />
-          </Form.Group>
-
-          <Button
-            variant="primary"
-            type="submit"
-            className="w-100 py-2"
-            disabled={isUploading}
+    <>
+      <div className="Personal-background">
+        <Container className="Personal-container">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="Personal-header text-center mb-4"
           >
-            {isUploading ? "Processing..." : "Save Profile"}
-          </Button>
+            <h1 className="Personal-logo">Linkipax</h1>
+            <h2 className="Personal-title">Complete Your Profile</h2>
+            <p className="Personal-subtitle">Let's get to know you better and build your professional identity</p>
+          </motion.div>
 
-          {error && (
-            <Alert variant="danger" className="mt-3">
-              {error}
-            </Alert>
-          )}
-          {success && (
-            <Alert variant="success" className="mt-3">
-              {success}
-            </Alert>
-          )}
-        </Form>
-      </Card>
-    </Container>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <Card className="Personal-card">
+              <Form onSubmit={handleSubmit}>
+                <Form.Group className="Personal-form-group text-center">
+                  <motion.div 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="Personal-profile-container mb-3 mx-auto"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {previewImage ? (
+                      <Image
+                        src={previewImage}
+                        roundedCircle
+                        className="Personal-profile-preview"
+                      />
+                    ) : (
+                      <div className="Personal-profile-placeholder d-flex flex-column justify-content-center align-items-center">
+                        <FiUser size={60} className="Personal-placeholder-icon mb-2" />
+                        <small className="Personal-placeholder-text">Click to upload</small>
+                      </div>
+                    )}
+                    
+                    {isUploading && (
+                      <div className="Personal-upload-overlay d-flex justify-content-center align-items-center">
+                        <div className="spinner-border text-light" role="status">
+                          <span className="visually-hidden">Uploading...</span>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="Personal-profile-shine"></div>
+                  </motion.div>
+
+                  <Form.Label
+                    htmlFor="profile-upload"
+                    className="Personal-upload-btn btn rounded-pill d-inline-flex align-items-center"
+                  >
+                    <FiUpload className="me-2" />
+                    {profilePicture ? "Change Picture" : "Upload Picture"}
+                  </Form.Label>
+                  <Form.Control
+                    type="file"
+                    id="profile-upload"
+                    ref={fileInputRef}
+                    onChange={handleImageChange}
+                    accept="image/*"
+                    className="d-none"
+                  />
+
+                  {isUploading && (
+                    <div className="Personal-progress-container mt-3">
+                      <ProgressBar
+                        now={uploadProgress}
+                        label={`${uploadProgress}%`}
+                        className="Personal-progress-bar mt-2"
+                        animated
+                      />
+                      <small className="Personal-progress-text">Uploading your profile picture...</small>
+                    </div>
+                  )}
+                </Form.Group>
+
+                <Row>
+                  <Col md={6}>
+                    <Form.Group className="Personal-form-group mb-3">
+                      <Form.Label className="Personal-form-label d-flex align-items-center">
+                        <FiUser className="Personal-input-icon me-2" /> Full Name
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        placeholder="Enter your full name"
+                        required
+                        className="Personal-form-control py-2"
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group className="Personal-form-group mb-3">
+                      <Form.Label className="Personal-form-label d-flex align-items-center">
+                        <FiBriefcase className="Personal-input-icon me-2" /> Job Title
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="jobTitle"
+                        value={formData.jobTitle}
+                        onChange={handleInputChange}
+                        placeholder="Your current position"
+                        required
+                        className="Personal-form-control py-2"
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Form.Group className="Personal-form-group mb-3">
+                  <Form.Label className="Personal-form-label d-flex align-items-center">
+                    <FiAward className="Personal-input-icon me-2" /> Company
+                  </Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="company"
+                    value={formData.company}
+                    onChange={handleInputChange}
+                    placeholder="Where you work"
+                    required
+                    className="Personal-form-control py-2"
+                  />
+                </Form.Group>
+
+                <Form.Group className="Personal-form-group mb-4">
+                  <Form.Label className="Personal-form-label d-flex align-items-center">
+                    <FiBook className="Personal-input-icon me-2" /> Bio
+                  </Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={4}
+                    name="bio"
+                    value={formData.bio}
+                    onChange={handleInputChange}
+                    placeholder="Tell us about yourself, your skills, and experience..."
+                    required
+                    className="Personal-form-control py-2"
+                  />
+                  <Form.Text className="Personal-form-text">
+                    This will be visible on your profile
+                  </Form.Text>
+                </Form.Group>
+
+                <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+                  <Button
+                    type="submit"
+                    className="Personal-submit-btn w-100 py-3 fw-semibold"
+                    disabled={isUploading}
+                    size="lg"
+                  >
+                    {isUploading ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <FiCheck className="me-2" />
+                        Save Profile
+                      </>
+                    )}
+                  </Button>
+                </motion.div>
+
+                {error && (
+                  <Alert variant="danger" className="Personal-alert mt-3 d-flex align-items-center">
+                    <FiXCircle className="me-2" />
+                    {error}
+                  </Alert>
+                )}
+                {success && (
+                  <Alert variant="success" className="Personal-alert mt-3 d-flex align-items-center">
+                    <FiCheck className="me-2" />
+                    {success}
+                  </Alert>
+                )}
+              </Form>
+            </Card>
+          </motion.div>
+        </Container>
+
+        {/* Toast Notifications */}
+        <ToastContainer position="top-end" className="Personal-toast-container p-3 position-fixed">
+          <AnimatePresence>
+            {toasts.map((toast) => (
+              <motion.div
+                key={toast.id}
+                layout
+                initial={{ opacity: 0, y: -50, scale: 0.3 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              >
+                <Toast 
+                  bg={toast.variant} 
+                  onClose={() => removeToast(toast.id)}
+                  show={true}
+                  delay={5000}
+                  autohide
+                  className="Personal-toast border-0 shadow-lg mb-2"
+                >
+                  <Toast.Header className={`Personal-toast-header text-${toast.variant} border-0`}>
+                    <strong className="me-auto d-flex align-items-center">
+                      {toast.variant === "success" && <FiCheck className="me-2" />}
+                      {toast.variant === "danger" && <FiXCircle className="me-2" />}
+                      {toast.variant === "info" && <FiInfo className="me-2" />}
+                      {toast.title}
+                    </strong>
+                  </Toast.Header>
+                  <Toast.Body className="Personal-toast-body text-dark">
+                    {toast.message}
+                  </Toast.Body>
+                </Toast>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </ToastContainer>
+      </div>
+    </>
   );
 }
 

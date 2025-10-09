@@ -54,6 +54,15 @@ import {
   FileWordOutlined,
   FilePptOutlined,
   FileExcelOutlined,
+  FilePdfOutlined,
+  FileTextOutlined,
+  FileZipOutlined,
+  WechatOutlined,
+  MessageOutlined,
+  EllipsisOutlined,
+  SettingOutlined,
+  BellOutlined,
+  LogoutOutlined,
 } from "@ant-design/icons";
 import { useParams } from "react-router-dom";
 import { io } from "socket.io-client";
@@ -62,8 +71,6 @@ import axios from "axios";
 import Peer from "peerjs";
 import "./ProfessionalChat.css";
 
-import CircularProgress from "@mui/material/CircularProgress";
-import { FilePdfOutlined } from "@ant-design/icons";
 const { Text, Title } = Typography;
 const { Option } = Select;
 const { TextArea } = Input;
@@ -113,9 +120,10 @@ const ProfessionalChat = () => {
   const [uploading, setUploading] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
   const [recordingTime, setRecordingTime] = useState(0);
-  const [imageLoaded, setImageLoaded] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [activeTab, setActiveTab] = useState("chats");
+  const [onlineUsers, setOnlineUsers] = useState([]);
 
   // Refs
   const messagesEndRef = useRef(null);
@@ -127,6 +135,9 @@ const ProfessionalChat = () => {
   const documentInputRef = useRef(null);
   const recordingIntervalRef = useRef(null);
   const peerInstanceRef = useRef(null);
+  const messageSoundRef = useRef(null);
+  const sendSoundRef = useRef(null);
+  const callSoundRef = useRef(null);
 
   // Initialize socket connection
   useEffect(() => {
@@ -134,6 +145,11 @@ const ProfessionalChat = () => {
       withCredentials: true,
     });
     socketRef.current = socket;
+
+    // Create audio elements for sounds
+    messageSoundRef.current = new Audio('/sounds/message.mp3');
+    sendSoundRef.current = new Audio('/sounds/send.mp3');
+    callSoundRef.current = new Audio('/sounds/call.mp3');
 
     const audio = document.createElement("audio");
     remoteAudioRef.current = audio;
@@ -153,7 +169,9 @@ const ProfessionalChat = () => {
   // Socket listeners
   useEffect(() => {
     if (!socketRef.current) return;
+    
     const handleIncomingCall = (callData) => {
+      callSoundRef.current.play();
       // Initialize PeerJS if not already initialized
       if (!peerInstanceRef.current) {
         const peer = new Peer(currentUser.id, {
@@ -198,12 +216,18 @@ const ProfessionalChat = () => {
       }
     };
 
+    const handleOnlineUsers = (users) => {
+      setOnlineUsers(users);
+    };
+
     socketRef.current.on("incoming_call", handleIncomingCall);
     socketRef.current.on("typing_indicator", handleTypingIndicator);
+    socketRef.current.on("online_users", handleOnlineUsers);
 
     return () => {
       socketRef.current.off("incoming_call", handleIncomingCall);
       socketRef.current.off("typing_indicator", handleTypingIndicator);
+      socketRef.current.off("online_users", handleOnlineUsers);
     };
   }, [contacts, activeContact, currentUser.id]);
 
@@ -219,6 +243,10 @@ const ProfessionalChat = () => {
           newMessage.receiver === activeContact?.id)
       ) {
         setMessages((prev) => [...prev, newMessage]);
+        // Play message sound if it's a received message
+        if (newMessage.sender !== currentUser.id) {
+          messageSoundRef.current.play();
+        }
       }
 
       if (newMessage.receiver === currentUser.id) {
@@ -316,8 +344,9 @@ const ProfessionalChat = () => {
                 name:
                   contactResponse.data.name || contactResponse.data.username,
                 avatar: contactResponse.data.profilePicture,
-                status: "offline",
+                status: onlineUsers.includes(contactResponse.data._id) ? "online" : "offline",
                 unread: unreadResponse.data.count,
+                lastSeen: contactResponse.data.lastSeen,
               };
             } catch (error) {
               console.error(`Error fetching contact ${connId}:`, error);
@@ -341,7 +370,7 @@ const ProfessionalChat = () => {
     if (currentUser.id) {
       fetchContacts();
     }
-  }, [currentUser.id]);
+  }, [currentUser.id, onlineUsers]);
 
   // Set active contact when contactId changes
   useEffect(() => {
@@ -408,7 +437,7 @@ const ProfessionalChat = () => {
           `${import.meta.env.VITE_API_URL}/api/messages/mark-as-read`,
           {
             messageIds: unreadMessages.map((msg) => msg._id),
-            readerId: currentUser.id, // ← add this
+            readerId: currentUser.id,
           }
         );
 
@@ -472,6 +501,9 @@ const ProfessionalChat = () => {
     setReplyTo(null);
     setShowEmojiPicker(false);
     setIsTyping(false);
+    
+    // Play send sound
+    sendSoundRef.current.play();
 
     try {
       socketRef.current.emit("send_message", {
@@ -509,6 +541,7 @@ const ProfessionalChat = () => {
     };
 
     setMessages((prev) => [...prev, optimisticMessage]);
+    sendSoundRef.current.play();
 
     const formData = new FormData();
     formData.append("image", imageFile);
@@ -562,6 +595,7 @@ const ProfessionalChat = () => {
     };
 
     setMessages((prev) => [...prev, optimisticMessage]);
+    sendSoundRef.current.play();
 
     const formData = new FormData();
     formData.append("video", videoFile);
@@ -621,6 +655,7 @@ const ProfessionalChat = () => {
 
       setMessages((prev) => [...prev, response.data]);
       setShowLocationModal(false);
+      sendSoundRef.current.play();
       antMessage.success("Live location shared");
     } catch (error) {
       antMessage.error("Failed to get location", error);
@@ -654,6 +689,7 @@ const ProfessionalChat = () => {
       setMessages((prev) => [...prev, response.data]);
       setShowContactsModal(false);
       setSelectedContacts([]);
+      sendSoundRef.current.play();
       antMessage.success("Contacts shared");
     } catch (error) {
       antMessage.error("Failed to share contacts", error);
@@ -686,6 +722,7 @@ const ProfessionalChat = () => {
     };
 
     setMessages((prev) => [...prev, optimisticMessage]);
+    sendSoundRef.current.play();
 
     const formData = new FormData();
     formData.append("document", documentFile);
@@ -743,6 +780,7 @@ const ProfessionalChat = () => {
       setPollOptions(["", ""]);
       setIsMultiSelect(false);
       setPollDuration(null);
+      sendSoundRef.current.play();
       antMessage.success("Poll created");
     } catch (error) {
       antMessage.error("Failed to create poll", error);
@@ -781,6 +819,7 @@ const ProfessionalChat = () => {
       setEventDate(null);
       setEventTime(null);
       setEventLocation("");
+      sendSoundRef.current.play();
       antMessage.success("Event created");
     } catch (error) {
       antMessage.error("Failed to create event", error);
@@ -940,6 +979,7 @@ const ProfessionalChat = () => {
     };
 
     setMessages((prev) => [...prev, optimisticMessage]);
+    sendSoundRef.current.play();
 
     try {
       const formData = new FormData();
@@ -1094,83 +1134,25 @@ const ProfessionalChat = () => {
               <>
                 <div
                   className="image-thumbnail"
-                  style={{
-                    width: "200px",
-                    height: "150px",
-                    position: "relative",
-                    cursor: "pointer",
-                    overflow: "hidden",
-                    borderRadius: "8px",
-                    backgroundColor: "#f0f0f0",
-                  }}
                   onClick={() => setExpanded(true)}
                 >
                   <img
                     src={msg.image.url}
                     alt={msg.image.caption || "Shared image"}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      display: imageLoaded ? "block" : "none",
-                    }}
-                    onLoad={() => setImageLoaded(true)}
                     onError={(e) => {
                       e.target.onerror = null;
                       e.target.src = "/placeholder-image.png";
                     }}
                   />
-
-                  {!imageLoaded && (
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <CircularProgress size={24} />
-                    </div>
-                  )}
                 </div>
 
                 {expanded && (
-                  <div
-                    style={{
-                      position: "fixed",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      backgroundColor: "rgba(0,0,0,0.9)",
-                      zIndex: 1000,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexDirection: "column",
-                    }}
-                  >
+                  <div className="image-expanded-view">
                     <img
                       src={msg.image.url}
                       alt={msg.image.caption || "Shared image"}
-                      style={{
-                        maxWidth: "90vw",
-                        maxHeight: "90vh",
-                        objectFit: "contain",
-                      }}
                     />
-                    <div
-                      style={{
-                        marginTop: "16px",
-                        display: "flex",
-                        gap: "16px",
-                      }}
-                    >
+                    <div className="image-actions">
                       <Button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -1190,29 +1172,13 @@ const ProfessionalChat = () => {
                 )}
 
                 {msg.image.caption && (
-                  <div
-                    style={{
-                      marginTop: "8px",
-                      fontSize: "0.9rem",
-                      color: "#666",
-                      wordBreak: "break-word",
-                      maxWidth: "200px",
-                    }}
-                  >
+                  <div className="image-caption">
                     {msg.image.caption}
                   </div>
                 )}
               </>
             ) : (
-              <div
-                style={{
-                  padding: "16px",
-                  backgroundColor: "#f8d7da",
-                  color: "#721c24",
-                  borderRadius: "8px",
-                  width: "200px",
-                }}
-              >
+              <div className="image-error">
                 Image failed to load
               </div>
             )}
@@ -1220,46 +1186,34 @@ const ProfessionalChat = () => {
         );
       case "video":
         return (
-          <div
-            className="video-message-container"
-            style={{ maxWidth: "400px" }}
-          >
-            <div className="relative">
+          <div className="video-message-container">
+            <div className="video-wrapper">
               <video
                 controls
                 src={msg.video?.url}
                 poster={msg.video?.thumbnail}
-                style={{
-                  width: "100%",
-                  borderRadius: "8px",
-                  aspectRatio:
-                    msg.video?.width && msg.video?.height
-                      ? `${msg.video.width}/${msg.video.height}`
-                      : "16/9",
-                  backgroundColor: "#000",
-                }}
                 onPlay={() => setIsPlaying(true)}
                 onPause={() => setIsPlaying(false)}
               />
 
               {!isPlaying && (
                 <div
-                  className="absolute inset-0 flex items-center justify-center cursor-pointer"
+                  className="video-play-overlay"
                   onClick={(e) => {
                     e.preventDefault();
                     e.currentTarget.parentElement.querySelector("video").play();
                   }}
                 >
-                  <div className="w-12 h-12 bg-black bg-opacity-50 rounded-full flex items-center justify-center"></div>
+                  <div className="play-button"></div>
                 </div>
               )}
             </div>
 
-            <div className="mt-2 flex items-center text-sm text-gray-500">
-              <span className="mr-2">🎥 Video</span>
+            <div className="video-meta">
+              <span className="video-icon">🎥 Video</span>
               <span>{formatFileSize(msg.video?.size)}</span>
               {msg.video?.duration > 0 && (
-                <span className="ml-2">
+                <span>
                   {new Date(msg.video.duration * 1000)
                     .toISOString()
                     .substr(11, 8)}
@@ -1268,12 +1222,12 @@ const ProfessionalChat = () => {
             </div>
 
             {msg.video?.caption && (
-              <div className="mt-1 text-sm text-gray-700 break-words">
+              <div className="video-caption">
                 {msg.video.caption}
               </div>
             )}
 
-            <div className="mt-2">
+            <div className="video-actions">
               <Button
                 onClick={() => {
                   const link = document.createElement("a");
@@ -1283,7 +1237,6 @@ const ProfessionalChat = () => {
                   }`;
                   link.click();
                 }}
-                className="text-sm text-blue-600 hover:text-blue-800"
               >
                 Download Video
               </Button>
@@ -1292,7 +1245,7 @@ const ProfessionalChat = () => {
         );
       case "audio":
         return (
-          <div className="audio-message-container" aria-label="Audio message">
+          <div className="audio-message-container">
             <div className="audio-player-wrapper">
               <audio
                 controls
@@ -1306,24 +1259,23 @@ const ProfessionalChat = () => {
                   console.error("Failed to load audio");
                 }}
                 preload="metadata"
-                aria-label="Audio player"
               />
             </div>
 
             <div className="audio-meta">
               <div className="audio-details">
-                <span className="duration" aria-label="Duration">
-                  <ClockCircleOutlined style={{ marginRight: 4 }} />
+                <span className="duration">
+                  <ClockCircleOutlined />
                   {formatDuration(msg.audio?.duration || 0)}
                 </span>
 
-                <span className="size" aria-label="File size">
-                  <FileOutlined style={{ marginRight: 4 }} />
+                <span className="size">
+                  <FileOutlined />
                   {formatFileSize(msg.audio?.size || 0)}
                 </span>
 
-                <span className="format" aria-label="Audio format">
-                  <SoundOutlined style={{ marginRight: 4 }} />
+                <span className="format">
+                  <SoundOutlined />
                   {msg.audio?.format?.toUpperCase() || "WEBM"}
                 </span>
               </div>
@@ -1340,17 +1292,13 @@ const ProfessionalChat = () => {
                   link.click();
                   document.body.removeChild(link);
                 }}
-                aria-label="Download audio"
-                title="Download audio"
               >
                 <DownloadOutlined />
-                <span className="sr-only">Download</span>
               </Button>
             </div>
           </div>
         );
       case "location": {
-        // Safeguard against undefined location data
         if (
           !msg.location ||
           !msg.location.latitude ||
@@ -1358,7 +1306,7 @@ const ProfessionalChat = () => {
         ) {
           return (
             <div className="location-message error">
-              <EnvironmentOutlined style={{ fontSize: 24, marginRight: 8 }} />
+              <EnvironmentOutlined />
               <Text type="danger">Location data unavailable</Text>
             </div>
           );
@@ -1372,77 +1320,28 @@ const ProfessionalChat = () => {
           : null;
 
         return (
-          <div className="location-message" style={{ maxWidth: "300px" }}>
+          <div className="location-message">
             <div
               className="location-map-preview"
               onClick={() => window.open(mapUrl, "_blank")}
-              style={{
-                position: "relative",
-                cursor: "pointer",
-                borderRadius: "8px",
-                overflow: "hidden",
-                marginBottom: "8px",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-              }}
             >
-              {/* Static map image - replace with your own implementation or API */}
-              <div
-                style={{
-                  height: "150px",
-                  background: `#f0f0f0 url(${staticMapUrl}) center/cover no-repeat`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  position: "relative",
-                }}
-              >
+              <div className="map-placeholder">
                 {!staticMapUrl && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      background: "rgba(0,0,0,0.3)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "white",
-                    }}
-                  >
-                    <EnvironmentOutlined style={{ fontSize: 32 }} />
+                  <div className="map-overlay">
+                    <EnvironmentOutlined />
                   </div>
                 )}
               </div>
 
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: "8px",
-                  left: "8px",
-                  right: "8px",
-                  background: "rgba(0,0,0,0.7)",
-                  color: "white",
-                  padding: "4px 8px",
-                  borderRadius: "4px",
-                  fontSize: "12px",
-                }}
-              >
-                <Text style={{ color: "white" }}>Tap to open in Maps</Text>
+              <div className="map-action-text">
+                <Text>Tap to open in Maps</Text>
               </div>
             </div>
 
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <EnvironmentOutlined
-                style={{
-                  fontSize: 20,
-                  color: "#1890ff",
-                  marginRight: "8px",
-                }}
-              />
+            <div className="location-info">
+              <EnvironmentOutlined />
               <div>
-                <Text strong style={{ display: "block" }}>
+                <Text strong>
                   {msg.location.live ? "Live Location" : "Shared Location"}
                 </Text>
 
@@ -1451,7 +1350,6 @@ const ProfessionalChat = () => {
                     type="link"
                     size="small"
                     onClick={() => window.open(mapUrl, "_blank")}
-                    style={{ padding: 0 }}
                   >
                     Open in Maps
                   </Button>
@@ -1465,7 +1363,6 @@ const ProfessionalChat = () => {
                       );
                       antMessage.success("Coordinates copied to clipboard");
                     }}
-                    style={{ padding: 0 }}
                   >
                     Copy Coordinates
                   </Button>
@@ -1474,19 +1371,8 @@ const ProfessionalChat = () => {
             </div>
 
             {msg.location.live && expiresInMinutes > 0 && (
-              <div
-                style={{
-                  marginTop: "8px",
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                <ClockCircleOutlined
-                  style={{
-                    color: expiresInMinutes < 5 ? "#ff4d4f" : "#faad14",
-                    marginRight: "6px",
-                  }}
-                />
+              <div className="location-timer">
+                <ClockCircleOutlined />
                 <Progress
                   percent={Math.min(
                     100,
@@ -1494,8 +1380,6 @@ const ProfessionalChat = () => {
                   )}
                   status={expiresInMinutes < 5 ? "exception" : "active"}
                   showInfo={false}
-                  strokeColor={expiresInMinutes < 5 ? "#ff4d4f" : "#1890ff"}
-                  style={{ flex: 1, marginRight: "8px" }}
                 />
                 <Text type={expiresInMinutes < 5 ? "danger" : "secondary"}>
                   {Math.floor(expiresInMinutes)} min left
@@ -1504,13 +1388,13 @@ const ProfessionalChat = () => {
             )}
 
             {msg.location.live && expiresInMinutes <= 0 && (
-              <Tag color="red" style={{ marginTop: "8px" }}>
+              <Tag color="red">
                 Location sharing ended
               </Tag>
             )}
 
             {msg.location.address && (
-              <div style={{ marginTop: "8px" }}>
+              <div className="location-address">
                 <Text type="secondary">{msg.location.address}</Text>
               </div>
             )}
@@ -1520,7 +1404,7 @@ const ProfessionalChat = () => {
       case "contact":
         return (
           <div className="contact-message">
-            <UserOutlined style={{ fontSize: 24, marginRight: 8 }} />
+            <UserOutlined />
             <div>
               <Text strong>Shared {msg.contacts.length} contact(s)</Text>
               {msg.contacts.map((contact, index) => (
@@ -1533,17 +1417,15 @@ const ProfessionalChat = () => {
           </div>
         );
       case "document": {
-        // Safeguard against undefined document
         if (!msg.document) {
           return (
             <div className="document-message error">
-              <FileOutlined style={{ fontSize: 24, marginRight: 8 }} />
+              <FileOutlined />
               <Text type="danger">Document unavailable</Text>
             </div>
           );
         }
 
-        // Determine document type and icon
         const getDocumentIcon = () => {
           const type = msg.document?.type?.toLowerCase() || "";
           const name = msg.document?.name?.toLowerCase() || "";
@@ -1593,81 +1475,21 @@ const ProfessionalChat = () => {
           "FILE";
 
         return (
-          <div
-            className="document-message-container"
-            style={{
-              maxWidth: "100%",
-              border: "1px solid #f0f0f0",
-              borderRadius: "8px",
-              overflow: "hidden",
-              display: "flex",
-              backgroundColor: "#fff",
-            }}
-          >
-            <div
-              className="document-preview"
-              style={{
-                width: "80px",
-                minWidth: "80px",
-                height: "100px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: `${color}10`, // Light tint of icon color
-                borderRight: `1px solid #f0f0f0`,
-              }}
-            >
+          <div className="document-message-container">
+            <div className="document-preview" style={{ backgroundColor: `${color}10` }}>
               {React.cloneElement(icon, {
-                style: {
-                  fontSize: 36,
-                  color: color,
-                },
+                style: { color: color },
               })}
             </div>
 
-            <div
-              className="document-info"
-              style={{
-                flex: 1,
-                padding: "12px",
-                minWidth: 0, // Important for text truncation
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-              }}
-            >
+            <div className="document-info">
               <div>
-                <div
-                  className="document-name"
-                  style={{
-                    fontWeight: 500,
-                    fontSize: "14px",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
+                <div className="document-name">
                   {msg.document.name || "Document"}
                 </div>
 
-                <div
-                  className="document-meta"
-                  style={{
-                    display: "flex",
-                    gap: "12px",
-                    marginTop: "4px",
-                    fontSize: "12px",
-                    color: "#666",
-                  }}
-                >
-                  <span
-                    style={{
-                      backgroundColor: "#f0f0f0",
-                      padding: "2px 6px",
-                      borderRadius: "4px",
-                      fontWeight: 500,
-                    }}
-                  >
+                <div className="document-meta">
+                  <span className="file-type">
                     {fileType}
                   </span>
                   <span>{formatFileSize(msg.document.size || 0)}</span>
@@ -1675,24 +1497,12 @@ const ProfessionalChat = () => {
               </div>
 
               {msg.document.url && (
-                <div
-                  className="document-actions"
-                  style={{
-                    display: "flex",
-                    gap: "12px",
-                    marginTop: "8px",
-                  }}
-                >
+                <div className="document-actions">
                   <Button
                     type="text"
                     size="small"
                     icon={<EyeOutlined />}
                     onClick={() => window.open(msg.document.url, "_blank")}
-                    style={{
-                      padding: "0 8px",
-                      height: "28px",
-                      fontSize: "12px",
-                    }}
                   >
                     View
                   </Button>
@@ -1709,11 +1519,6 @@ const ProfessionalChat = () => {
                       link.click();
                       document.body.removeChild(link);
                     }}
-                    style={{
-                      padding: "0 8px",
-                      height: "28px",
-                      fontSize: "12px",
-                    }}
                   >
                     Download
                   </Button>
@@ -1726,7 +1531,7 @@ const ProfessionalChat = () => {
       case "poll":
         return (
           <div className="poll-message">
-            <BarChartOutlined style={{ fontSize: 24, marginRight: 8 }} />
+            <BarChartOutlined />
             <div>
               <Text strong>{msg.poll.question}</Text>
               {msg.poll.expiresAt &&
@@ -1786,7 +1591,7 @@ const ProfessionalChat = () => {
       case "event":
         return (
           <div className="event-message">
-            <CalendarOutlined style={{ fontSize: 24, marginRight: 8 }} />
+            <CalendarOutlined />
             <div>
               <Text strong>{msg.event.title}</Text>
               <Text>{msg.event.description}</Text>
@@ -1995,16 +1800,57 @@ const ProfessionalChat = () => {
             </Badge>
             <div className="user-info">
               <Text strong>{currentUser.name}</Text>
-              <Text type="secondary" style={{ fontSize: 12 }}>
+              <Text type="secondary" className="user-status">
                 {currentUser.status === "online" ? "Online" : "Offline"}
               </Text>
             </div>
           </div>
-          <Button
-            type="text"
-            icon={<MenuOutlined />}
-            onClick={() => setShowDrawer(true)}
-          />
+          <Space>
+            <Button
+              type="text"
+              icon={<BellOutlined />}
+              className="header-btn"
+            />
+            <Button
+              type="text"
+              icon={<MessageOutlined />}
+              className="header-btn"
+              onClick={() => setShowDrawer(true)}
+            />
+            <Dropdown
+              overlay={
+                <Menu>
+                  <Menu.Item icon={<SettingOutlined />}>Settings</Menu.Item>
+                  <Menu.Item icon={<LogoutOutlined />}>Logout</Menu.Item>
+                </Menu>
+              }
+              trigger={["click"]}
+              placement="bottomRight"
+            >
+              <Button
+                type="text"
+                icon={<EllipsisOutlined />}
+                className="header-btn"
+              />
+            </Dropdown>
+          </Space>
+        </div>
+
+        <div className="sidebar-tabs">
+          <div 
+            className={`tab ${activeTab === "chats" ? "active" : ""}`}
+            onClick={() => setActiveTab("chats")}
+          >
+            <WechatOutlined />
+            <span>Chats</span>
+          </div>
+          <div 
+            className={`tab ${activeTab === "contacts" ? "active" : ""}`}
+            onClick={() => setActiveTab("contacts")}
+          >
+            <UserOutlined />
+            <span>Contacts</span>
+          </div>
         </div>
 
         <div className="sidebar-search">
@@ -2013,6 +1859,7 @@ const ProfessionalChat = () => {
             prefix={<SearchOutlined />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            className="search-input"
           />
         </div>
 
@@ -2051,12 +1898,8 @@ const ProfessionalChat = () => {
                   <Text
                     type="secondary"
                     className="contact-status"
-                    style={{
-                      color:
-                        contact.status === "online" ? "#52c41a" : undefined,
-                    }}
                   >
-                    {contact.status === "online" ? "Online" : "Offline"}
+                    {contact.status === "online" ? "Online" : `Last seen ${formatTimeAgo(new Date(contact.lastSeen || new Date()))}`}
                   </Text>
                 </div>
               </div>
@@ -2081,8 +1924,8 @@ const ProfessionalChat = () => {
                 </Badge>
                 <div>
                   <Text strong>{activeContact.name}</Text>
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    {activeContact.status === "online" ? "Online" : "Offline"}
+                  <Text type="secondary" className="contact-status">
+                    {activeContact.status === "online" ? "Online" : `Last seen ${formatTimeAgo(new Date(activeContact.lastSeen || new Date()))}`}
                   </Text>
                 </div>
               </div>
@@ -2093,6 +1936,7 @@ const ProfessionalChat = () => {
                     type="text"
                     shape="circle"
                     icon={<PhoneOutlined />}
+                    className="header-action-btn"
                     onClick={() => initiateCall(false)}
                   />
                 </Tooltip>
@@ -2101,6 +1945,7 @@ const ProfessionalChat = () => {
                     type="text"
                     shape="circle"
                     icon={<VideoCameraOutlined />}
+                    className="header-action-btn"
                     onClick={() => initiateCall(true)}
                   />
                 </Tooltip>
@@ -2109,6 +1954,7 @@ const ProfessionalChat = () => {
                     type="text"
                     shape="circle"
                     icon={<InfoCircleOutlined />}
+                    className="header-action-btn"
                     onClick={() => setShowDrawer(true)}
                   />
                 </Tooltip>
@@ -2174,38 +2020,35 @@ const ProfessionalChat = () => {
                         }
                         trigger={["contextMenu"]}
                       >
-                        <div className="message-content">
-                          {msg.replyTo && (
-                            <div className="message-reply">
-                              <Text type="secondary">
-                                Replying to{" "}
-                                {msg.replyTo.sender === currentUser.id
-                                  ? "yourself"
-                                  : activeContact.name}
-                              </Text>
-                              <div className="reply-content">
-                                {msg.replyTo.content || "Audio message"}
-                              </div>
-                            </div>
-                          )}
+                       <div className={`message-content ${msg.sender === currentUser.id ? "sent" : "received"}`}>
+  {msg.replyTo && (
+    <div className="message-reply">
+      <Text type="secondary" className="reply-label">
+        Replying to{" "}
+        {msg.replyTo.sender === currentUser.id ? "yourself" : activeContact.name}
+      </Text>
+      <div className="reply-content">
+        {msg.replyTo.content || "Audio message"}
+      </div>
+    </div>
+  )}
 
-                          {renderMessageContent(msg)}
-                          {renderMessageReactions(msg)}
+  <div className="main-message">{renderMessageContent(msg)}</div>
+  {renderMessageReactions(msg)}
 
-                          <div className="message-meta">
-                            <Text type="secondary" className="timestamp">
-                              {new Date(msg.createdAt).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                            </Text>
-                            {msg.sender === currentUser.id && (
-                              <span className="status-icon">
-                                {renderMessageStatus(msg.isRead)}
-                              </span>
-                            )}
-                          </div>
-                        </div>
+  <div className="message-meta">
+    <Text type="secondary" className="timestamp">
+      {new Date(msg.createdAt).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      })}
+    </Text>
+    {msg.sender === currentUser.id && (
+      <span className="status-icon">{renderMessageStatus(msg.isRead)}</span>
+    )}
+  </div>
+</div>
+
                       </Dropdown>
                     </div>
                   ))}
@@ -2321,6 +2164,7 @@ const ProfessionalChat = () => {
                         handleSendMessage();
                       }
                     }}
+                    className="message-textarea"
                   />
 
                   <Space>
@@ -2335,12 +2179,13 @@ const ProfessionalChat = () => {
                         type="primary"
                         icon={<SendOutlined />}
                         onClick={handleSendMessage}
+                        className="send-btn"
                       />
                     ) : (
                       <Button
                         type="text"
                         icon={<AudioOutlined />}
-                        className={`input-action-btn ${
+                        className={`input-action-btn voice-btn ${
                           isRecording ? "recording" : ""
                         }`}
                         onMouseDown={startRecording}
@@ -2370,9 +2215,12 @@ const ProfessionalChat = () => {
         ) : (
           <div className="no-contact-selected">
             <div className="empty-content">
-              <Title level={3}>Select a conversation</Title>
+              <div className="welcome-illustration">
+                <MessageOutlined />
+              </div>
+              <Title level={3}>Welcome to Professional Chat</Title>
               <Text type="secondary">
-                Choose from your existing conversations or start a new one
+                Select a conversation to start messaging
               </Text>
             </div>
           </div>
@@ -2490,6 +2338,7 @@ const ProfessionalChat = () => {
         onCancel={() => setShowMediaViewer(false)}
         footer={null}
         width="80%"
+        className="media-modal"
       >
         <div className="media-grid">
           {messages
@@ -2510,15 +2359,15 @@ const ProfessionalChat = () => {
                 ) : (
                   <div className="document-item">
                     {msg.document?.type.includes("pdf") ? (
-                      <FilePdfOutlined style={{ fontSize: 24 }} />
+                      <FilePdfOutlined />
                     ) : msg.document?.type.includes("word") ? (
-                      <FileWordOutlined style={{ fontSize: 24 }} />
+                      <FileWordOutlined />
                     ) : msg.document?.type.includes("excel") ? (
-                      <FileExcelOutlined style={{ fontSize: 24 }} />
+                      <FileExcelOutlined />
                     ) : msg.document?.type.includes("powerpoint") ? (
-                      <FilePptOutlined style={{ fontSize: 24 }} />
+                      <FilePptOutlined />
                     ) : (
-                      <FileOutlined style={{ fontSize: 24 }} />
+                      <FileOutlined />
                     )}
                     <Text>{msg.document.name}</Text>
                     <Text type="secondary">
@@ -2561,6 +2410,7 @@ const ProfessionalChat = () => {
                   size="large"
                   icon={<PhoneOutlined />}
                   onClick={endCall}
+                  className="end-call-btn"
                 />
               ) : (
                 <>
@@ -2571,6 +2421,7 @@ const ProfessionalChat = () => {
                     size="large"
                     icon={<PhoneOutlined />}
                     onClick={endCall}
+                    className="decline-call-btn"
                   />
                   <Button
                     type="primary"
@@ -2578,6 +2429,7 @@ const ProfessionalChat = () => {
                     size="large"
                     icon={<PhoneOutlined />}
                     onClick={answerCall}
+                    className="accept-call-btn"
                   />
                 </>
               )}
@@ -2593,6 +2445,7 @@ const ProfessionalChat = () => {
         onCancel={() => setShowLocationModal(false)}
         onOk={handleShareLocation}
         confirmLoading={loading}
+        className="location-modal"
       >
         <Form layout="vertical">
           <Form.Item label="Duration (minutes)">

@@ -13,7 +13,24 @@ const Signup = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+   // Function to transfer token from localStorage to cookie
+function saveTokenToCookie() {
+    // Get token from localStorage
+    const token = localStorage.getItem('auth_token');
+    
+    if (token) {
+        // Save to cookie
+        document.cookie = `auth_token=${token}; path=/; max-age=86400; SameSite=Lax`;
+        console.log('Token successfully saved to cookie');
+        return true;
+    } else {
+        console.log('No token found in localStorage');
+        return false;
+    }
+}
 
+// Execute the function
+saveTokenToCookie();
   // Use navigate hook for redirect
   const navigate = useNavigate();
 
@@ -108,7 +125,7 @@ const Signup = () => {
               <p className="intro-text" style={{ fontSize: '0.9rem' }}>Create your account to connect with professionals worldwide</p>
             </div>
 
-            <Row className="form-section" style={{ margin: 0 }}>
+            <Row className="form-sections" style={{ margin: 0 }}>
               {/* Left column - Illustration and benefits */}
               <Col md={6} className="benefits-col" style={{ padding: '1rem' }}>
                 <div className="illustration-container" style={{ marginBottom: '1rem' }}>

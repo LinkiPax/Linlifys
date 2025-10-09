@@ -1,52 +1,271 @@
-.personal-details-container {
-  max-width: 600px;
-  margin-top: 2rem;
-  margin-bottom: 4rem;
+/* Background with gradient animation */
+.Personal-background {
+  min-height: 100vh;
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  background-size: 400% 400%;
+  animation: Personal-gradient 15s ease infinite;
+  padding: 2rem 0;
+  display: flex;
+  align-items: center;
 }
 
-.profile-picture-container {
+@keyframes Personal-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.Personal-container {
+  max-width: 700px;
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+}
+
+/* Header styles */
+.Personal-header {
+  color: white;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.Personal-logo {
+  font-weight: 800;
+  margin-bottom: 1rem;
+  font-size: 3rem;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.Personal-title {
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.Personal-subtitle {
+  opacity: 0.9;
+  font-size: 1.1rem;
+}
+
+/* Card styles */
+.Personal-card {
+  padding: 2.5rem;
+  border-radius: 20px !important;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Profile picture container */
+.Personal-profile-container {
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 0 auto;
   width: 150px;
   height: 150px;
   border-radius: 50%;
   overflow: hidden;
-  background-color: #f8f9fa;
-  border: 2px solid #dee2e6;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 3px dashed rgba(13, 110, 253, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-.profile-preview {
+.Personal-profile-container:hover {
+  border-color: #0d6efd;
+  background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(13, 110, 253, 0.2);
+}
+
+.Personal-profile-preview {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.profile-placeholder {
+.Personal-profile-placeholder {
   color: #6c757d;
-  font-size: 5rem;
+  text-align: center;
 }
 
-.logo {
-  font-weight: 700;
-  color: #0d6efd;
-  margin-bottom: 1rem;
+.Personal-placeholder-icon {
+  color: #adb5bd;
 }
 
-.form-label {
-  font-weight: 500;
+.Personal-placeholder-text {
+  color: #6c757d;
+  font-size: 0.8rem;
 }
 
-.btn-outline-primary {
-  width: auto;
+.Personal-upload-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+}
+
+.Personal-profile-shine {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    to bottom right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(255, 255, 255, 0) 60%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(45deg);
+  pointer-events: none;
+  animation: Personal-shine 3s infinite;
+}
+
+@keyframes Personal-shine {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+/* Upload button */
+.Personal-upload-btn {
+  background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+  border: none;
+  padding: 0.5rem 1.5rem;
+  color: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+}
+
+.Personal-upload-btn:hover {
+  background: linear-gradient(135deg, #0a58ca 0%, #084298 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(13, 110, 253, 0.4);
+  color: white;
+}
+
+/* Progress bar */
+.Personal-progress-container {
+  width: 100%;
+  max-width: 250px;
   margin: 0 auto;
 }
 
-.alert {
-  margin-top: 1rem;
+.Personal-progress-bar {
+  height: 0.5rem;
+  border-radius: 1rem;
+  overflow: hidden;
 }
 
-.shadow-sm {
-  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+.Personal-progress-text {
+  color: #6c757d;
+  font-size: 0.8rem;
+}
+
+/* Form elements */
+.Personal-form-group {
+  margin-bottom: 1.5rem;
+}
+
+.Personal-form-label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 0.5rem;
+}
+
+.Personal-input-icon {
+  color: #0d6efd;
+}
+
+.Personal-form-control {
+  border-radius: 12px !important;
+  border: 2px solid #e9ecef;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.Personal-form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15), inset 0 2px 4px rgba(0, 0, 0, 0.05);
+  background: white;
+}
+
+.Personal-form-text {
+  color: #6c757d;
+  font-size: 0.85rem;
+}
+
+/* Submit button */
+.Personal-submit-btn {
+  background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+  border: none;
+  border-radius: 12px !important;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
+}
+
+.Personal-submit-btn:hover {
+  background: linear-gradient(135deg, #0a58ca 0%, #084298 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(13, 110, 253, 0.5);
+}
+
+.Personal-submit-btn:disabled {
+  opacity: 0.7;
+  transform: none;
+  box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+}
+
+/* Alerts */
+.Personal-alert {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Toast notifications */
+.Personal-toast-container {
+  z-index: 1055;
+}
+
+.Personal-toast {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.Personal-toast-header {
+  font-weight: 600;
+}
+
+.Personal-toast-body {
+  background: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .Personal-container {
+    padding: 0 15px;
+  }
+  
+  .Personal-card {
+    padding: 1.5rem;
+  }
+  
+  .Personal-profile-container {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .Personal-logo {
+    font-size: 2.5rem;
+  }
 }

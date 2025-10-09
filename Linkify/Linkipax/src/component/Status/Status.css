@@ -728,3 +728,547 @@ video.status-media {
   border-radius: 50%;
   border: 2px solid white;
 }
+/* Add these styles to your existing Status.css */
+
+/* Music Indicator */
+.music-indicator {
+  margin-right: auto;
+  margin-left: 15px;
+}
+
+.music-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 20px;
+  padding: 5px 12px;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.music-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.music-btn.playing {
+  background: rgba(29, 161, 242, 0.7);
+}
+
+/* Text Elements */
+.status-text-element {
+  pointer-events: none;
+  z-index: 10;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  max-width: 200px;
+  word-wrap: break-word;
+}
+
+/* Sticker Elements */
+.status-sticker-element {
+  pointer-events: none;
+  z-index: 10;
+}
+
+.sticker-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Media Container - make sure it's positioned relative for absolute positioning of elements */
+.media-container {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Ensure media has proper sizing */
+.status-media {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* Filter effects */
+.status-media {
+  transition: filter 0.3s ease;
+}
+.status-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Status Bar */
+.status-bar {
+  display: flex;
+  gap: 15px;
+  padding: 10px 0;
+  overflow-x: auto;
+}
+
+.status-profile {
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.status-profile.my-status {
+  border: 2px solid #007bff;
+  border-radius: 50%;
+}
+
+.profile-pic {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e0e0e0;
+}
+
+.plus-icon {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: #007bff;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+}
+
+/* Status Modal */
+.status-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.status-content {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  height: 90vh;
+  background: #000;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Progress Bars */
+.progress-container {
+  display: flex;
+  gap: 2px;
+  padding: 10px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+}
+
+.progress-track {
+  flex: 1;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: white;
+  transition: width 0.1s linear;
+}
+
+.progress-bar.active {
+  background: #0095f6;
+}
+
+/* Header */
+.status-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 15px;
+  background: rgba(0, 0, 0, 0.5);
+  position: absolute;
+  top: 30px;
+  left: 0;
+  right: 0;
+  z-index: 10;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+}
+
+.user-info .profile-pic {
+  width: 32px;
+  height: 32px;
+}
+
+.time-ago {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Music Indicator */
+.music-indicator {
+  margin-right: auto;
+}
+
+.music-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 20px;
+  padding: 6px 12px;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.music-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.music-btn.playing {
+  background: rgba(29, 161, 242, 0.7);
+}
+
+.music-error {
+  color: #ff6b6b;
+  margin-left: 4px;
+}
+
+/* Menu Button */
+.menu-btn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
+}
+
+.menu-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Delete Menu */
+.delete-menu-container {
+  position: relative;
+}
+
+.delete-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  min-width: 150px;
+}
+
+.delete-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: none;
+  color: #ed4956;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.delete-menu-item:hover {
+  background: rgba(237, 73, 86, 0.1);
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Media Container */
+.media-container {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.status-media {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* Text Elements */
+.status-text-element {
+  pointer-events: none;
+  z-index: 10;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  max-width: 200px;
+  word-wrap: break-word;
+  font-family: Arial, sans-serif;
+}
+
+/* Sticker Elements */
+.status-sticker-element {
+  pointer-events: none;
+  z-index: 10;
+}
+
+.sticker-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+/* Actions */
+.status-actions {
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px;
+}
+
+.action-btn.liked {
+  color: #ed4956;
+}
+
+.status-caption {
+  color: white;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+/* Comments Section */
+.comments-section {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding-top: 10px;
+}
+
+.comments-list {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+
+.comment {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+  color: white;
+}
+
+.comment-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.comment-content {
+  flex: 1;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.delete-comment {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  padding: 2px;
+}
+
+.delete-comment:hover {
+  color: #ed4956;
+}
+
+.comment-time {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.comment-input {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.comment-input input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  padding: 8px 15px;
+  color: white;
+  outline: none;
+}
+
+.comment-input input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.comment-input button {
+  background: #0095f6;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+}
+
+.comment-input button:disabled {
+  background: rgba(0, 149, 246, 0.5);
+  cursor: not-allowed;
+}
+
+/* Navigation Buttons */
+.nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  z-index: 10;
+}
+
+.nav-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.prev-btn {
+  left: 10px;
+}
+
+.next-btn {
+  right: 10px;
+}
+
+/* Scrollbar Styling */
+.comments-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.comments-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.comments-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+}
+
+.comments-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .status-container {
+    padding: 10px;
+  }
+  
+  .status-content {
+    height: 100vh;
+    border-radius: 0;
+  }
+  
+  .profile-pic {
+    width: 50px;
+    height: 50px;
+  }
+}

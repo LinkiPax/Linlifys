@@ -27,28 +27,12 @@ body {
   margin: 0 auto;
   padding: 1rem 0;
 }
-
-.quality-selector {
-  margin-bottom: 1rem;
-  width: 100%;
-  padding: 0 1rem;
-}
-
-.quality-selector select {
-  width: 100%;
-  padding: 0.5rem;
-  border-radius: 8px;
-  border: none;
-  background-color: #2d2d2d;
-  color: white;
-}
-
 /* Short Player */
 .short-player {
   position: relative;
   width: 100%;
-  max-width: 375px;
-  height: 667px;
+  max-width: 390px;
+  height: 725px;
   border-radius: 10px;
   overflow: hidden;
   background-color: #000;
@@ -92,7 +76,8 @@ body {
 .user-info {
   display: flex;
   align-items: center;
-  margin-bottom: 0.5rem;
+  margin-left: 0.4rem;
+  margin-bottom: 3.7rem;
 }
 
 .user-avatar {
@@ -416,4 +401,35 @@ body {
 
 .action-button {
   position: relative;
+}
+.action-buttons-left {
+  position: absolute;
+  right: 475px;       /* pushes outside the video frame */
+  top: 68%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
+.action-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  color: rgb(16, 16, 16);
+}
+
+.action-label {
+  font-size: 12px;
+  margin-top: 4px;
+  color: #0f0e0e;
+  opacity: 0.8;
+}
+video {
+  filter: none !important;
+  transform: none !important;
+  mix-blend-mode: normal !important;
+  background: black; /* prevents weird transparency */
 }

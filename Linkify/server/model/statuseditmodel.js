@@ -1,38 +1,86 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
+
+const textElementSchema = new mongoose.Schema({
+    id: String,
+    text: String,
+    style: {
+        fontSize: String,
+        color: String,
+        fontFamily: String,
+        fontWeight: String,
+        textShadow: String,
+        // Add other style properties as needed
+    },
+    position: {
+        x: Number,
+        y: Number
+    }
+});
+
+const stickerElementSchema = new mongoose.Schema({
+    id: String,
+    url: String,
+    position: {
+        x: Number,
+        y: Number
+    },
+    size: Number
+});
+
+const filterSchema = new mongoose.Schema({
+    brightness: Number,
+    contrast: Number,
+    saturation: Number,
+    blur: Number,
+    hueRotate: Number,
+    dropShadow: String
+    // Add other filter properties as needed
+});
+
+const musicSchema = new mongoose.Schema({
+    id: String,
+    name: String,
+    path: String
+});
 
 const statusSchema = new mongoose.Schema({
     userId: {
         type: String,
-        required: true,
-    },
-    userProfilePic: {
-        type: String,  // Keep user profile pic if needed
-        required: false, // Set to false if optional
+        required: true
     },
     name: {
         type: String,
-        required: true,
+        required: true
     },
-    media: {
-        type: [String],  // Supports multiple media files
-        default: [],
-    },
-    text: {
-        type: String,
-        required: false,
-    },
-    selectedFilter: {
-        type: String,
-        required: false,
-    },
-    selectedMusic: {
-        type: String,
-        required: false,
-    },
+    userProfilePic: String,
+    media: [String], // Array of file paths
+    textElements: [textElementSchema],
+    stickerElements: [stickerElementSchema],
+    filter: filterSchema,
+    music: musicSchema,
+    likes: [{
+        userId: String,
+        userProfilePic: String,
+        userName: String,
+        createdAt: {
+            type: Date,
+            default: Date.now
+        }
+    }],
+    comments: [{
+        userId: String,
+        userProfilePic: String,
+        userName: String,
+        text: String,
+        createdAt: {
+            type: Date,
+            default: Date.now
+        }
+    }],
     createdAt: {
         type: Date,
-        default: Date.now,
-    },
+        default: Date.now
+    }
 });
 
-module.exports = mongoose.model('Statusedit', statusSchema);
+module.exports = mongoose.model("Status", statusSchema);
