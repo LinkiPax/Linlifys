@@ -88,7 +88,7 @@ router.get("/music", (req, res) => {
 // Get available stickers/emojis
 router.get("/api/stickers", (req, res) => {
     try {
-        const musicPath = path.join(__basedir, "public", "stickers");
+        const stickersPath = path.join(__basedir, "public", "stickers");
         if (!fs.existsSync(stickersPath)) {
             return res.json({ stickers: [] });
         }
