@@ -42,43 +42,47 @@ const errorHandler = (err, req, res, next) => {
 // Get available music files
 // In your backend routes file, make sure the route is properly defined
 // In your music route, add more detailed logging
+const __dirname = path.resolve();
+
 router.get("/music", (req, res) => {
-    try {
-        const musicPath = path.join(__dirname, "../public/music");
-        console.log('Looking for music in:', musicPath);
-        
-        if (!fs.existsSync(musicPath)) {
-            console.log('Music directory does not exist');
-            return res.json({ music: [] });
-        }
-        
-        const files = fs.readdirSync(musicPath);
-        console.log('All files in music directory:', files);
-        
-        const musicFiles = files
-            .filter(file => {
-                const ext = path.extname(file).toLowerCase();
-                const isAudio = ['.mp3', '.wav', '.m4a', '.ogg'].includes(ext);
-                console.log(`File: ${file}, Extension: ${ext}, IsAudio: ${isAudio}`);
-                return isAudio;
-            })
-            .map(file => {
-                const musicData = {
-                    name: path.parse(file).name,
-                    path: `/music/${file}`,
-                    filename: file
-                };
-                console.log('Music data:', musicData);
-                return musicData;
-            });
-        
-        console.log('Final music files:', musicFiles);
-        res.json({ music: musicFiles });
-    } catch (error) {
-        console.error('Error in /music route:', error);
-        res.status(500).json({ error: "Internal server error" });
+  try {
+    // ✅ Use absolute path to public/music (no ../ issues)
+    const musicPath = path.join(__dirname, "public", "music");
+    console.log("Looking for music in:", musicPath);
+
+    if (!fs.existsSync(musicPath)) {
+      console.log("Music directory does not exist");
+      return res.json({ music: [] });
     }
+
+    const files = fs.readdirSync(musicPath);
+    console.log("All files in music directory:", files);
+
+    const musicFiles = files
+      .filter((file) => {
+        const ext = path.extname(file).toLowerCase();
+        const isAudio = [".mp3", ".wav", ".m4a", ".ogg"].includes(ext);
+        console.log(`File: ${file}, Extension: ${ext}, IsAudio: ${isAudio}`);
+        return isAudio;
+      })
+      .map((file) => {
+        const musicData = {
+          name: path.parse(file).name,
+          path: `/music/${file}`, // relative path for static serving
+          filename: file,
+        };
+        console.log("Music data:", musicData);
+        return musicData;
+      });
+
+    console.log("Final music files:", musicFiles);
+    res.json({ music: musicFiles });
+  } catch (error) {
+    console.error("Error in /music route:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
+
 
 // Get available stickers/emojis
 router.get("/api/stickers", (req, res) => {

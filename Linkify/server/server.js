@@ -94,6 +94,7 @@ app.use('/api/notifications', require('./routes/notificationroute'));
 app.use('/upload', require('./routes/Resumeroute'));
 app.use('/api/room', require('./routes/roomRoute'));   
 app.use('/', require('./routes/statusroutes'));
+app.use("/music", express.static(path.join(__dirname, "public", "music")));
 app.use('/api/status', require('./routes/statusedit'));
 app.use('/api/short', require('./routes/shortRoutes'));
 app.use("/connections", require('./routes/connectionroute'));
