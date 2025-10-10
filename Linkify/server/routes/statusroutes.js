@@ -5,6 +5,7 @@ const path = require("path");
 const fs = require("fs");
 const Status = require("../model/statuseditmodel");
 const sharp = require("sharp"); // For image processing
+const __basedir = path.join(path.dirname(__filename), "..");
 
 
 const router = express.Router();
@@ -42,12 +43,12 @@ const errorHandler = (err, req, res, next) => {
 // Get available music files
 // In your backend routes file, make sure the route is properly defined
 // In your music route, add more detailed logging
-const __dirname = path.resolve();
+
 
 router.get("/music", (req, res) => {
   try {
     // ✅ Use absolute path to public/music (no ../ issues)
-    const musicPath = path.join(__dirname, "public", "music");
+   const musicPath = path.join(__basedir, "public", "music");
     console.log("Looking for music in:", musicPath);
 
     if (!fs.existsSync(musicPath)) {
