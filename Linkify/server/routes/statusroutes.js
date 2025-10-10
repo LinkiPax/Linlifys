@@ -44,7 +44,7 @@ const errorHandler = (err, req, res, next) => {
 // In your music route, add more detailed logging
 router.get("/music", (req, res) => {
     try {
-        const musicPath = path.join(__dirname, "../../Linkipax/public/music");
+        const musicPath = path.join(__dirname, "../public/music");
         console.log('Looking for music in:', musicPath);
         
         if (!fs.existsSync(musicPath)) {
@@ -83,7 +83,7 @@ router.get("/music", (req, res) => {
 // Get available stickers/emojis
 router.get("/api/stickers", (req, res) => {
     try {
-        const stickersPath = path.join(__dirname, "../../Linkipax/public/stickers");
+        const stickersPath = path.join(__dirname, "../public/stickers");
         if (!fs.existsSync(stickersPath)) {
             return res.json({ stickers: [] });
         }
