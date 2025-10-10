@@ -73,7 +73,7 @@ const startApolloServer = async () => {
 };
 startApolloServer();
 app.use("/music", express.static(path.join(__dirname, "public", "music")));
-app.use("/stickers", express.static(path.join(__dirname, "public", "stickers")));
+app.use("/api/stickers", express.static(path.join(__dirname, "public", "stickers")));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // Routes 
 app.use('/user', require('./routes/userroutes'));
