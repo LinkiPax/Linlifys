@@ -6,12 +6,12 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
-const https = require('https');
+const https = require('http');
 const { ApolloServer } = require("apollo-server-express");
 const { typeDefs, resolvers } = require("./GraphQL/messageschema");
 const path = require('path');
 const { initializeSocket ,getIO} = require('./socket/socketnadle'); // New socket handler
-const fs = require('fs');
+// const fs = require('fs');
 
 // const options = {
 //   key: fs.readFileSync('./localhost+1-key.pem'),
@@ -32,6 +32,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'Set-Cookie'],
   optionsSuccessStatus: 200,
 }));
+console.log("Allowed CORS origin:", process.env.FRONTEND_ORIGIN);
+
 app.options('*', cors());
 
 app.use(express.json()); 
