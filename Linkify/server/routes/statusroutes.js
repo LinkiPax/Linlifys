@@ -71,25 +71,27 @@ router.get("/music", (req, res) => {
 
 // Get available stickers/emojis
 router.get("/api/stickers", (req, res) => {
-    try {
-        const stickersPath = path.join(__basedir, "public", "stickers");
-        if (!fs.existsSync(stickersPath)) {
-            return res.json({ stickers: [] });
-        }
-        
-        const stickerFiles = fs.readdirSync(stickersPath)
-            .filter(file => ['.png', '.jpg', '.jpeg', '.gif', '.webp'].includes(path.extname(file).toLowerCase()))
-            .map(file => ({
-                name: path.parse(file).name,
-                path: `/stickers/${file}`,
-                filename: file
-            }));
-        
-        res.json({ stickers: stickerFiles });
-    } catch (error) {
-        errorHandler(error, req, res);
+  try {
+    const stickersPath = path.join(__basedir, "public", "stickers");
+    if (!fs.existsSync(stickersPath)) {
+      return res.json({ stickers: [] });
     }
+
+    const stickerFiles = fs.readdirSync(stickersPath)
+      .filter(file => ['.png', '.jpg', '.jpeg', '.gif', '.webp'].includes(path.extname(file).toLowerCase()))
+      .map(file => ({
+        name: path.parse(file).name,
+        filename: file,
+        // ✅ Build full absolute URL instead of a relative /stickers path
+        path: `${req.protocol}://${req.get("host")}/stickers/${encodeURIComponent(file)}`
+      }));
+
+    res.json({ stickers: stickerFiles });
+  } catch (error) {
+    errorHandler(error, req, res);
+  }
 });
+
 
 // Function to add text to image
 const addTextToImage = async (imagePath, text) => {

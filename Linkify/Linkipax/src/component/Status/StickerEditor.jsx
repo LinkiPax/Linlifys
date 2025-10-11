@@ -78,7 +78,8 @@ const StickerEditor = ({ onAddSticker }) => {
     onAddSticker(dataUrl, 'emoji', emoji);
   };
 
-  const getStickerUrl = (path) => path.startsWith('http') ? path : `${import.meta.env.VITE_API_URL}${path}`;
+  const getStickerUrl = (path) => path;
+
 
   const categorizeStickers = (stickers) => {
     const categories = {
