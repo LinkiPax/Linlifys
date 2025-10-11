@@ -51,7 +51,7 @@ console.log(features[0].video);
   const threeContainerRef = useRef(null);
   const animationFrameRef = useRef(null);
   const heroCanvasRef = useRef(null);
-
+ const [videoError, setVideoError] = useState(false);
   const colorThemes = [
     { hue: "260deg", name: "purple" },
     { hue: "180deg", name: "teal" },
