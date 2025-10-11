@@ -78,9 +78,7 @@ const MusicEditor = ({ selectedMusic, setSelectedMusic, isPlaying, onTogglePlay 
       onTogglePlay(); // Update parent component
     }
     
-    const musicUrl = music.path.startsWith('http') 
-      ? music.path 
-      : `${window.location.origin}${music.path}`;
+     const musicUrl = music.path;
     
     const newAudio = new Audio(musicUrl);
     setAudio(newAudio);

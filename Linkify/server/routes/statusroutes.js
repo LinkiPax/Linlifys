@@ -47,42 +47,26 @@ const errorHandler = (err, req, res, next) => {
 
 router.get("/music", (req, res) => {
   try {
-    // ✅ Use absolute path to public/music (no ../ issues)
-   const musicPath = path.join(__basedir, "public", "music");
-    console.log("Looking for music in:", musicPath);
-
-    if (!fs.existsSync(musicPath)) {
-      console.log("Music directory does not exist");
-      return res.json({ music: [] });
-    }
+    const musicPath = path.join(__basedir, "public", "music");
+    if (!fs.existsSync(musicPath)) return res.json({ music: [] });
 
     const files = fs.readdirSync(musicPath);
-    console.log("All files in music directory:", files);
-
     const musicFiles = files
-      .filter((file) => {
-        const ext = path.extname(file).toLowerCase();
-        const isAudio = [".mp3", ".wav", ".m4a", ".ogg"].includes(ext);
-        console.log(`File: ${file}, Extension: ${ext}, IsAudio: ${isAudio}`);
-        return isAudio;
-      })
-      .map((file) => {
-        const musicData = {
-          name: path.parse(file).name,
-          path: `/music/${file}`, // relative path for static serving
-          filename: file,
-        };
-        console.log("Music data:", musicData);
-        return musicData;
-      });
+      .filter((file) => [".mp3", ".wav", ".m4a", ".ogg"].includes(path.extname(file).toLowerCase()))
+      .map((file) => ({
+        name: path.parse(file).name,
+        filename: file,
+        // ✅ Construct absolute public URL (backend domain)
+        path: `${req.protocol}://${req.get("host")}/music/${encodeURIComponent(file)}`
+      }));
 
-    console.log("Final music files:", musicFiles);
     res.json({ music: musicFiles });
   } catch (error) {
     console.error("Error in /music route:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
 
 
 // Get available stickers/emojis
