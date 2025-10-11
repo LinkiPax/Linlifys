@@ -611,7 +611,7 @@ const MainPage = () => {
   useThreeSetup(threeContainerRef, isProfessional);
 
   const features = [
-    { name: "Dashboard", video: "/Screen Recording 2025-10-03 132223.mp4" },
+    { name: "Dashboard", video: "/videos/Screen Recording 2025-10-03 132223.mp4" },
     { name: "Team", video: "/videos/demo2.mp4" },
     { name: "Features", video: "/videos/demo3.mp4" },
   ];
