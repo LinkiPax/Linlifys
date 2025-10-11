@@ -32,7 +32,15 @@ import { debounce } from "lodash";
 
 const MainPage = () => {
   const navigate = useNavigate();
-  const [videoSrc, setVideoSrc] = useState("/videos/demo1.mp4");
+  
+  // FIX 2: Define features first and set Dashboard as default
+  const features = [
+    { name: "Dashboard", video: "/videos/Dashboard.mp4" },
+    { name: "Team", video: "/videos/demo2.mp4" },
+    { name: "Features", video: "/videos/demo3.mp4" },
+  ];
+
+  const [videoSrc, setVideoSrc] = useState(features[0].video); // Default to Dashboard
   const [isPlaying, setIsPlaying] = useState(true);
   const [isProfessional, setIsProfessional] = useState(true);
   const [volume, setVolume] = useState(0.5);
@@ -55,10 +63,104 @@ const MainPage = () => {
   useEffect(() => {
     const colorInterval = setInterval(() => {
       setColorIndex((prevIndex) => (prevIndex + 1) % colorThemes.length);
-    }, 100000000); // Change every 10 seconds
+    }, 10000); // Fixed: Changed from 100000000 to 10000 (10 seconds)
 
     return () => clearInterval(colorInterval);
   }, []);
+
+  // FIX 1: Improved video loading and error handling
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleVideoError = () => {
+      console.error("Video failed to load:", videoSrc);
+      setIsPlaying(false);
+    };
+
+    const handleVideoLoad = () => {
+      console.log("Video loaded successfully:", videoSrc);
+      if (isPlaying) {
+        video.play().catch(err => {
+          console.error("Video play failed:", err);
+          setIsPlaying(false);
+        });
+      }
+    };
+
+    video.addEventListener('error', handleVideoError);
+    video.addEventListener('loadeddata', handleVideoLoad);
+    video.addEventListener('canplay', handleVideoLoad);
+
+    // Ensure video plays when source changes
+    if (video.readyState >= 3 && isPlaying) {
+      video.play().catch(err => {
+        console.error("Video play failed:", err);
+        setIsPlaying(false);
+      });
+    }
+
+    return () => {
+      video.removeEventListener('error', handleVideoError);
+      video.removeEventListener('loadeddata', handleVideoLoad);
+      video.removeEventListener('canplay', handleVideoLoad);
+    };
+  }, [videoSrc, isPlaying]);
+
+  const handlePlayPause = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    
+    if (video.paused) {
+      video.play().then(() => {
+        setIsPlaying(true);
+      }).catch(err => {
+        console.error("Play failed:", err);
+        setIsPlaying(false);
+      });
+    } else {
+      video.pause();
+      setIsPlaying(false);
+    }
+  };
+
+  const handleVolumeChange = (e) => {
+    const newVolume = parseFloat(e.target.value);
+    setVolume(newVolume);
+    if (videoRef.current) {
+      videoRef.current.volume = newVolume;
+      // Unmute when volume is increased
+      if (newVolume > 0) {
+        videoRef.current.muted = false;
+      }
+    }
+  };
+
+  const handleProgress = () => {
+    const video = videoRef.current;
+    if (!video || !video.duration) return;
+    setProgress((video.currentTime / video.duration) * 100);
+  };
+
+  const handleSeek = (e) => {
+    const video = videoRef.current;
+    if (!video || !video.duration) return;
+    const seekTime = (e.target.value / 100) * video.duration;
+    video.currentTime = seekTime;
+    setProgress(e.target.value);
+  };
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    
+    video.volume = volume;
+    video.addEventListener("timeupdate", handleProgress);
+    
+    return () => {
+      video.removeEventListener("timeupdate", handleProgress);
+    };
+  }, [volume]);
 
   const globeConfig = {
     pointSize: 2,
@@ -610,52 +712,6 @@ const MainPage = () => {
 
   useThreeSetup(threeContainerRef, isProfessional);
 
-  const features = [
-    { name: "Dashboard", video: "/videos/Dashboard.mp4" },
-    { name: "Team", video: "/videos/demo2.mp4" },
-    { name: "Features", video: "/videos/demo3.mp4" },
-  ];
-
-  const handlePlayPause = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    if (video.paused) {
-      video.play();
-      setIsPlaying(true);
-    } else {
-      video.pause();
-      setIsPlaying(false);
-    }
-  };
-
-  const handleVolumeChange = (e) => {
-    const newVolume = parseFloat(e.target.value);
-    setVolume(newVolume);
-    if (videoRef.current) videoRef.current.volume = newVolume;
-  };
-
-  const handleProgress = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    setProgress((video.currentTime / video.duration) * 100);
-  };
-
-  const handleSeek = (e) => {
-    const video = videoRef.current;
-    if (!video) return;
-    const seekTime = (e.target.value / 100) * video.duration;
-    video.currentTime = seekTime;
-    setProgress(e.target.value);
-  };
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    video.volume = volume;
-    video.addEventListener("timeupdate", handleProgress);
-    return () => video.removeEventListener("timeupdate", handleProgress);
-  }, [volume]);
-
   return (
     <div className="main-homepage-container" role="main">
       <MainNavbar />
@@ -804,15 +860,23 @@ const MainPage = () => {
 
             <div className="tablet-wrapper">
               <div className="tablet-normal">
+                {/* FIX 1: Improved video element with better error handling */}
                 <video
                   id="feature-video"
                   ref={videoRef}
                   src={videoSrc}
                   autoPlay
-                  muted={!volume}
+                  muted={volume === 0}
                   loop
                   playsInline
+                  preload="auto"
                   aria-label="Feature demonstration video"
+                  onError={(e) => {
+                    console.error("Video loading error:", e);
+                    setIsPlaying(false);
+                  }}
+                  onLoadStart={() => console.log("Video loading started:", videoSrc)}
+                  onCanPlay={() => console.log("Video can play:", videoSrc)}
                 />
                 <div className="video-controls">
                   <button
@@ -861,7 +925,10 @@ const MainPage = () => {
               {features.map((feature, idx) => (
                 <button
                   key={idx}
-                  onClick={() => setVideoSrc(feature.video)}
+                  onClick={() => {
+                    setVideoSrc(feature.video);
+                    setIsPlaying(true);
+                  }}
                   className={videoSrc === feature.video ? "active" : ""}
                   aria-current={videoSrc === feature.video ? "true" : "false"}
                 >
@@ -1243,37 +1310,37 @@ const MainPage = () => {
                   <a href="#">Security</a>
                   <a href="#">Cookies</a>
                 </div>
-            </div>
-          </div>
-
-          <div className="footer-bottom">
-            <div className="newsletter">
-              <h4>Stay Updated</h4>
-              <div className="newsletter-form">
-                <input
-                  type="email"
-                  placeholder="Your email address"
-                  aria-label="Email address for newsletter"
-                />
-                <button aria-label="Subscribe to newsletter">
-                  <FaEnvelope /> Subscribe
-                </button>
               </div>
             </div>
 
-            <div className="footer-legal">
-              <p>© 2025 Linkipax. All rights reserved.</p>
-              <div className="footer-locale">
-                <span>🌐 English</span>
-                <span>📍 United States</span>
+            <div className="footer-bottom">
+              <div className="newsletter">
+                <h4>Stay Updated</h4>
+                <div className="newsletter-form">
+                  <input
+                    type="email"
+                    placeholder="Your email address"
+                    aria-label="Email address for newsletter"
+                  />
+                  <button aria-label="Subscribe to newsletter">
+                    <FaEnvelope /> Subscribe
+                  </button>
+                </div>
+              </div>
+
+              <div className="footer-legal">
+                <p>© 2025 Linkipax. All rights reserved.</p>
+                <div className="footer-locale">
+                  <span>🌐 English</span>
+                  <span>📍 United States</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </footer>
+        </footer>
+      </div>
     </div>
-  </div>
-);
+  );
 };
 
 export default MainPage;
