@@ -29,17 +29,17 @@ import { AnimatedTooltip } from "../../components/ui/animated-tooltip";
 import { WorldMap } from "../../components/ui/world-map";
 import aroraImage from "../../../public/aurora.d2a6947c3dcfb777c25f.webp";
 import { debounce } from "lodash";
-
+import dashboardvideo from "../../../public/videos/Dashboard.mp4";
 const MainPage = () => {
   const navigate = useNavigate();
   
   // FIX 2: Define features first and set Dashboard as default
   const features = [
-    { name: "Dashboard", video:"/videos/Dashboard.mp4" },
+    { name: "Dashboard", video: dashboardvideo },
     { name: "Team", video: "/videos/demo2.mp4" },
     { name: "Features", video: "/videos/demo3.mp4" },
   ];
-
+console.log(features[0].video);
   const [videoSrc, setVideoSrc] = useState(features[0].video); // Default to Dashboard
   const [isPlaying, setIsPlaying] = useState(true);
   const [isProfessional, setIsProfessional] = useState(true);
@@ -860,7 +860,6 @@ const MainPage = () => {
 
             <div className="tablet-wrapper">
               <div className="tablet-normal">
-                {/* FIX 1: Improved video element with better error handling */}
                 <video
                   id="feature-video"
                   ref={videoRef}
@@ -871,13 +870,39 @@ const MainPage = () => {
                   playsInline
                   preload="auto"
                   aria-label="Feature demonstration video"
-                  onError={(e) => {
-                    console.error("Video loading error:", e);
-                    setIsPlaying(false);
-                  }}
-                  onLoadStart={() => console.log("Video loading started:", videoSrc)}
-                  onCanPlay={() => console.log("Video can play:", videoSrc)}
                 />
+                
+                {/* Error state */}
+                {videoError && (
+                  <div className="video-error-state">
+                    <div className="error-content">
+                      <FaVideo size={32} />
+                      <h4>Video Not Available</h4>
+                      <p>This demo video cannot be loaded.</p>
+                      <div className="error-actions">
+                        <button 
+                          onClick={() => window.open(videoSrc, '_blank')}
+                          className="error-btn"
+                        >
+                          Try Direct Link
+                        </button>
+                        <button 
+                          onClick={() => {
+                            // Try to reload the video
+                            if (videoRef.current) {
+                              videoRef.current.load();
+                              setVideoError(false);
+                            }
+                          }}
+                          className="error-btn secondary"
+                        >
+                          Retry Loading
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="video-controls">
                   <button
                     className="play-pause-icon"
@@ -916,6 +941,7 @@ const MainPage = () => {
                 </div>
               </div>
             </div>
+
 
             <div
               className="feature-navbar"
