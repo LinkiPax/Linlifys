@@ -469,7 +469,7 @@ router.use(passport.initialize());
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: `${process.env.SERVER_URL}/auth/google/callback`
+    callbackURL: `${process.env.SERVER_URL}/user/google/callback`
 }, async (accessToken, refreshToken, profile, done) => {
     try {
         console.log('Google Profile:', profile);
