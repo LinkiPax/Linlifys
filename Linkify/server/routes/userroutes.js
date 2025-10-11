@@ -523,6 +523,7 @@ const generateToken = (user) => {
 };
 
 // Google OAuth Routes
+// Google OAuth Routes - FIXED VERSION
 router.get('/google',
     passport.authenticate('google', { 
         scope: ['profile', 'email'],
@@ -530,13 +531,21 @@ router.get('/google',
     })
 );
 
+// FIX: Make sure this route matches exactly what Google is calling
 router.get('/google/callback',
+    (req, res, next) => {
+        console.log('Google callback received with code:', req.query.code);
+        console.log('Full callback URL:', req.originalUrl);
+        next();
+    },
     passport.authenticate('google', { 
-        failureRedirect: `${process.env.CLIENT_URL}/login?error=auth_failed`,
+        failureRedirect: `${process.env.CLIENT_URL || 'https://linlifysserver.onrender.com'}/login?error=auth_failed`,
         session: false 
     }),
     async (req, res) => {
         try {
+            console.log('Google authentication successful, user:', req.user);
+            
             // Update user's online status
             await User.findByIdAndUpdate(req.user._id, {
                 isOnline: true,
@@ -561,14 +570,15 @@ router.get('/google/callback',
             };
             
             // Redirect to frontend with token
-            res.redirect(`${process.env.CLIENT_URL}/auth-success?token=${token}&user=${encodeURIComponent(JSON.stringify(userData))}`);
+            const clientURL = process.env.CLIENT_URL || 'https://linlifysserver.onrender.com';
+            res.redirect(`${clientURL}/auth-success?token=${token}&user=${encodeURIComponent(JSON.stringify(userData))}`);
         } catch (error) {
             console.error('Google callback error:', error);
-            res.redirect(`${process.env.CLIENT_URL}/login?error=auth_failed`);
+            const clientURL = process.env.CLIENT_URL || 'https://linlifysserver.onrender.com';
+            res.redirect(`${clientURL}/login?error=auth_failed`);
         }
     }
 );
-
 // POST: Signin (Login) - Updated to use model's static method
 router.post('/signin', [
     body('email').isEmail().withMessage('Please provide a valid email'),
