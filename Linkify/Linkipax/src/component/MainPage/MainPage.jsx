@@ -29,13 +29,13 @@ import { AnimatedTooltip } from "../../components/ui/animated-tooltip";
 import { WorldMap } from "../../components/ui/world-map";
 import aroraImage from "../../../public/aurora.d2a6947c3dcfb777c25f.webp";
 import { debounce } from "lodash";
-
+import dash from "../../../public/videos/Dashboard.mp4";
 const MainPage = () => {
   const navigate = useNavigate();
   
   // FIX 2: Define features first and set Dashboard as default
   const features = [
-    { name: "Dashboard", video: "/videos/Dashboard.mp4" },
+    { name: "Dashboard", video: {dash} },
     { name: "Team", video: "/videos/demo2.mp4" },
     { name: "Features", video: "/videos/demo3.mp4" },
   ];
