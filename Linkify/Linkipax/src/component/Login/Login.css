@@ -207,3 +207,120 @@ a.link-text:hover {
   color: white !important;
   box-shadow: none !important;
 }
+/* Google Login Button */
+.google-login-button {
+  border: 2px solid #db4437;
+  color: #db4437;
+  font-weight: 500;
+  padding: 12px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.google-login-button:hover:not(:disabled) {
+  background-color: #db4437;
+  color: white;
+  border-color: #db4437;
+}
+
+.google-login-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Separator */
+.separator {
+  position: relative;
+  text-align: center;
+  margin: 20px 0;
+  color: #666;
+}
+
+.separator::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #dee2e6;
+  z-index: 1;
+}
+
+.separator span {
+  background: white;
+  padding: 0 15px;
+  position: relative;
+  z-index: 2;
+  font-size: 0.9rem;
+}
+
+/* Google Benefits Side */
+.google-benefits-side {
+  margin-top: 30px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.google-benefits-side h4 {
+  color: white;
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.google-benefits-side ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.google-benefits-side li {
+  color: rgba(255, 255, 255, 0.9);
+  padding: 5px 0;
+  font-size: 0.9rem;
+  position: relative;
+  padding-left: 20px;
+}
+
+.google-benefits-side li:before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+/* Form improvements */
+.small-text {
+  font-size: 0.85rem;
+}
+
+.signup-link-button {
+  display: inline-block;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.signup-link-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  color: white;
+  text-decoration: none;
+}
+
+/* Input field improvements */
+.input-field:disabled {
+  background-color: #f8f9fa;
+  opacity: 0.7;
+  cursor: not-allowed;
+}

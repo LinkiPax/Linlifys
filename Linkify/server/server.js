@@ -10,6 +10,8 @@ const https = require('http');
 const { ApolloServer } = require("apollo-server-express");
 const { typeDefs, resolvers } = require("./GraphQL/messageschema");
 const path = require('path');
+const passport = require('passport');
+const session=require('express-session');
 const { initializeSocket ,getIO} = require('./socket/socketnadle'); // New socket handler
 // const fs = require('fs');
 
@@ -35,7 +37,20 @@ app.use(cors({
 console.log("Allowed CORS origin:", process.env.FRONTEND_ORIGIN);
 
 app.options('*', cors());
-
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-fallback-session-secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+  }
+}));
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(express.json()); 
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }

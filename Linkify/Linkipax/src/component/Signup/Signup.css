@@ -484,3 +484,36 @@
     gap: 20px;
     flex-wrap: nowrap;
 }
+/* Google button styles */
+.social-btn.google-btn {
+  border-color: #db4437;
+  color: #db4437;
+  transition: all 0.3s ease;
+}
+
+.social-btn.google-btn:hover {
+  background-color: #db4437;
+  color: white;
+}
+
+.social-btn.google-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Benefits section */
+.google-benefits {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border-left: 3px solid #4285f4;
+}
+
+.google-benefits h4 {
+  color: #4285f4;
+}
+
+/* Separator line */
+.separator {
+  position: relative;
+  text-align: center;
+}
