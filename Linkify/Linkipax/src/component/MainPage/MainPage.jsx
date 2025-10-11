@@ -35,7 +35,7 @@ const MainPage = () => {
   
   // FIX 2: Define features first and set Dashboard as default
   const features = [
-    { name: "Dashboard", video: {dash} },
+    { name: "Dashboard", video:"/videos/Dashboard.mp4" },
     { name: "Team", video: "/videos/demo2.mp4" },
     { name: "Features", video: "/videos/demo3.mp4" },
   ];
