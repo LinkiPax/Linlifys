@@ -788,18 +788,45 @@ router.post('/signup', [
 });
 
 // POST: Upload profile picture
-router.post('/upload-profile-pic/:userId', checkForAuthenticationHeader, uploadProfilePic.single('profilePicture'), async (req, res) => {
+// POST: Upload profile picture - FIXED VERSION
+router.post('/upload-profile-pic/:userId', uploadProfilePic.single('profilePicture'), async (req, res) => {
     try {
         const { userId } = req.params;
+        
+        // Get token from multiple sources
+        let token = req.headers['authorization'];
+        if (token && token.startsWith('Bearer ')) {
+            token = token.slice(7, token.length);
+        }
+
+        // If no token in header, check cookies
+        if (!token && req.cookies && req.cookies.auth_token) {
+            token = req.cookies.auth_token;
+        }
+
+        if (!token) {
+            return res.status(401).json({ message: 'Authentication required' });
+        }
+
+        // Verify token
+        let decoded;
+        try {
+            decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+        } catch (error) {
+            return res.status(401).json({ message: 'Invalid or expired token' });
+        }
 
         // Check if user is authorized to update this profile
-        if (req.user.userId !== userId) {
+        if (decoded.userId !== userId) {
             return res.status(403).json({ message: 'Unauthorized to update this profile' });
         }
 
         if (!req.file) {
             return res.status(400).json({ message: 'Profile picture file is required' });
         }
+
+        console.log('Uploading profile picture for user:', userId);
+        console.log('File details:', req.file);
 
         const user = await User.findByIdAndUpdate(
             userId,
