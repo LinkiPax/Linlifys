@@ -56,8 +56,6 @@ const Login = () => {
       // Redirect based on profile completion status
       setTimeout(() => {
         if (user.profileCompleted) {
-          navigate('/feed');
-        } else {
           navigate('/home');
         }
       }, 1500);
