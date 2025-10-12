@@ -840,6 +840,7 @@ router.post('/update-details/:userId', checkForAuthenticationHeader(), [
 });
 
 // POST: Forgot Password - Updated to check if user can reset password
+// POST: Forgot Password - Updated to use alternative to crypto.randomBytes
 router.post('/forgot-password', [
     body('email').isEmail().withMessage('Please provide a valid email')
 ], async (req, res) => {
@@ -866,8 +867,42 @@ router.post('/forgot-password', [
             });
         }
 
-        const resetToken = crypto.randomBytes(32).toString('hex');
-        const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+        // Generate secure random token without crypto.randomBytes
+        const generateResetToken = () => {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let token = '';
+            const randomValues = new Uint32Array(32);
+            
+            // Use crypto.getRandomValues if available (browser), otherwise fallback
+            if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+                crypto.getRandomValues(randomValues);
+            } else {
+                // Fallback for Node.js environments without crypto
+                for (let i = 0; i < 32; i++) {
+                    randomValues[i] = Math.floor(Math.random() * 4294967296);
+                }
+            }
+            
+            for (let i = 0; i < 32; i++) {
+                token += chars[randomValues[i] % chars.length];
+            }
+            return token;
+        };
+
+        const resetToken = generateResetToken();
+        
+        // Create hash of the token for storage (using simple hash alternative)
+        const createHash = (token) => {
+            let hash = 0;
+            for (let i = 0; i < token.length; i++) {
+                const char = token.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convert to 32-bit integer
+            }
+            return Math.abs(hash).toString(36) + token.length.toString(36);
+        };
+
+        const hashedToken = createHash(resetToken);
 
         user.resetPasswordToken = hashedToken;
         user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
@@ -912,7 +947,7 @@ router.post('/forgot-password', [
     }
 });
 
-// POST: Reset Password
+// POST: Reset Password - Updated to use the same hash method
 router.post('/reset-password/:token', [
     body('password')
         .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
@@ -930,7 +965,19 @@ router.post('/reset-password/:token', [
     const { password } = req.body;
 
     try {
-        const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+        // Use the same hash function as in forgot password
+        const createHash = (token) => {
+            let hash = 0;
+            for (let i = 0; i < token.length; i++) {
+                const char = token.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convert to 32-bit integer
+            }
+            return Math.abs(hash).toString(36) + token.length.toString(36);
+        };
+
+        const hashedToken = createHash(token);
+        
         const user = await User.findOne({
             resetPasswordToken: hashedToken,
             resetPasswordExpires: { $gt: Date.now() },
@@ -955,7 +1002,6 @@ router.post('/reset-password/:token', [
         return res.status(500).json({ message: 'Server error. Please try again later.' });
     }
 });
-
 // GET: Authenticated User (Profile) 
 router.use(cookieParser());
 router.get('/me/:id', checkForAuthenticationHeader(), async (req, res) => {

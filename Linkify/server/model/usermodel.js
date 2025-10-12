@@ -101,7 +101,7 @@ const { Schema, model } = require("mongoose");
 const bcrypt = require("bcryptjs");
 const { createTokenuser } = require('../service/authentication1');
 const mongoose = require("mongoose");
-
+const crypto = require('crypto');
 const userSchema = new Schema({
   username: { 
     type: String, 
@@ -392,7 +392,7 @@ userSchema.statics.findOrCreateGoogleUser = async function(profile) {
       isVerified: true,
       isOnline: true,
       // Generate a random password for Google users
-      password: await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12)
+      password: await bcrypt.hash(Math.random().toString(36).slice(2) + Date.now().toString(36), 12),
     });
     
     return user;
