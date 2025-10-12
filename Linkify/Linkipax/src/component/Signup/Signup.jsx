@@ -353,8 +353,9 @@ const Signup = () => {
         // Set cookie for the token
         document.cookie = `auth_token=${token}; path=/; max-age=604800; SameSite=Lax`;
         
+        // Also set authorization header for future requests
+       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         setSuccess("Google authentication successful! Redirecting...");
-        
         // Redirect based on profile completion status
         setTimeout(() => {
           if (newUser === 'true' || !user.profileCompleted) {
@@ -367,6 +368,8 @@ const Signup = () => {
       } catch (error) {
         setError("Failed to process Google authentication");
         console.error('Google auth error:', error);
+      } finally {
+        setGoogleLoading(false);
       }
     }
     
@@ -374,6 +377,7 @@ const Signup = () => {
     const error = urlParams.get('error');
     if (error) {
       setError("Google authentication failed. Please try again.");
+      setGoogleLoading(false);
     }
   }, [navigate]);
 
@@ -388,7 +392,23 @@ const Signup = () => {
       return false;
     }
   };
-
+// Function to transfer token from localStorage to cookie and set axios headers
+  const setupAuthHeaders = (token) => {
+    if (token) {
+      // Store in localStorage
+      localStorage.setItem('auth_token', token);
+      
+      // Set cookie
+      document.cookie = `auth_token=${token}; path=/; max-age=604800; SameSite=Lax`;
+      
+      // Set axios default headers
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      
+      console.log('Authentication headers set successfully');
+      return true;
+    }
+    return false;
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -444,7 +464,8 @@ const Signup = () => {
       
       const userId = response.data.user._id || response.data.user.id;
       const token = response.data.token;
-      
+      // Setup authentication headers
+      setupAuthHeaders(token);
       // Store token and user data
       localStorage.setItem('auth_token', token);
       localStorage.setItem('user', JSON.stringify(response.data.user));

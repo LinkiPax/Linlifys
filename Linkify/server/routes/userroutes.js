@@ -460,6 +460,8 @@ const { checkForAuthenticationCookie } = require('../middleware/middleware');
 const { uploadProfilePic } = require('../cloudinary');
 require('dotenv').config();
 const router = Router();
+
+// Import the corrected authentication middleware
 const checkForAuthenticationHeader = require('../middleware/Authentication');
 
 // Initialize Passport
@@ -612,9 +614,9 @@ router.get('/google/callback',
     }
 );
 
-// POST: Signin (Login)
+// POST: Signin (Login) - Support both email and username login
 router.post('/signin', [
-    body('email').isEmail().withMessage('Please provide a valid email'),
+    body('email').notEmpty().withMessage('Email or username is required'),
     body('password').notEmpty().withMessage('Password is required')
 ], async (req, res) => {
     const errors = validationResult(req);
@@ -630,7 +632,7 @@ router.post('/signin', [
         });
 
         if (!user) {
-            return res.status(401).json({ message: 'Invalid email or password' });
+            return res.status(401).json({ message: 'Invalid email/username or password' });
         }
 
         // Check if user signed up with Google
@@ -642,7 +644,7 @@ router.post('/signin', [
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(401).json({ message: 'Invalid email or password' });
+            return res.status(401).json({ message: 'Invalid email/username or password' });
         }
 
         // Update online status
@@ -676,7 +678,7 @@ router.post('/signin', [
 });
 
 // GET: Signout (Logout)
-router.get('/signout', checkForAuthenticationHeader(), async (req, res) => {
+router.get('/signout', checkForAuthenticationHeader, async (req, res) => {
     try {
         // Update user's online status
         await User.findByIdAndUpdate(req.user.userId, {
@@ -786,7 +788,7 @@ router.post('/signup', [
 });
 
 // POST: Upload profile picture
-router.post('/upload-profile-pic/:userId', checkForAuthenticationHeader(), uploadProfilePic.single('profilePicture'), async (req, res) => {
+router.post('/upload-profile-pic/:userId', checkForAuthenticationHeader, uploadProfilePic.single('profilePicture'), async (req, res) => {
     try {
         const { userId } = req.params;
 
@@ -821,7 +823,7 @@ router.post('/upload-profile-pic/:userId', checkForAuthenticationHeader(), uploa
 });
 
 // POST: Update personal details
-router.post('/update-details/:userId', checkForAuthenticationHeader(), [
+router.post('/update-details/:userId', checkForAuthenticationHeader, [
     body('name').notEmpty().withMessage('Name is required'),
     body('bio').notEmpty().withMessage('Bio is required'),
     body('jobTitle').notEmpty().withMessage('Job title is required'),
@@ -994,7 +996,7 @@ router.post('/reset-password/:token', [
 
 // GET: Authenticated User (Profile) 
 router.use(cookieParser());
-router.get('/me/:id', checkForAuthenticationHeader(), async (req, res) => {
+router.get('/me/:id', checkForAuthenticationHeader, async (req, res) => {
     let userId = req.params.id;
 
     if (userId === "me") {
@@ -1018,9 +1020,16 @@ router.get('/me/:id', checkForAuthenticationHeader(), async (req, res) => {
 });
 
 // Get user connections
-router.get('/connections/:userId', async (req, res) => {
+router.get('/connections/:userId', checkForAuthenticationHeader, async (req, res) => {
     try {
-        const user = await User.findById(req.params.userId)
+        const { userId } = req.params;
+
+        // Check if user is authorized
+        if (req.user.userId !== userId) {
+            return res.status(403).json({ error: 'Unauthorized' });
+        }
+
+        const user = await User.findById(userId)
             .populate('connections', 'username name profilePicture isOnline lastSeen jobTitle company')
             .select('connections');
 
@@ -1039,9 +1048,16 @@ router.get('/connections/:userId', async (req, res) => {
 });
 
 // Get suggested connections
-router.get('/suggested/:userId', async (req, res) => {
+router.get('/suggested/:userId', checkForAuthenticationHeader, async (req, res) => {
     try {
-        const user = await User.findById(req.params.userId);
+        const { userId } = req.params;
+
+        // Check if user is authorized
+        if (req.user.userId !== userId) {
+            return res.status(403).json({ error: 'Unauthorized' });
+        }
+
+        const user = await User.findById(userId);
 
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
@@ -1052,15 +1068,10 @@ router.get('/suggested/:userId', async (req, res) => {
             _id: { 
                 $nin: [
                     ...user.connections, 
-                    ...user.blockedUsers, 
+                    ...(user.blockedUsers || []), 
                     user._id
                 ] 
-            },
-            $or: [
-                { industry: user.industry },
-                { skills: { $in: user.skills || [] } },
-                { company: user.company }
-            ]
+            }
         })
         .select('username name profilePicture bio jobTitle company industry skills isOnline')
         .limit(10);
@@ -1076,7 +1087,7 @@ router.get('/suggested/:userId', async (req, res) => {
 });
 
 // Add connection
-router.patch('/add-connection/:userId', checkForAuthenticationHeader(), async (req, res) => {
+router.patch('/add-connection/:userId', checkForAuthenticationHeader, async (req, res) => {
     try {
         const { connectionId } = req.body;
         const { userId } = req.params;
@@ -1107,7 +1118,7 @@ router.patch('/add-connection/:userId', checkForAuthenticationHeader(), async (r
 });
 
 // Remove connection
-router.patch('/remove-connection/:userId', checkForAuthenticationHeader(), async (req, res) => {
+router.patch('/remove-connection/:userId', checkForAuthenticationHeader, async (req, res) => {
     try {
         const { connectionId } = req.body;
         const { userId } = req.params;
@@ -1138,7 +1149,7 @@ router.patch('/remove-connection/:userId', checkForAuthenticationHeader(), async
 });
 
 // Update online status
-router.patch('/update-status/:userId', checkForAuthenticationHeader(), async (req, res) => {
+router.patch('/update-status/:userId', checkForAuthenticationHeader, async (req, res) => {
     try {
         const { isOnline } = req.body;
         const { userId } = req.params;
