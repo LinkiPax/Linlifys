@@ -532,6 +532,7 @@ router.get('/google',
 );
 
 // FIX: Make sure this route matches exactly what Google is calling
+// FIX: Make sure this route matches exactly what Google is calling
 router.get('/google/callback',
     (req, res, next) => {
         console.log('Google callback received with code:', req.query.code);
@@ -539,7 +540,7 @@ router.get('/google/callback',
         next();
     },
     passport.authenticate('google', { 
-        failureRedirect: `${process.env.CLIENT_URL || 'https://linlifysserver.onrender.com'}/login?error=auth_failed`,
+        failureRedirect: `${process.env.CLIENT_URL}/login?error=auth_failed`,
         session: false 
     }),
     async (req, res) => {
@@ -569,13 +570,19 @@ router.get('/google/callback',
                 profileCompleted: req.user.profileCompleted
             };
             
-            // Redirect to frontend with token
-            const clientURL = process.env.CLIENT_URL || 'https://linlifysserver.onrender.com';
-            res.redirect(`${clientURL}/auth-success?token=${token}&user=${encodeURIComponent(JSON.stringify(userData))}`);
+            // Redirect to frontend with token in URL parameters
+            const clientURL = process.env.CLIENT_URL;
+            
+            // URL encode the user data properly
+            const userDataString = encodeURIComponent(JSON.stringify(userData));
+            
+            // Redirect to a page that exists on your frontend
+            res.redirect(`${clientURL}/dashboard?token=${token}&user=${userDataString}&auth=success`);
+            
         } catch (error) {
             console.error('Google callback error:', error);
-            const clientURL = process.env.CLIENT_URL || 'https://linlifysserver.onrender.com';
-            res.redirect(`${clientURL}/login?error=auth_failed`);
+            const clientURL = process.env.CLIENT_URL;
+            res.redirect(`${clientURL}/login?error=auth_failed&message=${encodeURIComponent(error.message)}`);
         }
     }
 );
