@@ -361,7 +361,7 @@ const Signup = () => {
           if (newUser === 'true' || !user.profileCompleted) {
             navigate(`/personal-details/${user.id}`);
           } else {
-            navigate('/feed');
+            navigate('/home');
           }
         }, 1500);
         

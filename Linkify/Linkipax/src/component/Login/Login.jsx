@@ -104,8 +104,6 @@ const Login = () => {
       // Redirect based on profile completion
       setTimeout(() => {
         if (user.profileCompleted) {
-          navigate('/feed');
-        } else {
           navigate(`/home/${user._id || user.id}`);
         }
       }, 1500);
