@@ -867,7 +867,7 @@ router.post('/update-details/:userId', [
     // Check if user is authorized to update this profile
     // if (req.user.userId !== userId) {
     //     return res.status(403).json({ message: 'Unauthorized to update this profile' });
-    }
+    // }
 
     try {
         const updateData = {
