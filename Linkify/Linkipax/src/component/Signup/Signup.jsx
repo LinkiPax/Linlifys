@@ -339,8 +339,10 @@ const Signup = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
     const userData = urlParams.get('user');
+    const authSuccess = urlParams.get('auth');
+    const newUser = urlParams.get('newUser');
     
-    if (token && userData) {
+    if (token && userData && authSuccess === 'success') {
       try {
         const user = JSON.parse(decodeURIComponent(userData));
         
@@ -349,16 +351,16 @@ const Signup = () => {
         localStorage.setItem('user', JSON.stringify(user));
         
         // Set cookie for the token
-        document.cookie = `auth_token=${token}; path=/; max-age=86400; SameSite=Lax`;
+        document.cookie = `auth_token=${token}; path=/; max-age=604800; SameSite=Lax`;
         
         setSuccess("Google authentication successful! Redirecting...");
         
         // Redirect based on profile completion status
         setTimeout(() => {
-          if (user.profileCompleted) {
-            navigate('/feed');
-          } else {
+          if (newUser === 'true' || !user.profileCompleted) {
             navigate(`/personal-details/${user.id}`);
+          } else {
+            navigate('/feed');
           }
         }, 1500);
         
@@ -376,14 +378,13 @@ const Signup = () => {
   }, [navigate]);
 
   // Function to transfer token from localStorage to cookie
-  const saveTokenToCookie = () => {
-    const token = localStorage.getItem('auth_token');
+  const saveTokenToCookie = (token) => {
     if (token) {
-      document.cookie = `auth_token=${token}; path=/; max-age=86400; SameSite=Lax`;
+      document.cookie = `auth_token=${token}; path=/; max-age=604800; SameSite=Lax`;
       console.log('Token successfully saved to cookie');
       return true;
     } else {
-      console.log('No token found in localStorage');
+      console.log('No token found');
       return false;
     }
   };
@@ -447,7 +448,7 @@ const Signup = () => {
       // Store token and user data
       localStorage.setItem('auth_token', token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
-      saveTokenToCookie();
+      saveTokenToCookie(token);
       
       setSuccess("Signup successful! Redirecting...");
       setError("");

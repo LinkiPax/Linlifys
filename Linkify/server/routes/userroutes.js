@@ -465,7 +465,7 @@ const checkForAuthenticationHeader = require('../middleware/Authentication');
 // Initialize Passport
 router.use(passport.initialize());
 
-// Passport Google Strategy - Updated to use the model's static method
+// Passport Google Strategy
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
@@ -474,8 +474,34 @@ passport.use(new GoogleStrategy({
     try {
         console.log('Google Profile:', profile);
         
-        // Use the model's static method for consistency
-        const user = await User.findOrCreateGoogleUser(profile);
+        // Find or create user
+        let user = await User.findOne({ 
+            $or: [
+                { email: profile.emails[0].value },
+                { googleId: profile.id }
+            ] 
+        });
+
+        if (user) {
+            // Update Google ID if not present
+            if (!user.googleId) {
+                user.googleId = profile.id;
+                await user.save();
+            }
+            return done(null, user);
+        }
+
+        // Create new user
+        user = await User.create({
+            googleId: profile.id,
+            username: profile.emails[0].value.split('@')[0] + '_' + profile.id.substring(0, 4),
+            email: profile.emails[0].value,
+            name: profile.displayName,
+            profilePicture: profile.photos[0].value,
+            isVerified: true,
+            authMethod: 'google'
+        });
+
         return done(null, user);
     } catch (error) {
         console.error('Google OAuth error:', error);
@@ -503,27 +529,25 @@ const setCookie = (res, token) => {
     const isProduction = process.env.NODE_ENV === 'production';
     
     const cookieOptions = {
-        httpOnly: true, // More secure - true in production
-        secure: isProduction, // true in production
+        httpOnly: true,
+        secure: isProduction,
         sameSite: isProduction ? 'none' : 'lax',
-        maxAge: 7 * 24 * 3600 * 1000, // 7 days to match token expiry
+        maxAge: 7 * 24 * 3600 * 1000, // 7 days
         path: '/',
     };
     res.cookie('auth_token', token, cookieOptions);
 };
 
-// Generate JWT Token - Updated to include more user data
+// Generate JWT Token
 const generateToken = (user) => {
     return jwt.sign({ 
         userId: user._id,
         email: user.email,
-        username: user.username,
-        isVerified: user.isVerified
+        username: user.username
     }, process.env.JWT_SECRET_KEY, { expiresIn: '7d' });
 };
 
 // Google OAuth Routes
-// Google OAuth Routes - FIXED VERSION
 router.get('/google',
     passport.authenticate('google', { 
         scope: ['profile', 'email'],
@@ -531,62 +555,6 @@ router.get('/google',
     })
 );
 
-// FIX: Make sure this route matches exactly what Google is calling
-// FIX: Make sure this route matches exactly what Google is calling
-// router.get('/google/callback',
-//     (req, res, next) => {
-//         console.log('Google callback received with code:', req.query.code);
-//         console.log('Full callback URL:', req.originalUrl);
-//         next();
-//     },
-//     passport.authenticate('google', { 
-//         failureRedirect: `${process.env.CLIENT_URL}/login?error=auth_failed`,
-//         session: false 
-//     }),
-//     async (req, res) => {
-//         try {
-//             console.log('Google authentication successful, user:', req.user);
-            
-//             // Update user's online status
-//             await User.findByIdAndUpdate(req.user._id, {
-//                 isOnline: true,
-//                 lastSeen: new Date()
-//             });
-
-//             // Successful authentication
-//             const token = generateToken(req.user);
-            
-//             // Set cookie
-//             setCookie(res, token);
-            
-//             // Prepare user data for response
-//             const userData = {
-//                 id: req.user._id,
-//                 username: req.user.username,
-//                 email: req.user.email,
-//                 name: req.user.name,
-//                 profilePicture: req.user.profilePicture,
-//                 isVerified: req.user.isVerified,
-//                 profileCompleted: req.user.profileCompleted
-//             };
-            
-//             // Redirect to frontend with token in URL parameters
-//             const clientURL = process.env.CLIENT_URL;
-            
-//             // URL encode the user data properly
-//             const userDataString = encodeURIComponent(JSON.stringify(userData));
-            
-//             // Redirect to a page that exists on your frontend
-//             res.redirect(`${clientURL}/dashboard?token=${token}&user=${userDataString}&auth=success`);
-            
-//         } catch (error) {
-//             console.error('Google callback error:', error);
-//             const clientURL = process.env.CLIENT_URL;
-//             res.redirect(`${clientURL}/login?error=auth_failed&message=${encodeURIComponent(error.message)}`);
-//         }
-//     }
-// );
-// MORE ROBUST Google OAuth Callback
 router.get('/google/callback',
     passport.authenticate('google', { 
         failureRedirect: `${process.env.CLIENT_URL}/login?error=auth_failed`,
@@ -621,19 +589,16 @@ router.get('/google/callback',
             // Determine where to redirect based on profile completion
             let redirectUrl;
             
-            // Check if this is a new Google user (recently created)
-            // You can check creation time or specific fields
-            const isNewUser = 
-                !req.user.profileCompleted || 
-                !req.user.name || 
-                !req.user.jobTitle || 
-                !req.user.company ||
-                Date.now() - req.user.createdAt < 5 * 60 * 1000; // Created less than 5 minutes ago
+            // Check if this is a new Google user (profile not completed)
+            const isNewUser = !req.user.profileCompleted || 
+                            !req.user.name || 
+                            !req.user.jobTitle || 
+                            !req.user.company;
                 
             if (isNewUser) {
                 redirectUrl = `${clientURL}/personal-details/${req.user._id}?token=${token}&user=${userDataString}&auth=success&newUser=true`;
             } else {
-                redirectUrl = `${clientURL}/home?token=${token}&user=${userDataString}&auth=success`;
+                redirectUrl = `${clientURL}/feed?token=${token}&user=${userDataString}&auth=success`;
             }
             
             console.log(`Redirecting to: ${redirectUrl}`);
@@ -646,7 +611,8 @@ router.get('/google/callback',
         }
     }
 );
-// POST: Signin (Login) - Updated to use model's static method
+
+// POST: Signin (Login)
 router.post('/signin', [
     body('email').isEmail().withMessage('Please provide a valid email'),
     body('password').notEmpty().withMessage('Password is required')
@@ -659,13 +625,23 @@ router.post('/signin', [
     const { email, password } = req.body;
     
     try {
-        // Use the model's static method for consistency
-        const token = await User.matchPasswordandGenerateToken(email, password);
         const user = await User.findOne({ 
             $or: [{ email }, { username: email }] 
-        }).select('-password');
+        });
 
         if (!user) {
+            return res.status(401).json({ message: 'Invalid email or password' });
+        }
+
+        // Check if user signed up with Google
+        if (user.authMethod === 'google') {
+            return res.status(401).json({ 
+                message: 'This account uses Google authentication. Please sign in with Google.' 
+            });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
 
@@ -674,10 +650,11 @@ router.post('/signin', [
         user.lastSeen = new Date();
         await user.save();
 
+        const token = generateToken(user);
         setCookie(res, token);
         
         // Return user data
-        const userResponse = user.toObject ? user.toObject() : {
+        const userResponse = {
             id: user._id,
             username: user.username,
             email: user.email,
@@ -694,16 +671,11 @@ router.post('/signin', [
         });  
     } catch (error) {
         console.error('Signin error:', error);
-        if (error.message.includes('Google authentication')) {
-            return res.status(401).json({ 
-                message: 'This account uses Google authentication. Please sign in with Google.' 
-            });
-        }
-        return res.status(401).json({ message: error.message || 'Invalid email or password' });
+        return res.status(500).json({ message: 'Server error. Please try again later.' });
     }
 });
 
-// GET: Signout (Logout) - Update user status
+// GET: Signout (Logout)
 router.get('/signout', checkForAuthenticationHeader(), async (req, res) => {
     try {
         // Update user's online status
@@ -754,7 +726,7 @@ router.post('/signup', [
         .matches(/^[a-zA-Z0-9_]+$/).withMessage('Username can only contain letters, numbers, and underscores'),
     body('email').isEmail().withMessage('Invalid email format'),
     body('password')
-        .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
+        .isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
         .matches(/[A-Z]/).withMessage('Password must contain at least one uppercase letter')
         .matches(/[a-z]/).withMessage('Password must contain at least one lowercase letter')
         .matches(/\d/).withMessage('Password must contain at least one number')
@@ -784,7 +756,8 @@ router.post('/signup', [
         const user = await User.create({
             username,
             email,
-            password, // Password will be hashed by pre-save hook
+            password,
+            authMethod: 'email'
         });
 
         const token = generateToken(user);
@@ -808,9 +781,6 @@ router.post('/signup', [
         });
     } catch (error) {
         console.error('Signup error:', error);
-        if (error.message.includes('Password must contain')) {
-            return res.status(400).json({ message: error.message });
-        }
         return res.status(500).json({ message: 'Server error. Please try again later.' });
     }
 });
@@ -876,6 +846,7 @@ router.post('/update-details/:userId', checkForAuthenticationHeader(), [
             bio,
             jobTitle,
             company,
+            profileCompleted: true,
             industry,
             skills: Array.isArray(skills) ? skills : skills?.split(',').map(skill => skill.trim()).filter(skill => skill) || [],
             location,
@@ -906,8 +877,7 @@ router.post('/update-details/:userId', checkForAuthenticationHeader(), [
     }
 });
 
-// POST: Forgot Password - Updated to check if user can reset password
-// POST: Forgot Password - Updated to use alternative to crypto.randomBytes
+// POST: Forgot Password
 router.post('/forgot-password', [
     body('email').isEmail().withMessage('Please provide a valid email')
 ], async (req, res) => {
@@ -928,48 +898,14 @@ router.post('/forgot-password', [
         }
 
         // Check if user can reset password (Google users without password cannot)
-        if (!user.canResetPassword()) {
+        if (user.authMethod === 'google') {
             return res.status(400).json({ 
                 message: 'This account uses Google authentication and does not have a password set.' 
             });
         }
 
-        // Generate secure random token without crypto.randomBytes
-        const generateResetToken = () => {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            let token = '';
-            const randomValues = new Uint32Array(32);
-            
-            // Use crypto.getRandomValues if available (browser), otherwise fallback
-            if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-                crypto.getRandomValues(randomValues);
-            } else {
-                // Fallback for Node.js environments without crypto
-                for (let i = 0; i < 32; i++) {
-                    randomValues[i] = Math.floor(Math.random() * 4294967296);
-                }
-            }
-            
-            for (let i = 0; i < 32; i++) {
-                token += chars[randomValues[i] % chars.length];
-            }
-            return token;
-        };
-
-        const resetToken = generateResetToken();
-        
-        // Create hash of the token for storage (using simple hash alternative)
-        const createHash = (token) => {
-            let hash = 0;
-            for (let i = 0; i < token.length; i++) {
-                const char = token.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash; // Convert to 32-bit integer
-            }
-            return Math.abs(hash).toString(36) + token.length.toString(36);
-        };
-
-        const hashedToken = createHash(resetToken);
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
 
         user.resetPasswordToken = hashedToken;
         user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
@@ -988,7 +924,7 @@ router.post('/forgot-password', [
         const mailOptions = {
             to: user.email,
             from: process.env.EMAIL_USERNAME,
-            subject: 'Password Reset Request - Your App Name',
+            subject: 'Password Reset Request - Linkipax',
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                     <h2 style="color: #333;">Password Reset Request</h2>
@@ -1014,10 +950,10 @@ router.post('/forgot-password', [
     }
 });
 
-// POST: Reset Password - Updated to use the same hash method
+// POST: Reset Password
 router.post('/reset-password/:token', [
     body('password')
-        .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
+        .isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
         .matches(/[A-Z]/).withMessage('Password must contain at least one uppercase letter')
         .matches(/[a-z]/).withMessage('Password must contain at least one lowercase letter')
         .matches(/\d/).withMessage('Password must contain at least one number')
@@ -1032,18 +968,7 @@ router.post('/reset-password/:token', [
     const { password } = req.body;
 
     try {
-        // Use the same hash function as in forgot password
-        const createHash = (token) => {
-            let hash = 0;
-            for (let i = 0; i < token.length; i++) {
-                const char = token.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash; // Convert to 32-bit integer
-            }
-            return Math.abs(hash).toString(36) + token.length.toString(36);
-        };
-
-        const hashedToken = createHash(token);
+        const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
         
         const user = await User.findOne({
             resetPasswordToken: hashedToken,
@@ -1054,7 +979,7 @@ router.post('/reset-password/:token', [
             return res.status(400).json({ message: 'Invalid or expired reset token' });
         }
 
-        // Update password (pre-save hook will hash it)
+        // Update password
         user.password = password;
         user.resetPasswordToken = undefined;
         user.resetPasswordExpires = undefined;
@@ -1063,12 +988,10 @@ router.post('/reset-password/:token', [
         return res.status(200).json({ message: 'Password reset successful' });
     } catch (error) {
         console.error('Reset password error:', error);
-        if (error.message.includes('Password must contain')) {
-            return res.status(400).json({ message: error.message });
-        }
         return res.status(500).json({ message: 'Server error. Please try again later.' });
     }
 });
+
 // GET: Authenticated User (Profile) 
 router.use(cookieParser());
 router.get('/me/:id', checkForAuthenticationHeader(), async (req, res) => {
