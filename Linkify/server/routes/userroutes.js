@@ -533,12 +533,61 @@ router.get('/google',
 
 // FIX: Make sure this route matches exactly what Google is calling
 // FIX: Make sure this route matches exactly what Google is calling
+// router.get('/google/callback',
+//     (req, res, next) => {
+//         console.log('Google callback received with code:', req.query.code);
+//         console.log('Full callback URL:', req.originalUrl);
+//         next();
+//     },
+//     passport.authenticate('google', { 
+//         failureRedirect: `${process.env.CLIENT_URL}/login?error=auth_failed`,
+//         session: false 
+//     }),
+//     async (req, res) => {
+//         try {
+//             console.log('Google authentication successful, user:', req.user);
+            
+//             // Update user's online status
+//             await User.findByIdAndUpdate(req.user._id, {
+//                 isOnline: true,
+//                 lastSeen: new Date()
+//             });
+
+//             // Successful authentication
+//             const token = generateToken(req.user);
+            
+//             // Set cookie
+//             setCookie(res, token);
+            
+//             // Prepare user data for response
+//             const userData = {
+//                 id: req.user._id,
+//                 username: req.user.username,
+//                 email: req.user.email,
+//                 name: req.user.name,
+//                 profilePicture: req.user.profilePicture,
+//                 isVerified: req.user.isVerified,
+//                 profileCompleted: req.user.profileCompleted
+//             };
+            
+//             // Redirect to frontend with token in URL parameters
+//             const clientURL = process.env.CLIENT_URL;
+            
+//             // URL encode the user data properly
+//             const userDataString = encodeURIComponent(JSON.stringify(userData));
+            
+//             // Redirect to a page that exists on your frontend
+//             res.redirect(`${clientURL}/dashboard?token=${token}&user=${userDataString}&auth=success`);
+            
+//         } catch (error) {
+//             console.error('Google callback error:', error);
+//             const clientURL = process.env.CLIENT_URL;
+//             res.redirect(`${clientURL}/login?error=auth_failed&message=${encodeURIComponent(error.message)}`);
+//         }
+//     }
+// );
+// MORE ROBUST Google OAuth Callback
 router.get('/google/callback',
-    (req, res, next) => {
-        console.log('Google callback received with code:', req.query.code);
-        console.log('Full callback URL:', req.originalUrl);
-        next();
-    },
     passport.authenticate('google', { 
         failureRedirect: `${process.env.CLIENT_URL}/login?error=auth_failed`,
         session: false 
@@ -553,13 +602,9 @@ router.get('/google/callback',
                 lastSeen: new Date()
             });
 
-            // Successful authentication
             const token = generateToken(req.user);
-            
-            // Set cookie
             setCookie(res, token);
             
-            // Prepare user data for response
             const userData = {
                 id: req.user._id,
                 username: req.user.username,
@@ -569,15 +614,30 @@ router.get('/google/callback',
                 isVerified: req.user.isVerified,
                 profileCompleted: req.user.profileCompleted
             };
-            
-            // Redirect to frontend with token in URL parameters
+
             const clientURL = process.env.CLIENT_URL;
-            
-            // URL encode the user data properly
             const userDataString = encodeURIComponent(JSON.stringify(userData));
+
+            // Determine where to redirect based on profile completion
+            let redirectUrl;
             
-            // Redirect to a page that exists on your frontend
-            res.redirect(`${clientURL}/dashboard?token=${token}&user=${userDataString}&auth=success`);
+            // Check if this is a new Google user (recently created)
+            // You can check creation time or specific fields
+            const isNewUser = 
+                !req.user.profileCompleted || 
+                !req.user.name || 
+                !req.user.jobTitle || 
+                !req.user.company ||
+                Date.now() - req.user.createdAt < 5 * 60 * 1000; // Created less than 5 minutes ago
+                
+            if (isNewUser) {
+                redirectUrl = `${clientURL}/personal-details/${req.user._id}?token=${token}&user=${userDataString}&auth=success&newUser=true`;
+            } else {
+                redirectUrl = `${clientURL}/home?token=${token}&user=${userDataString}&auth=success`;
+            }
+            
+            console.log(`Redirecting to: ${redirectUrl}`);
+            res.redirect(redirectUrl);
             
         } catch (error) {
             console.error('Google callback error:', error);
