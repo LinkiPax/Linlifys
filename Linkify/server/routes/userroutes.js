@@ -850,7 +850,7 @@ router.post('/upload-profile-pic/:userId', uploadProfilePic.single('profilePictu
 });
 
 // POST: Update personal details
-router.post('/update-details/:userId', checkForAuthenticationHeader, [
+router.post('/update-details/:userId', [
     body('name').notEmpty().withMessage('Name is required'),
     body('bio').notEmpty().withMessage('Bio is required'),
     body('jobTitle').notEmpty().withMessage('Job title is required'),
