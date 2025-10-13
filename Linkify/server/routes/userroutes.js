@@ -599,9 +599,11 @@ router.get('/google/callback',
                 
             if (isNewUser) {
                 redirectUrl = `${clientURL}/personal-details/${req.user._id}?token=${token}&user=${userDataString}&auth=success&newUser=true`;
+                setCookie(res, token);
             } else {
                 // redirectUrl = `${clientURL}/home/?token=${token}&user=${userDataString}&auth=success&id=${req.user._id}`;
                 redirectUrl = `${clientURL}/home/${req.user._id}`;
+                setCookie(res, token);
             }
             
             console.log(`Redirecting to: ${redirectUrl}`);
@@ -654,6 +656,7 @@ router.post('/signin', [
         await user.save();
 
         const token = generateToken(user);
+        console.log('Token Signin:', token);
         setCookie(res, token);
         
         // Return user data
