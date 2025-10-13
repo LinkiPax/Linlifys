@@ -600,7 +600,8 @@ router.get('/google/callback',
             if (isNewUser) {
                 redirectUrl = `${clientURL}/personal-details/${req.user._id}?token=${token}&user=${userDataString}&auth=success&newUser=true`;
             } else {
-                redirectUrl = `${clientURL}/home/?token=${token}&user=${userDataString}&auth=success`;
+                // redirectUrl = `${clientURL}/home/?token=${token}&user=${userDataString}&auth=success&id=${req.user._id}`;
+                redirectUrl = `${clientURL}/home?userId=${req.user._id}&auth=success`;
             }
             
             console.log(`Redirecting to: ${redirectUrl}`);
