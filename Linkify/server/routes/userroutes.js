@@ -532,8 +532,8 @@ const setCookie = (res, token) => {
     
     const cookieOptions = {
         httpOnly: false,
-        secure: isProduction,
-        sameSite: isProduction ? 'none' : 'lax',
+        secure: false,
+        sameSite: 'none',
         maxAge: 7 * 24 * 3600 * 1000, // 7 days
         path: '/',
     };
