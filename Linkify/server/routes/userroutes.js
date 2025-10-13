@@ -602,7 +602,7 @@ router.get('/google/callback',
                 setCookie(res, token);
             } else {
                 // redirectUrl = `${clientURL}/home/?token=${token}&user=${userDataString}&auth=success&id=${req.user._id}`;
-                setCookie('auth_token', token);
+                
                 redirectUrl = `${clientURL}/home/${req.user._id}?token=${token}&user=${userDataString}&auth=success`;
             }
             
