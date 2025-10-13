@@ -152,6 +152,7 @@ const HomePage = () => {
         if (token && userParam) {
           // Store token and user data from OAuth
           localStorage.setItem('auth_token', token);
+          document.cookie = `auth_token=${token}; path=/; max-age=${60 * 60}; secure; samesite=strict`;
           const userData = JSON.parse(decodeURIComponent(userParam));
           localStorage.setItem('user', JSON.stringify(userData));
           localStorage.setItem('userId', userData.id);
