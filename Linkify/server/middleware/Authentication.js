@@ -27,48 +27,52 @@
 
 // module.exports = checkForAuthenticationHeader;
 const jwt = require('jsonwebtoken');
+const User = require('../model/usermodel');
 
-function checkForAuthenticationHeader() {
-  return (req, res, next) => {
-    // Check for token in multiple places
-    let token = req.headers['authorization'];
-    
-    if (token && token.startsWith('Bearer ')) {
-      token = token.slice(7, token.length);
-    } else if (req.cookies && req.cookies.auth_token) {
-      token = req.cookies.auth_token;
-    } else if (req.query.token) {
-      token = req.query.token;
-    }
-
-    if (!token) {
-      return res.status(401).json({ message: 'Unauthorized: No token provided' });
-    }
-
+const checkForAuthenticationHeader = async (req, res, next) => {
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-      
-      // Ensure the decoded payload has the expected structure
-      if (!decoded || !decoded.userId) {
-        return res.status(401).json({ message: 'Unauthorized: Invalid token structure' });
-      }
+        // Check for token in headers
+        const authHeader = req.headers['authorization'];
+        const tokenFromHeader = authHeader && authHeader.startsWith('Bearer ') 
+            ? authHeader.slice(7) 
+            : null;
 
-      req.user = decoded; // Attach the user data to the request object
-      return next(); // Proceed to the next middleware or route handler
+        // Check for token in cookies
+        const tokenFromCookie = req.cookies?.auth_token;
+
+        // Use token from header first, then from cookie
+        const token = tokenFromHeader || tokenFromCookie;
+
+        if (!token) {
+            return res.status(401).json({ 
+                message: 'Access denied. No token provided.' 
+            });
+        }
+
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+            const user = await User.findById(decoded.userId).select('-password');
+            
+            if (!user) {
+                return res.status(401).json({ 
+                    message: 'Invalid token. User not found.' 
+                });
+            }
+
+            req.user = user;
+            next();
+        } catch (jwtError) {
+            console.error('JWT verification error:', jwtError);
+            return res.status(401).json({ 
+                message: 'Invalid or expired token.' 
+            });
+        }
     } catch (error) {
-      console.error('Token verification failed:', error);
-      
-      if (error.name === 'TokenExpiredError') {
-        return res.status(401).json({ message: 'Unauthorized: Token expired' });
-      }
-      
-      if (error.name === 'JsonWebTokenError') {
-        return res.status(401).json({ message: 'Unauthorized: Invalid token' });
-      }
-      
-      return res.status(401).json({ message: 'Unauthorized: Token verification failed' });
+        console.error('Authentication middleware error:', error);
+        return res.status(500).json({ 
+            message: 'Internal server error during authentication.' 
+        });
     }
-  };
-}
+};
 
 module.exports = checkForAuthenticationHeader;

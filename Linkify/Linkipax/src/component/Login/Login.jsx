@@ -23,21 +23,30 @@ const Login = () => {
       videoRef.current.playbackRate = 0.8;
     }
 
+    // Check if user is already logged in
+    const token = localStorage.getItem('auth_token');
+    const userId = localStorage.getItem('userId');
+    
+    if (token && userId) {
+      navigate(`/home/${userId}`);
+      return;
+    }
+
     // Check for Google authentication callback
     const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
+    const tokenFromUrl = urlParams.get('token');
     const userData = urlParams.get('user');
-    const error = urlParams.get('error');
-    const authSuccess = urlParams.get('auth');
+    const errorFromUrl = urlParams.get('error');
     
-    if (token && userData && authSuccess === 'success') {
-      handleGoogleAuthSuccess(token, userData);
+    if (tokenFromUrl && userData) {
+      handleGoogleAuthSuccess(tokenFromUrl, userData);
+      return;
     }
     
-    if (error) {
+    if (errorFromUrl) {
       setError("Google authentication failed. Please try again.");
     }
-  }, []);
+  }, [navigate]);
 
   const handleGoogleAuthSuccess = (token, userData) => {
     try {
@@ -48,18 +57,22 @@ const Login = () => {
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('userId', user.id);
       
-      console.log('Google auth successful, user:', user);
+      // Set axios default headers
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      
       setSuccess("Google login successful! Redirecting...");
       setGoogleLoading(false);
       
-      // Redirect based on profile completion status
+      // Clean URL
+      const cleanUrl = `${window.location.origin}/login`;
+      window.history.replaceState({}, '', cleanUrl);
+      
+      // Redirect based on profile completion
       setTimeout(() => {
-        const isNewUser = new URLSearchParams(window.location.search).get('newUser') === 'true';
-        
-        if (isNewUser || !user.profileCompleted) {
-          navigate(`/personal-details/${user.id}`);
-        } else {
+        if (user.profileCompleted) {
           navigate(`/home/${user.id}`);
+        } else {
+          navigate(`/personal-details/${user.id}`);
         }
       }, 1500);
       
@@ -75,9 +88,7 @@ const Login = () => {
     setError("");
     
     // Redirect to Google OAuth endpoint
-    const googleAuthUrl = `${import.meta.env.VITE_API_URL}/user/google`;
-    console.log('Redirecting to Google auth:', googleAuthUrl);
-    window.location.href = googleAuthUrl;
+    window.location.href = `${import.meta.env.VITE_API_URL}/user/google`;
   };
 
   const handleSubmit = async (e) => {
@@ -91,28 +102,22 @@ const Login = () => {
         `${import.meta.env.VITE_API_URL}/user/signin`,
         { email, password },
         { 
-          withCredentials: true, // This is crucial for cookies
+          withCredentials: true, // Important for cookies
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json'
           }
         }
       );
       
-      const { token, user, cookieSet } = response.data;
+      const { token, user } = response.data;
       
-      console.log('Login response:', response);
-      console.log('Response data:', response.data);
-      console.log('Cookies after login:', document.cookie);
-      
-      // Store user data in localStorage as fallback
-      localStorage.setItem("userId", user.id || user._id);
+      // Store user data in localStorage
+      localStorage.setItem("userId", user.id);
       localStorage.setItem("auth_token", token);
       localStorage.setItem("user", JSON.stringify(user));
       
-      // Test if cookies are working
-      setTimeout(() => {
-        console.log('Cookies 2 seconds after login:', document.cookie);
-      }, 2000);
+      // Set axios default headers for future requests
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       
       setSuccess("Login successful! Redirecting...");
       setError("");
@@ -120,15 +125,13 @@ const Login = () => {
       // Redirect based on profile completion
       setTimeout(() => {
         if (user.profileCompleted) {
-          navigate(`/home/${user.id || user._id}`);
+          navigate(`/home/${user.id}`);
         } else {
-          navigate(`/personal-details/${user.id || user._id}`);
+          navigate(`/personal-details/${user.id}`);
         }
       }, 1500);
       
     } catch (error) {
-      console.error('Login error:', error);
-      console.error('Error response:', error.response);
       setSuccess("");
       if (error.response?.data?.message?.includes('Google authentication')) {
         setError(
@@ -136,28 +139,12 @@ const Login = () => {
         );
       } else {
         setError(
-          error.response?.data?.message || 
-          error.response?.data?.errors?.[0]?.msg || 
-          "An error occurred during login"
+          error.response?.data?.message || "An error occurred during login"
         );
       }
     } finally {
       setLoading(false);
     }
-  };
-
-  // Enhanced cookie debug function
-  const testCookies = () => {
-    console.log('=== COOKIE DEBUG INFO ===');
-    console.log('Current cookies:', document.cookie);
-    console.log('LocalStorage token:', localStorage.getItem('auth_token'));
-    console.log('API URL:', import.meta.env.VITE_API_URL);
-    console.log('CLIENT URL:', window.location.origin);
-    
-    // Check if we can access the debug cookie
-    const cookies = document.cookie.split(';');
-    const authCookie = cookies.find(cookie => cookie.includes('auth_token'));
-    console.log('Auth cookie found:', authCookie);
   };
 
   return (
@@ -182,23 +169,6 @@ const Login = () => {
             <h2>Welcome Back</h2>
             <p>Connect with professionals around the world</p>
           </div>
-          
-          {/* Debug button - remove in production */}
-          <button 
-            onClick={testCookies} 
-            style={{ 
-              position: 'absolute', 
-              bottom: '10px', 
-              left: '10px', 
-              background: 'transparent', 
-              border: '1px solid white', 
-              color: 'white', 
-              padding: '5px',
-              fontSize: '10px'
-            }}
-          >
-            Debug Cookies
-          </button>
         </div>
       </div>
 
