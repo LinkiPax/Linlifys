@@ -528,20 +528,34 @@ passport.deserializeUser(async (id, done) => {
 
 // Utility function to set cookies
 // Updated utility function to set cookies
+// Updated utility function to set cookies
 const setCookie = (res, token) => {
     const isProduction = process.env.NODE_ENV === 'production';
+    const clientUrl = new URL(process.env.CLIENT_URL);
     
     const cookieOptions = {
-        httpOnly: true, // Changed to true for security
+        httpOnly: true,
         secure: isProduction, // true in production, false in development
-        sameSite: isProduction ? 'none' : 'lax', // Adjust based on environment
+        sameSite: isProduction ? 'none' : 'lax',
         maxAge: 7 * 24 * 3600 * 1000, // 7 days
         path: '/',
-        domain: process.env.NODE_ENV === 'production' ? '.yourdomain.com' : undefined // Set your domain in production
+        domain: isProduction ? clientUrl.hostname : 'localhost'
     };
-    
+
     console.log('Setting cookie with options:', cookieOptions);
+    console.log('Cookie domain:', cookieOptions.domain);
+    
     res.cookie('auth_token', token, cookieOptions);
+    
+    // Also set a non-httpOnly cookie for debugging
+    res.cookie('auth_token_debug', token, {
+        httpOnly: false,
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax',
+        maxAge: 7 * 24 * 3600 * 1000,
+        path: '/',
+        domain: isProduction ? clientUrl.hostname : 'localhost'
+    });
 };
 
 // Generate JWT Token
@@ -623,6 +637,73 @@ router.get('/google/callback',
 
 // POST: Signin (Login) - Support both email and username login
 // POST: Signin (Login) - Updated version
+// router.post('/signin', [
+//     body('email').notEmpty().withMessage('Email or username is required'),
+//     body('password').notEmpty().withMessage('Password is required')
+// ], async (req, res) => {
+//     const errors = validationResult(req);
+//     if (!errors.isEmpty()) {
+//         return res.status(400).json({ errors: errors.array() });
+//     }
+
+//     const { email, password } = req.body;
+    
+//     try {
+//         const user = await User.findOne({ 
+//             $or: [{ email }, { username: email }] 
+//         });
+
+//         if (!user) {
+//             return res.status(401).json({ message: 'Invalid email/username or password' });
+//         }
+
+//         // Check if user signed up with Google
+//         if (user.authMethod === 'google') {
+//             return res.status(401).json({ 
+//                 message: 'This account uses Google authentication. Please sign in with Google.' 
+//             });
+//         }
+
+//         const isMatch = await bcrypt.compare(password, user.password);
+//         if (!isMatch) {
+//             return res.status(401).json({ message: 'Invalid email/username or password' });
+//         }
+
+//         // Update online status
+//         user.isOnline = true;
+//         user.lastSeen = new Date();
+//         await user.save();
+
+//         const token = generateToken(user);
+//         console.log('Token Signin:', token);
+        
+//         // Set cookie
+//         setCookie(res, token);
+        
+//         // Return user data
+//         const userResponse = {
+//             id: user._id,
+//             username: user.username,
+//             email: user.email,
+//             name: user.name,
+//             profilePicture: user.profilePicture,
+//             isVerified: user.isVerified,
+//             profileCompleted: user.profileCompleted
+//         };
+        
+//         console.log('Cookie set in response headers:', res.getHeaders()['set-cookie']);
+        
+//         return res.json({ 
+//             message: 'Signin successful', 
+//             user: userResponse, 
+//             token 
+//         });  
+//     } catch (error) {
+//         console.error('Signin error:', error);
+//         return res.status(500).json({ message: 'Server error. Please try again later.' });
+//     }
+// });
+// POST: Signin (Login) - Enhanced version
 router.post('/signin', [
     body('email').notEmpty().withMessage('Email or username is required'),
     body('password').notEmpty().withMessage('Password is required')
@@ -643,7 +724,6 @@ router.post('/signin', [
             return res.status(401).json({ message: 'Invalid email/username or password' });
         }
 
-        // Check if user signed up with Google
         if (user.authMethod === 'google') {
             return res.status(401).json({ 
                 message: 'This account uses Google authentication. Please sign in with Google.' 
@@ -661,9 +741,9 @@ router.post('/signin', [
         await user.save();
 
         const token = generateToken(user);
-        console.log('Token Signin:', token);
+        console.log('Token generated:', token);
         
-        // Set cookie
+        // Set cookies
         setCookie(res, token);
         
         // Return user data
@@ -677,12 +757,14 @@ router.post('/signin', [
             profileCompleted: user.profileCompleted
         };
         
-        console.log('Cookie set in response headers:', res.getHeaders()['set-cookie']);
+        // Log the response headers to verify Set-Cookie
+        console.log('Response headers set-cookie:', res.getHeaders()['set-cookie']);
         
         return res.json({ 
             message: 'Signin successful', 
             user: userResponse, 
-            token 
+            token,
+            cookieSet: true // Add this for debugging
         });  
     } catch (error) {
         console.error('Signin error:', error);

@@ -98,15 +98,21 @@ const Login = () => {
         }
       );
       
-      const { token, user } = response.data;
+      const { token, user, cookieSet } = response.data;
       
       console.log('Login response:', response);
-      console.log('Cookies received:', document.cookie);
+      console.log('Response data:', response.data);
+      console.log('Cookies after login:', document.cookie);
       
-      // Store user data in localStorage
+      // Store user data in localStorage as fallback
       localStorage.setItem("userId", user.id || user._id);
       localStorage.setItem("auth_token", token);
       localStorage.setItem("user", JSON.stringify(user));
+      
+      // Test if cookies are working
+      setTimeout(() => {
+        console.log('Cookies 2 seconds after login:', document.cookie);
+      }, 2000);
       
       setSuccess("Login successful! Redirecting...");
       setError("");
@@ -122,6 +128,7 @@ const Login = () => {
       
     } catch (error) {
       console.error('Login error:', error);
+      console.error('Error response:', error.response);
       setSuccess("");
       if (error.response?.data?.message?.includes('Google authentication')) {
         setError(
@@ -139,10 +146,18 @@ const Login = () => {
     }
   };
 
-  // Test cookie function (for debugging)
+  // Enhanced cookie debug function
   const testCookies = () => {
+    console.log('=== COOKIE DEBUG INFO ===');
     console.log('Current cookies:', document.cookie);
     console.log('LocalStorage token:', localStorage.getItem('auth_token'));
+    console.log('API URL:', import.meta.env.VITE_API_URL);
+    console.log('CLIENT URL:', window.location.origin);
+    
+    // Check if we can access the debug cookie
+    const cookies = document.cookie.split(';');
+    const authCookie = cookies.find(cookie => cookie.includes('auth_token'));
+    console.log('Auth cookie found:', authCookie);
   };
 
   return (
@@ -166,16 +181,6 @@ const Login = () => {
           <div className="welcome-text">
             <h2>Welcome Back</h2>
             <p>Connect with professionals around the world</p>
-          </div>
-          {/* Google benefits on video side */}
-          <div className="google-benefits-side">
-            <h4>Quick Access with Google</h4>
-            <ul>
-              <li>One-click sign in</li>
-              <li>No password to remember</li>
-              <li>Secure and verified</li>
-              <li>Automatic profile sync</li>
-            </ul>
           </div>
           
           {/* Debug button - remove in production */}
