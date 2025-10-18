@@ -57,8 +57,9 @@ const Login = () => {
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('userId', user.id);
       
-      // Set axios default headers
+      // Set axios default headers with credentials
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      axios.defaults.withCredentials = true;
       
       setSuccess("Google login successful! Redirecting...");
       setGoogleLoading(false);
@@ -102,7 +103,7 @@ const Login = () => {
         `${import.meta.env.VITE_API_URL}/user/signin`,
         { email, password },
         { 
-          withCredentials: true, // Important for cookies
+          withCredentials: true, // Essential for HTTPS cookies
           headers: {
             'Content-Type': 'application/json'
           }
@@ -118,6 +119,7 @@ const Login = () => {
       
       // Set axios default headers for future requests
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      axios.defaults.withCredentials = true;
       
       setSuccess("Login successful! Redirecting...");
       setError("");
@@ -216,8 +218,8 @@ const Login = () => {
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="email" className="mb-3">
                 <Form.Control
-                  type="email"
-                  placeholder="Email address"
+                  type="text"
+                  placeholder="Email or username"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required

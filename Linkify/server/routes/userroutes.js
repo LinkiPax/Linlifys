@@ -448,10 +448,6 @@
 const { Router } = require('express');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
-const crypto = require('crypto');
-const cookieParser = require('cookie-parser');
-const nodemailer = require('nodemailer');
-const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
@@ -460,13 +456,14 @@ const checkForAuthenticationHeader = require('../middleware/Authentication');
 require('dotenv').config();
 const router = Router();
 
-// Cookie configuration
+// HTTPS Cookie configuration
 const cookieConfig = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    secure: true, // Required for HTTPS
+    sameSite: 'none', // Required for cross-site cookies
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     path: '/',
+    domain: process.env.COOKIE_DOMAIN || '.yourdomain.com' // Add your domain
 };
 
 // Initialize Passport
@@ -505,7 +502,7 @@ passport.use(new GoogleStrategy({
             profilePicture: profile.photos[0].value,
             isVerified: true,
             authMethod: 'google',
-            profileCompleted: false // Force profile completion for new users
+            profileCompleted: false
         });
 
         return done(null, user);
@@ -549,7 +546,7 @@ router.get('/google/callback',
 
             const token = generateToken(req.user);
             
-            // Set HTTP-only cookie
+            // Set HTTP-only cookie with HTTPS settings
             res.cookie('auth_token', token, cookieConfig);
             
             const userData = {
@@ -572,10 +569,8 @@ router.get('/google/callback',
                                      req.user.company;
                 
             if (!isProfileCompleted) {
-                // Redirect to profile completion
                 res.redirect(`${clientURL}/personal-details/${req.user._id}?token=${token}&user=${userDataString}&auth=success`);
             } else {
-                // Redirect to home
                 res.redirect(`${clientURL}/home/${req.user._id}?token=${token}&user=${userDataString}&auth=success`);
             }
             
@@ -626,7 +621,7 @@ router.post('/signin', [
 
         const token = generateToken(user);
         
-        // Set HTTP-only cookie
+        // Set HTTP-only cookie with HTTPS settings
         res.cookie('auth_token', token, cookieConfig);
         
         // Return user data
@@ -651,6 +646,25 @@ router.post('/signin', [
     }
 });
 
+// GET: Verify token validity
+router.get('/verify-token', checkForAuthenticationHeader, async (req, res) => {
+    try {
+        res.json({ 
+            valid: true, 
+            user: {
+                id: req.user._id,
+                username: req.user.username,
+                email: req.user.email,
+                name: req.user.name,
+                profilePicture: req.user.profilePicture
+            }
+        });
+    } catch (error) {
+        console.error('Token verification error:', error);
+        res.status(401).json({ valid: false, message: 'Invalid token' });
+    }
+});
+
 // GET: Signout (Logout)
 router.get('/signout', checkForAuthenticationHeader, async (req, res) => {
     try {
@@ -659,20 +673,19 @@ router.get('/signout', checkForAuthenticationHeader, async (req, res) => {
             lastSeen: new Date()
         });
         
-        // Clear the cookie
+        // Clear the cookie with same settings
         res.clearCookie('auth_token', {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            secure: true,
+            sameSite: 'none',
             path: '/',
+            domain: process.env.COOKIE_DOMAIN || '.yourdomain.com'
         }).json({ message: 'Signout successful' });
     } catch (error) {
         console.error('Signout error:', error);
         res.clearCookie('auth_token').json({ message: 'Signout successful' });
     }
 });
-
-module.exports = router;
 // GET: All users
 router.get('/', async (req, res) => {
     try {

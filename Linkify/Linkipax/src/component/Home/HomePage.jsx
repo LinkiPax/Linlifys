@@ -143,6 +143,11 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
 
+  // Configure axios for HTTPS
+  useEffect(() => {
+    axios.defaults.withCredentials = true;
+  }, []);
+
   useEffect(() => {
     const initializeAuth = async () => {
       try {
@@ -162,6 +167,7 @@ const HomePage = () => {
           
           // Set axios default headers
           axios.defaults.headers.common['Authorization'] = `Bearer ${tokenFromUrl}`;
+          axios.defaults.withCredentials = true;
           
           // Clean URL
           const cleanUrl = `${window.location.origin}/home/${userData.id}`;
@@ -176,22 +182,21 @@ const HomePage = () => {
         const storedUserId = localStorage.getItem('userId');
 
         if (!existingToken || !storedUserId) {
-          // No token found, redirect to login
           navigate('/login');
           return;
         }
 
-        // Validate the token by making an API call
+        // Validate the token
         try {
           axios.defaults.headers.common['Authorization'] = `Bearer ${existingToken}`;
+          axios.defaults.withCredentials = true;
           
-          // Verify token is valid by making a test request
           await axios.get(`${import.meta.env.VITE_API_URL}/user/verify-token`);
           
           setAuthChecked(true);
         } catch (error) {
           console.error('Token validation failed:', error);
-          // Token is invalid, clear storage and redirect to login
+          // Clear storage and redirect
           localStorage.removeItem('auth_token');
           localStorage.removeItem('userId');
           localStorage.removeItem('user');
@@ -221,10 +226,10 @@ const HomePage = () => {
       
       const [postResponse, connectionsResponse, trendingResponse, userResponse] =
         await Promise.all([
-          axios.get(`${import.meta.env.VITE_API_URL}/api/posts`),
-          axios.get(`${import.meta.env.VITE_API_URL}/user/suggested/${currentUserId}`),
-          axios.get(`${import.meta.env.VITE_API_URL}/api/trending-topics`),
-          axios.get(`${import.meta.env.VITE_API_URL}/user/${currentUserId}`)
+          axios.get(`${import.meta.env.VITE_API_URL}/api/posts`, { withCredentials: true }),
+          axios.get(`${import.meta.env.VITE_API_URL}/user/suggested/${currentUserId}`, { withCredentials: true }),
+          axios.get(`${import.meta.env.VITE_API_URL}/api/trending-topics`, { withCredentials: true }),
+          axios.get(`${import.meta.env.VITE_API_URL}/user/${currentUserId}`, { withCredentials: true })
         ]);
       
       setPosts(postResponse.data || []);
@@ -235,7 +240,6 @@ const HomePage = () => {
     } catch (error) {
       console.error("Error fetching data:", error);
       if (error.response?.status === 401) {
-        // Unauthorized - redirect to login
         navigate('/login');
       }
     } finally {
