@@ -142,65 +142,52 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const initializeUser = async () => {
-      try {
-        // Check if we're coming from Google OAuth redirect with token in URL
-        const urlParams = new URLSearchParams(location.search);
-        const token = urlParams.get('token');
-        const userParam = urlParams.get('user');
-        
-        if (token && userParam) {
-          // Store token and user data from OAuth
-          localStorage.setItem('auth_token', token);
-          document.cookie = `auth_token=${token}; path=/; max-age=${60 * 60}; secure; samesite=strict`;
-          const userData = JSON.parse(decodeURIComponent(userParam));
-          localStorage.setItem('user', JSON.stringify(userData));
-          localStorage.setItem('userId', userData.id);
-          
-          // Set axios default headers
-          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-          
-          // Clean the URL but keep the path
-          const cleanUrl = `${window.location.origin}/home/${userId}`;
-          window.history.replaceState({}, '', cleanUrl);
-        } else {
-          // Normal flow - check if we have existing token
-          const existingToken = localStorage.getItem('auth_token');
-          if (existingToken) {
-            axios.defaults.headers.common['Authorization'] = `Bearer ${existingToken}`;
-          }
-        }
-
-        await fetchData();
-        
-      } catch (error) {
-        console.error("Error initializing user:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    initializeUser();
-  }, [userId, location]);
-
-  const fetchData = async () => {
+  const initializeUser = async () => {
     try {
-      const currentUserId = localStorage.getItem("userId") || userId;
-      
-      const [postResponse, connectionsResponse, trendingResponse] =
-        await Promise.all([
-          axios.get(`${import.meta.env.VITE_API_URL}/api/posts`),
-          axios.get(`${import.meta.env.VITE_API_URL}/user/suggested/${currentUserId}`),
-          axios.get(`${import.meta.env.VITE_API_URL}/api/trending-topics`),
-        ]);
-      
-      setPosts(postResponse.data || []);
-      setConnections(connectionsResponse.data || []);
-      setTrendingTopics(trendingResponse.data || []);
-    } catch (error) {
-      console.error("Error fetching data:", error);
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get('token');
+      const userParam = urlParams.get('user');
+      const storedUserId = localStorage.getItem('userId');
+      const currentUserId = userId || storedUserId;
+
+      if (token && userParam) {
+        const userData = JSON.parse(decodeURIComponent(userParam));
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('userId', userData.id);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        window.history.replaceState({}, '', `${window.location.origin}/home/${userData.id}`);
+      } else {
+        const existingToken = localStorage.getItem('auth_token');
+        if (existingToken) {
+          axios.defaults.headers.common['Authorization'] = `Bearer ${existingToken}`;
+        }
+      }
+
+      await fetchData(currentUserId);
+    } catch (err) {
+      console.error("Error initializing user:", err);
+    } finally {
+      setLoading(false);
     }
   };
+
+  initializeUser();
+}, [userId]);
+const fetchData = async (currentUserId) => {
+  try {
+    const [postResponse, connectionsResponse, trendingResponse] = await Promise.all([
+      axios.get(`${import.meta.env.VITE_API_URL}/api/posts`),
+      axios.get(`${import.meta.env.VITE_API_URL}/user/suggested/${currentUserId}`),
+      axios.get(`${import.meta.env.VITE_API_URL}/api/trending-topics`),
+    ]);
+    setPosts(postResponse.data || []);
+    setConnections(connectionsResponse.data || []);
+    setTrendingTopics(trendingResponse.data || []);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+};
+
 
   useEffect(() => {
     const fetchUserInfo = async () => {
