@@ -28,8 +28,9 @@ const Login = () => {
     const token = urlParams.get('token');
     const userData = urlParams.get('user');
     const error = urlParams.get('error');
+    const authSuccess = urlParams.get('auth');
     
-    if (token && userData) {
+    if (token && userData && authSuccess === 'success') {
       handleGoogleAuthSuccess(token, userData);
     }
     
@@ -42,21 +43,23 @@ const Login = () => {
     try {
       const user = JSON.parse(decodeURIComponent(userData));
       
-      // Store token and user data
+      // Store token and user data in localStorage
       localStorage.setItem('auth_token', token);
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('userId', user.id);
       
-      // Set cookie for the token
-      document.cookie = `auth_token=${token}; path=/; max-age=86400; SameSite=Lax`;
-      
+      console.log('Google auth successful, user:', user);
       setSuccess("Google login successful! Redirecting...");
       setGoogleLoading(false);
       
       // Redirect based on profile completion status
       setTimeout(() => {
-        if (user.profileCompleted) {
-          navigate('/home');
+        const isNewUser = new URLSearchParams(window.location.search).get('newUser') === 'true';
+        
+        if (isNewUser || !user.profileCompleted) {
+          navigate(`/personal-details/${user.id}`);
+        } else {
+          navigate(`/home/${user.id}`);
         }
       }, 1500);
       
@@ -72,7 +75,9 @@ const Login = () => {
     setError("");
     
     // Redirect to Google OAuth endpoint
-    window.location.href = `${import.meta.env.VITE_API_URL}/user/google`;
+    const googleAuthUrl = `${import.meta.env.VITE_API_URL}/user/google`;
+    console.log('Redirecting to Google auth:', googleAuthUrl);
+    window.location.href = googleAuthUrl;
   };
 
   const handleSubmit = async (e) => {
@@ -85,30 +90,38 @@ const Login = () => {
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/user/signin`,
         { email, password },
-        { withCredentials: true }
+        { 
+          withCredentials: true, // This is crucial for cookies
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
       );
       
       const { token, user } = response.data;
       
-      // Store user data
-      localStorage.setItem("userId", user._id || user.id);
+      console.log('Login response:', response);
+      console.log('Cookies received:', document.cookie);
+      
+      // Store user data in localStorage
+      localStorage.setItem("userId", user.id || user._id);
       localStorage.setItem("auth_token", token);
       localStorage.setItem("user", JSON.stringify(user));
       
-      // Set cookie
-      document.cookie = `auth_token=${token}; path=/; max-age=86400; SameSite=Lax`;
-      
-      setSuccess("Login successful!");
+      setSuccess("Login successful! Redirecting...");
       setError("");
       
       // Redirect based on profile completion
       setTimeout(() => {
         if (user.profileCompleted) {
-          navigate(`/home/${user._id || user.id}`);
+          navigate(`/home/${user.id || user._id}`);
+        } else {
+          navigate(`/personal-details/${user.id || user._id}`);
         }
       }, 1500);
       
     } catch (error) {
+      console.error('Login error:', error);
       setSuccess("");
       if (error.response?.data?.message?.includes('Google authentication')) {
         setError(
@@ -116,12 +129,20 @@ const Login = () => {
         );
       } else {
         setError(
-          error.response?.data?.message || "An error occurred during login"
+          error.response?.data?.message || 
+          error.response?.data?.errors?.[0]?.msg || 
+          "An error occurred during login"
         );
       }
     } finally {
       setLoading(false);
     }
+  };
+
+  // Test cookie function (for debugging)
+  const testCookies = () => {
+    console.log('Current cookies:', document.cookie);
+    console.log('LocalStorage token:', localStorage.getItem('auth_token'));
   };
 
   return (
@@ -156,6 +177,23 @@ const Login = () => {
               <li>Automatic profile sync</li>
             </ul>
           </div>
+          
+          {/* Debug button - remove in production */}
+          <button 
+            onClick={testCookies} 
+            style={{ 
+              position: 'absolute', 
+              bottom: '10px', 
+              left: '10px', 
+              background: 'transparent', 
+              border: '1px solid white', 
+              color: 'white', 
+              padding: '5px',
+              fontSize: '10px'
+            }}
+          >
+            Debug Cookies
+          </button>
         </div>
       </div>
 

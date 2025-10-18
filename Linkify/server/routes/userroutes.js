@@ -527,16 +527,20 @@ passport.deserializeUser(async (id, done) => {
 });
 
 // Utility function to set cookies
+// Updated utility function to set cookies
 const setCookie = (res, token) => {
     const isProduction = process.env.NODE_ENV === 'production';
     
     const cookieOptions = {
-        httpOnly: false,
-        secure: false,
-        sameSite: 'none',
+        httpOnly: true, // Changed to true for security
+        secure: isProduction, // true in production, false in development
+        sameSite: isProduction ? 'none' : 'lax', // Adjust based on environment
         maxAge: 7 * 24 * 3600 * 1000, // 7 days
         path: '/',
+        domain: process.env.NODE_ENV === 'production' ? '.yourdomain.com' : undefined // Set your domain in production
     };
+    
+    console.log('Setting cookie with options:', cookieOptions);
     res.cookie('auth_token', token, cookieOptions);
 };
 
@@ -618,6 +622,7 @@ router.get('/google/callback',
 );
 
 // POST: Signin (Login) - Support both email and username login
+// POST: Signin (Login) - Updated version
 router.post('/signin', [
     body('email').notEmpty().withMessage('Email or username is required'),
     body('password').notEmpty().withMessage('Password is required')
@@ -657,6 +662,8 @@ router.post('/signin', [
 
         const token = generateToken(user);
         console.log('Token Signin:', token);
+        
+        // Set cookie
         setCookie(res, token);
         
         // Return user data
@@ -670,6 +677,8 @@ router.post('/signin', [
             profileCompleted: user.profileCompleted
         };
         
+        console.log('Cookie set in response headers:', res.getHeaders()['set-cookie']);
+        
         return res.json({ 
             message: 'Signin successful', 
             user: userResponse, 
@@ -680,7 +689,6 @@ router.post('/signin', [
         return res.status(500).json({ message: 'Server error. Please try again later.' });
     }
 });
-
 // GET: Signout (Logout)
 router.get('/signout', checkForAuthenticationHeader, async (req, res) => {
     try {
