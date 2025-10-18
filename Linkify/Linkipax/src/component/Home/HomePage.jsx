@@ -141,26 +141,42 @@ const HomePage = () => {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+ useEffect(() => {
   const initializeUser = async () => {
     try {
-      const urlParams = new URLSearchParams(location.search);
-      const token = urlParams.get('token');
-      const userParam = urlParams.get('user');
-      const storedUserId = localStorage.getItem('userId');
-      const currentUserId = userId || storedUserId;
+      // Get token from cookies (authtoken)
+      const cookieToken = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("auth_token="))
+        ?.split("=")[1];
 
-      if (token && userParam) {
+      const urlParams = new URLSearchParams(location.search);
+      const tokenFromUrl = urlParams.get("token");
+      const userParam = urlParams.get("user");
+      const storedUserId = localStorage.getItem("userId");
+      let currentUserId = userId || storedUserId;
+
+      // Priority: token from URL → cookie → localStorage
+      const finalToken = tokenFromUrl || cookieToken || localStorage.getItem("auth_token");
+
+      if (tokenFromUrl && userParam) {
         const userData = JSON.parse(decodeURIComponent(userParam));
-        localStorage.setItem('auth_token', token);
-        localStorage.setItem('userId', userData.id);
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        window.history.replaceState({}, '', `${window.location.origin}/home/${userData.id}`);
+        localStorage.setItem("auth_token", tokenFromUrl);
+        localStorage.setItem("userId", userData.id);
+        axios.defaults.headers.common["Authorization"] = `Bearer ${tokenFromUrl}`;
+
+        // Clean the URL
+        window.history.replaceState({}, "", `${window.location.origin}/home/${userData.id}`);
+        currentUserId = userData.id;
+      } else if (finalToken) {
+        axios.defaults.headers.common["Authorization"] = `Bearer ${finalToken}`;
       } else {
-        const existingToken = localStorage.getItem('auth_token');
-        if (existingToken) {
-          axios.defaults.headers.common['Authorization'] = `Bearer ${existingToken}`;
-        }
+        console.warn("⚠️ No token found in cookies, URL, or localStorage.");
+      }
+
+      if (!currentUserId) {
+        console.warn("⚠️ No userId found — skipping fetchData");
+        return;
       }
 
       await fetchData(currentUserId);
@@ -173,6 +189,7 @@ const HomePage = () => {
 
   initializeUser();
 }, [userId]);
+
 const fetchData = async (currentUserId) => {
   try {
     const [postResponse, connectionsResponse, trendingResponse] = await Promise.all([
