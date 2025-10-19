@@ -6,7 +6,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
-const https = require('http');
+const http = require('http');
 const { ApolloServer } = require("apollo-server-express");
 const { typeDefs, resolvers } = require("./GraphQL/messageschema");
 const path = require('path');
@@ -24,17 +24,17 @@ const { initializeSocket ,getIO} = require('./socket/socketnadle'); // New socke
 // Initialize Express app and HTTP server 
 const app = express();
 // const server = https.createServer(options, app);
-const server = https.createServer(app);
+const server = http.createServer(app);
 // Middleware Setup 
-app.use(cors({ 
-  origin: [process.env.FRONTEND_ORIGIN],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+const allowedOrigin = process.env.FRONTEND_ORIGIN || "https://linkipax.onrender.com";
+
+app.use(cors({
+  origin: allowedOrigin,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   credentials: true,
-  exposedHeaders: ['set-cookie'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Set-Cookie'],
-  optionsSuccessStatus: 200,
 }));
-console.log("Allowed CORS origin:", process.env.FRONTEND_ORIGIN);
+console.log("Allowed CORS origin:", allowedOrigin);
+
 
 app.options('*', cors());
 app.use(session({
