@@ -532,7 +532,7 @@ const setCookie = (res, token) => {
     
     const cookieOptions = {
         httpOnly: false, // Changed to true for security
-        secure: false, // true in production, false in development
+        secure: true, // true in production, false in development
         sameSite: 'none', // 'none' for production, 'lax' for development
         maxAge: 7 * 24 * 3600 * 1000, // 7 days
         path: '/',
