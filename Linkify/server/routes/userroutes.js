@@ -532,11 +532,11 @@ const setCookie = (res, token) => {
     
     const cookieOptions = {
         httpOnly: true, // Changed to true for security
-        secure: isProduction, // true in production, false in development
-        sameSite: isProduction ? 'none' : 'lax', // 'none' for production, 'lax' for development
+        secure: true, // true in production, false in development
+        sameSite: 'none', // 'none' for production, 'lax' for development
         maxAge: 7 * 24 * 3600 * 1000, // 7 days
         path: '/',
-        domain: isProduction ? '.yourdomain.com' : undefined // Set your actual domain
+        // domain: isProduction ? '.yourdomain.com' : undefined // Set your actual domain
     };
     
     res.cookie('auth_token', token, cookieOptions);
