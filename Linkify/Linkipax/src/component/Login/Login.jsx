@@ -20,19 +20,10 @@ const Login = () => {
 
   useEffect(() => {
     if (videoRef.current) {
-      videoRef.current.playbackRate = 0.8;
+        videoRef.current.playbackRate = 0.8;
     }
 
-    // Check if user is already logged in
-    const token = localStorage.getItem('auth_token');
-    const userId = localStorage.getItem('userId');
-    
-    if (token && userId) {
-      navigate(`/home/${userId}`);
-      return;
-    }
-
-    // Check for Google authentication callback
+    // Check for Google authentication callback first
     const urlParams = new URLSearchParams(window.location.search);
     const tokenFromUrl = urlParams.get('token');
     const userData = urlParams.get('user');
@@ -41,15 +32,54 @@ const Login = () => {
     const errorFromUrl = urlParams.get('error');
     
     if (tokenFromUrl && userData && authSuccess === 'success') {
-      handleGoogleAuthSuccess(tokenFromUrl, userData, newUser === 'true');
-      return;
+        handleGoogleAuthSuccess(tokenFromUrl, userData, newUser === 'true');
+        return;
     }
     
     if (errorFromUrl) {
-      const errorMessage = urlParams.get('message') || "Google authentication failed. Please try again.";
-      setError(errorMessage);
+        const errorMessage = urlParams.get('message') || "Google authentication failed. Please try again.";
+        setError(errorMessage);
+        return;
     }
-  }, [navigate]);
+
+    // Check if user is already logged in via token verification
+    const checkExistingAuth = async () => {
+        const token = localStorage.getItem('auth_token');
+        const userId = localStorage.getItem('userId');
+        
+        if (!token || !userId) {
+            return; // No existing auth
+        }
+
+        try {
+            setLoading(true);
+            const response = await axios.get(
+                `${import.meta.env.VITE_API_URL}/user/verify-token`,
+                {
+                    withCredentials: true,
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
+
+            // Token is valid, redirect to home
+            const { user } = response.data;
+            navigate(`/home/${user.id}`);
+            
+        } catch (error) {
+            console.log('Token invalid, requiring new login');
+            // Clear invalid tokens
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('userId');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    checkExistingAuth();
+}, [navigate]);
 
   const handleGoogleAuthSuccess = (token, userData, isNewUser) => {
     try {

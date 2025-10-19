@@ -886,7 +886,44 @@ router.post('/signup', [
         return res.status(500).json({ message: 'Server error. Please try again later.' });
     }
 });
+// GET: Verify token and get user data
+router.get('/verify-token', checkForAuthenticationHeader, async (req, res) => {
+    try {
+        // The middleware already verified the token and attached user to req.user
+        const user = req.user;
+        
+        if (!user) {
+            return res.status(401).json({ 
+                error: 'Invalid token',
+                message: 'User not found' 
+            });
+        }
 
+        // Return user data without sensitive information
+        const userResponse = {
+            id: user._id,
+            username: user.username,
+            email: user.email,
+            name: user.name,
+            profilePicture: user.profilePicture,
+            isVerified: user.isVerified,
+            profileCompleted: user.profileCompleted,
+            isOnline: user.isOnline,
+            lastSeen: user.lastSeen
+        };
+
+        res.json({ 
+            success: true,
+            user: userResponse 
+        });
+    } catch (error) {
+        console.error('Token verification error:', error);
+        res.status(500).json({ 
+            error: 'Server error during token verification',
+            message: error.message 
+        });
+    }
+});
 // POST: Upload profile picture
 // POST: Upload profile picture - FIXED VERSION
 router.post('/upload-profile-pic/:userId', uploadProfilePic.single('profilePicture'), async (req, res) => {

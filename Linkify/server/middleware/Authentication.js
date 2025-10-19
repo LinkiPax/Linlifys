@@ -31,7 +31,7 @@ const User = require('../model/usermodel');
 
 const checkForAuthenticationHeader = async (req, res, next) => {
     try {
-        // Check for token in headers first
+        // Check for token in headers
         const authHeader = req.headers['authorization'];
         const tokenFromHeader = authHeader && authHeader.startsWith('Bearer ') 
             ? authHeader.slice(7) 
@@ -52,6 +52,15 @@ const checkForAuthenticationHeader = async (req, res, next) => {
 
         try {
             const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+            
+            // Validate user ID
+            if (!decoded.userId) {
+                return res.status(400).json({
+                    error: 'Invalid user ID',
+                    message: 'User ID not found in token'
+                });
+            }
+
             const user = await User.findById(decoded.userId).select('-password');
             
             if (!user) {
@@ -73,9 +82,16 @@ const checkForAuthenticationHeader = async (req, res, next) => {
                 });
             }
             
+            if (jwtError.name === 'JsonWebTokenError') {
+                return res.status(401).json({ 
+                    message: 'Invalid token.',
+                    code: 'INVALID_TOKEN'
+                });
+            }
+            
             return res.status(401).json({ 
-                message: 'Invalid token.',
-                code: 'INVALID_TOKEN'
+                message: 'Token verification failed.',
+                code: 'TOKEN_VERIFICATION_FAILED'
             });
         }
     } catch (error) {
