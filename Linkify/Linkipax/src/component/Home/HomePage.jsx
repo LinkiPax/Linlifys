@@ -154,7 +154,10 @@ const HomePage = () => {
         const urlParams = new URLSearchParams(location.search);
         const tokenFromUrl = urlParams.get("token");
         const userFromUrl = urlParams.get("user");
-
+        console.log(urlParams);
+        console.log("Token from URL:", tokenFromUrl);
+        console.log("User from URL:", userFromUrl);
+        console.log("Full URL:", window.location.href);
         if (tokenFromUrl && userFromUrl) {
           // OAuth redirect handling
           const decodedUser = JSON.parse(decodeURIComponent(userFromUrl));
