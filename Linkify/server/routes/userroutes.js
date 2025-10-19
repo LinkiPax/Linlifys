@@ -448,23 +448,21 @@
 const { Router } = require('express');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
+const cookieParser = require('cookie-parser');
+const nodemailer = require('nodemailer');
+const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../model/usermodel');
-const checkForAuthenticationHeader = require('../middleware/Authentication');
+const { checkForAuthenticationCookie } = require('../middleware/middleware');
+const { uploadProfilePic } = require('../cloudinary');
 require('dotenv').config();
 const router = Router();
 
-// HTTPS Cookie configuration
-const cookieConfig = {
-    httpOnly: true,
-    secure: true, // Required for HTTPS
-    sameSite: 'none', // Required for cross-site cookies
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    path: '/',
-    domain: process.env.COOKIE_DOMAIN || '.yourdomain.com' // Add your domain
-};
+// Import the corrected authentication middleware
+const checkForAuthenticationHeader = require('../middleware/Authentication');
 
 // Initialize Passport
 router.use(passport.initialize());
@@ -478,6 +476,7 @@ passport.use(new GoogleStrategy({
     try {
         console.log('Google Profile:', profile);
         
+        // Find or create user
         let user = await User.findOne({ 
             $or: [
                 { email: profile.emails[0].value },
@@ -486,6 +485,7 @@ passport.use(new GoogleStrategy({
         });
 
         if (user) {
+            // Update Google ID if not present
             if (!user.googleId) {
                 user.googleId = profile.id;
                 await user.save();
@@ -501,8 +501,7 @@ passport.use(new GoogleStrategy({
             name: profile.displayName,
             profilePicture: profile.photos[0].value,
             isVerified: true,
-            authMethod: 'google',
-            profileCompleted: false
+            authMethod: 'google'
         });
 
         return done(null, user);
@@ -511,6 +510,37 @@ passport.use(new GoogleStrategy({
         return done(error, null);
     }
 }));
+
+// Serialize user
+passport.serializeUser((user, done) => {
+    done(null, user.id);
+});
+
+// Deserialize user
+passport.deserializeUser(async (id, done) => {
+    try {
+        const user = await User.findById(id);
+        done(null, user);
+    } catch (error) {
+        done(error, null);
+    }
+});
+
+// Utility function to set cookies
+const setCookie = (res, token) => {
+    const isProduction = process.env.NODE_ENV === 'production';
+    
+    const cookieOptions = {
+        httpOnly: true, // Changed to true for security
+        secure: isProduction, // true in production, false in development
+        sameSite: isProduction ? 'none' : 'lax', // 'none' for production, 'lax' for development
+        maxAge: 7 * 24 * 3600 * 1000, // 7 days
+        path: '/',
+        domain: isProduction ? '.yourdomain.com' : undefined // Set your actual domain
+    };
+    
+    res.cookie('auth_token', token, cookieOptions);
+};
 
 // Generate JWT Token
 const generateToken = (user) => {
@@ -545,9 +575,7 @@ router.get('/google/callback',
             });
 
             const token = generateToken(req.user);
-            
-            // Set HTTP-only cookie with HTTPS settings
-            res.cookie('auth_token', token, cookieConfig);
+            setCookie(res, token);
             
             const userData = {
                 id: req.user._id,
@@ -562,17 +590,26 @@ router.get('/google/callback',
             const clientURL = process.env.CLIENT_URL;
             const userDataString = encodeURIComponent(JSON.stringify(userData));
 
-            // Check if profile is completed
-            const isProfileCompleted = req.user.profileCompleted && 
-                                     req.user.name && 
-                                     req.user.jobTitle && 
-                                     req.user.company;
+            // Determine where to redirect based on profile completion
+            let redirectUrl;
+            
+            // Check if this is a new Google user (profile not completed)
+            const isNewUser = !req.user.profileCompleted || 
+                            !req.user.name || 
+                            !req.user.jobTitle || 
+                            !req.user.company;
                 
-            if (!isProfileCompleted) {
-                res.redirect(`${clientURL}/personal-details/${req.user._id}?token=${token}&user=${userDataString}&auth=success`);
+            if (isNewUser) {
+                redirectUrl = `${clientURL}/personal-details/${req.user._id}?token=${token}&user=${userDataString}&auth=success&newUser=true`;
+                setCookie(res, token);
             } else {
-                res.redirect(`${clientURL}/home/${req.user._id}?token=${token}&user=${userDataString}&auth=success`);
+                // redirectUrl = `${clientURL}/home/?token=${token}&user=${userDataString}&auth=success&id=${req.user._id}`;
+                
+                redirectUrl = `${clientURL}/home/${req.user._id}?token=${token}&user=${userDataString}&auth=success`;
             }
+            
+            console.log(`Redirecting to: ${redirectUrl}`);
+            res.redirect(redirectUrl);
             
         } catch (error) {
             console.error('Google callback error:', error);
@@ -582,7 +619,69 @@ router.get('/google/callback',
     }
 );
 
-// POST: Signin (Login)
+// POST: Signin (Login) - Support both email and username login
+// router.post('/signin', [
+//     body('email').notEmpty().withMessage('Email or username is required'),
+//     body('password').notEmpty().withMessage('Password is required')
+// ], async (req, res) => {
+//     const errors = validationResult(req);
+//     if (!errors.isEmpty()) {
+//         return res.status(400).json({ errors: errors.array() });
+//     }
+
+//     const { email, password } = req.body;
+    
+//     try {
+//         const user = await User.findOne({ 
+//             $or: [{ email }, { username: email }] 
+//         });
+
+//         if (!user) {
+//             return res.status(401).json({ message: 'Invalid email/username or password' });
+//         }
+
+//         // Check if user signed up with Google
+//         if (user.authMethod === 'google') {
+//             return res.status(401).json({ 
+//                 message: 'This account uses Google authentication. Please sign in with Google.' 
+//             });
+//         }
+
+//         const isMatch = await bcrypt.compare(password, user.password);
+//         if (!isMatch) {
+//             return res.status(401).json({ message: 'Invalid email/username or password' });
+//         }
+
+//         // Update online status
+//         user.isOnline = true;
+//         user.lastSeen = new Date();
+//         await user.save();
+
+//         const token = generateToken(user);
+//         console.log('Token Signin:', token);
+//         setCookie(res, token);
+        
+//         // Return user data
+//         const userResponse = {
+//             id: user._id,
+//             username: user.username,
+//             email: user.email,
+//             name: user.name,
+//             profilePicture: user.profilePicture,
+//             isVerified: user.isVerified,
+//             profileCompleted: user.profileCompleted
+//         };
+        
+//         return res.json({ 
+//             message: 'Signin successful', 
+//             user: userResponse, 
+//             token 
+//         });  
+//     } catch (error) {
+//         console.error('Signin error:', error);
+//         return res.status(500).json({ message: 'Server error. Please try again later.' });
+//     }
+// });
 router.post('/signin', [
     body('email').notEmpty().withMessage('Email or username is required'),
     body('password').notEmpty().withMessage('Password is required')
@@ -620,9 +719,10 @@ router.post('/signin', [
         await user.save();
 
         const token = generateToken(user);
+        console.log('Token Signin:', token);
         
-        // Set HTTP-only cookie with HTTPS settings
-        res.cookie('auth_token', token, cookieConfig);
+        // Set cookie
+        setCookie(res, token);
         
         // Return user data
         const userResponse = {
@@ -638,54 +738,30 @@ router.post('/signin', [
         return res.json({ 
             message: 'Signin successful', 
             user: userResponse, 
-            token 
+            token,
+            cookieSet: true // Indicate that cookie was set
         });  
     } catch (error) {
         console.error('Signin error:', error);
         return res.status(500).json({ message: 'Server error. Please try again later.' });
     }
 });
-
-// GET: Verify token validity
-router.get('/verify-token', checkForAuthenticationHeader, async (req, res) => {
-    try {
-        res.json({ 
-            valid: true, 
-            user: {
-                id: req.user._id,
-                username: req.user.username,
-                email: req.user.email,
-                name: req.user.name,
-                profilePicture: req.user.profilePicture
-            }
-        });
-    } catch (error) {
-        console.error('Token verification error:', error);
-        res.status(401).json({ valid: false, message: 'Invalid token' });
-    }
-});
-
 // GET: Signout (Logout)
 router.get('/signout', checkForAuthenticationHeader, async (req, res) => {
     try {
-        await User.findByIdAndUpdate(req.user._id, {
+        // Update user's online status
+        await User.findByIdAndUpdate(req.user.userId, {
             isOnline: false,
             lastSeen: new Date()
         });
         
-        // Clear the cookie with same settings
-        res.clearCookie('auth_token', {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'none',
-            path: '/',
-            domain: process.env.COOKIE_DOMAIN || '.yourdomain.com'
-        }).json({ message: 'Signout successful' });
+        res.clearCookie('auth_token').json({ message: 'Signout successful' });
     } catch (error) {
         console.error('Signout error:', error);
         res.clearCookie('auth_token').json({ message: 'Signout successful' });
     }
 });
+
 // GET: All users
 router.get('/', async (req, res) => {
     try {
@@ -695,7 +771,38 @@ router.get('/', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch users', details: error.message });
     }
 });
+// Debug endpoint to check if cookies are being set
+router.get('/debug-cookies', (req, res) => {
+    const isProduction = process.env.NODE_ENV === 'production';
+    
+    res.json({
+        cookiesReceived: req.cookies,
+        headers: req.headers,
+        environment: process.env.NODE_ENV,
+        clientUrl: process.env.CLIENT_URL,
+        serverUrl: process.env.SERVER_URL,
+        cookieSettings: {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? 'none' : 'lax'
+        }
+    });
+});
 
+// Test endpoint to set a cookie
+router.get('/test-cookie', (req, res) => {
+    const isProduction = process.env.NODE_ENV === 'production';
+    
+    res.cookie('test_cookie', 'working', {
+        httpOnly: false, // Set to false for testing
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax',
+        maxAge: 3600000,
+        path: '/'
+    });
+    
+    res.json({ message: 'Test cookie set' });
+});
 // GET: User by ID
 router.get('/:id', async (req, res) => {
     try {
@@ -1192,22 +1299,5 @@ router.patch('/update-status/:userId', checkForAuthenticationHeader, async (req,
         res.status(500).json({ error: 'Server error' });
     }
 });
-// GET: Verify token validity
-router.get('/verify-token', checkForAuthenticationHeader, async (req, res) => {
-    try {
-        res.json({ 
-            valid: true, 
-            user: {
-                id: req.user._id,
-                username: req.user.username,
-                email: req.user.email,
-                name: req.user.name,
-                profilePicture: req.user.profilePicture
-            }
-        });
-    } catch (error) {
-        console.error('Token verification error:', error);
-        res.status(401).json({ valid: false, message: 'Invalid token' });
-    }
-});
+
 module.exports = router;

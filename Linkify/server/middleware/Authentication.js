@@ -31,7 +31,7 @@ const User = require('../model/usermodel');
 
 const checkForAuthenticationHeader = async (req, res, next) => {
     try {
-        // Check for token in headers
+        // Check for token in headers first
         const authHeader = req.headers['authorization'];
         const tokenFromHeader = authHeader && authHeader.startsWith('Bearer ') 
             ? authHeader.slice(7) 
@@ -45,7 +45,8 @@ const checkForAuthenticationHeader = async (req, res, next) => {
 
         if (!token) {
             return res.status(401).json({ 
-                message: 'Access denied. No token provided.' 
+                message: 'Access denied. No token provided.',
+                code: 'NO_TOKEN'
             });
         }
 
@@ -55,7 +56,8 @@ const checkForAuthenticationHeader = async (req, res, next) => {
             
             if (!user) {
                 return res.status(401).json({ 
-                    message: 'Invalid token. User not found.' 
+                    message: 'Invalid token. User not found.',
+                    code: 'USER_NOT_FOUND'
                 });
             }
 
@@ -63,16 +65,25 @@ const checkForAuthenticationHeader = async (req, res, next) => {
             next();
         } catch (jwtError) {
             console.error('JWT verification error:', jwtError);
+            
+            if (jwtError.name === 'TokenExpiredError') {
+                return res.status(401).json({ 
+                    message: 'Token expired.',
+                    code: 'TOKEN_EXPIRED'
+                });
+            }
+            
             return res.status(401).json({ 
-                message: 'Invalid or expired token.' 
+                message: 'Invalid token.',
+                code: 'INVALID_TOKEN'
             });
         }
     } catch (error) {
         console.error('Authentication middleware error:', error);
         return res.status(500).json({ 
-            message: 'Internal server error during authentication.' 
+            message: 'Internal server error during authentication.',
+            code: 'AUTH_ERROR'
         });
     }
 };
-
 module.exports = checkForAuthenticationHeader;

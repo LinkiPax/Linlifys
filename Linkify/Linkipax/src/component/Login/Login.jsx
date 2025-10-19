@@ -36,44 +36,47 @@ const Login = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const tokenFromUrl = urlParams.get('token');
     const userData = urlParams.get('user');
+    const authSuccess = urlParams.get('auth');
+    const newUser = urlParams.get('newUser');
     const errorFromUrl = urlParams.get('error');
     
-    if (tokenFromUrl && userData) {
-      handleGoogleAuthSuccess(tokenFromUrl, userData);
+    if (tokenFromUrl && userData && authSuccess === 'success') {
+      handleGoogleAuthSuccess(tokenFromUrl, userData, newUser === 'true');
       return;
     }
     
     if (errorFromUrl) {
-      setError("Google authentication failed. Please try again.");
+      const errorMessage = urlParams.get('message') || "Google authentication failed. Please try again.";
+      setError(errorMessage);
     }
   }, [navigate]);
 
-  const handleGoogleAuthSuccess = (token, userData) => {
+  const handleGoogleAuthSuccess = (token, userData, isNewUser) => {
     try {
       const user = JSON.parse(decodeURIComponent(userData));
       
-      // Store token and user data in localStorage
+      // Store token and user data in localStorage as fallback
       localStorage.setItem('auth_token', token);
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('userId', user.id);
       
-      // Set axios default headers with credentials
+      // Set axios default headers with credentials for future requests
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       axios.defaults.withCredentials = true;
       
       setSuccess("Google login successful! Redirecting...");
       setGoogleLoading(false);
       
-      // Clean URL
-      const cleanUrl = `${window.location.origin}/login`;
+      // Clean URL - remove query parameters
+      const cleanUrl = window.location.origin + window.location.pathname;
       window.history.replaceState({}, '', cleanUrl);
       
       // Redirect based on profile completion
       setTimeout(() => {
-        if (user.profileCompleted) {
-          navigate(`/home/${user.id}`);
-        } else {
+        if (isNewUser || !user.profileCompleted) {
           navigate(`/personal-details/${user.id}`);
+        } else {
+          navigate(`/home/${user.id}`);
         }
       }, 1500);
       
@@ -89,7 +92,9 @@ const Login = () => {
     setError("");
     
     // Redirect to Google OAuth endpoint
-    window.location.href = `${import.meta.env.VITE_API_URL}/user/google`;
+    const googleAuthUrl = `${import.meta.env.VITE_API_URL}/user/google`;
+    console.log('Redirecting to Google OAuth:', googleAuthUrl);
+    window.location.href = googleAuthUrl;
   };
 
   const handleSubmit = async (e) => {
@@ -98,21 +103,30 @@ const Login = () => {
     setError("");
     setSuccess("");
     
+    // Validate inputs
+    if (!email || !password) {
+      setError("Please enter both email/username and password");
+      setLoading(false);
+      return;
+    }
+    
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/user/signin`,
         { email, password },
         { 
-          withCredentials: true, // Essential for HTTPS cookies
+          withCredentials: true, // Essential for cookies
           headers: {
             'Content-Type': 'application/json'
           }
         }
       );
       
-      const { token, user } = response.data;
+      const { token, user, cookieSet } = response.data;
       
-      // Store user data in localStorage
+      console.log('Login response:', { token, user, cookieSet });
+      
+      // Store user data in localStorage as fallback
       localStorage.setItem("userId", user.id);
       localStorage.setItem("auth_token", token);
       localStorage.setItem("user", JSON.stringify(user));
@@ -134,18 +148,47 @@ const Login = () => {
       }, 1500);
       
     } catch (error) {
+      console.error('Login error:', error);
       setSuccess("");
-      if (error.response?.data?.message?.includes('Google authentication')) {
+      
+      if (error.response?.status === 401) {
+        if (error.response?.data?.message?.includes('Google authentication')) {
+          setError(
+            "This account uses Google authentication. Please sign in with Google."
+          );
+        } else {
+          setError(
+            error.response?.data?.message || "Invalid email/username or password"
+          );
+        }
+      } else if (error.response?.status === 400) {
         setError(
-          "This account uses Google authentication. Please sign in with Google."
+          error.response?.data?.errors?.[0]?.msg || "Please check your input"
         );
+      } else if (error.response?.status === 500) {
+        setError("Server error. Please try again later.");
+      } else if (error.code === 'NETWORK_ERROR' || !error.response) {
+        setError("Network error. Please check your connection.");
       } else {
         setError(
-          error.response?.data?.message || "An error occurred during login"
+          error.response?.data?.message || "An unexpected error occurred"
         );
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Test cookie functionality
+  const testCookies = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/user/debug-cookies`,
+        { withCredentials: true }
+      );
+      console.log('Cookie debug info:', response.data);
+    } catch (error) {
+      console.error('Cookie test failed:', error);
     }
   };
 
@@ -183,6 +226,18 @@ const Login = () => {
 
             {error && <Alert variant="danger">{error}</Alert>}
             {success && <Alert variant="success">{success}</Alert>}
+
+            {/* Debug button - remove in production */}
+            {import.meta.env.DEV && (
+              <Button 
+                variant="outline-secondary" 
+                size="sm" 
+                className="mb-2"
+                onClick={testCookies}
+              >
+                Debug Cookies
+              </Button>
+            )}
 
             {/* Google Login Button */}
             <Button
