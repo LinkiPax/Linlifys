@@ -531,7 +531,7 @@ const setCookie = (res, token) => {
     const isProduction = process.env.NODE_ENV === 'production';
     
     const cookieOptions = {
-        httpOnly: false, // Changed to true for security
+        httpOnly: true, // Changed to true for security
         secure: true, // true in production, false in development
         sameSite: 'None', // 'none' for production, 'lax' for development
         maxAge: 7 * 24 * 3600 * 1000, // 7 days

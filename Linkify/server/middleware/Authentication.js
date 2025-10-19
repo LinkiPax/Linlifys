@@ -30,76 +30,75 @@ const jwt = require('jsonwebtoken');
 const User = require('../model/usermodel');
 
 const checkForAuthenticationHeader = async (req, res, next) => {
-    try {
-        // Check for token in headers
-        const authHeader = req.headers['authorization'];
-        const tokenFromHeader = authHeader && authHeader.startsWith('Bearer ') 
-            ? authHeader.slice(7) 
-            : null;
+  try {
+    // 1️⃣ Extract token from Authorization header
+    const authHeader = req.headers['authorization'];
+    const tokenFromHeader =
+      authHeader && authHeader.startsWith('Bearer ')
+        ? authHeader.split(' ')[1]
+        : null;
 
-        // Check for token in cookies
-        const tokenFromCookie = req.cookies?.auth_token;
+    // 2️⃣ Extract token from cookies (works for frontend withCredentials)
+    const tokenFromCookie = req.cookies?.auth_token;
 
-        // Use token from header first, then from cookie
-        const token = tokenFromHeader || tokenFromCookie;
+    // 3️⃣ Prefer header token (API calls), fallback to cookie (browser sessions)
+    const token = tokenFromHeader || tokenFromCookie;
 
-        if (!token) {
-            return res.status(401).json({ 
-                message: 'Access denied. No token provided.',
-                code: 'NO_TOKEN'
-            });
-        }
-
-        try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-            
-            // Validate user ID
-            if (!decoded.userId) {
-                return res.status(400).json({
-                    error: 'Invalid user ID',
-                    message: 'User ID not found in token'
-                });
-            }
-
-            const user = await User.findById(decoded.userId).select('-password');
-            
-            if (!user) {
-                return res.status(401).json({ 
-                    message: 'Invalid token. User not found.',
-                    code: 'USER_NOT_FOUND'
-                });
-            }
-
-            req.user = user;
-            next();
-        } catch (jwtError) {
-            console.error('JWT verification error:', jwtError);
-            
-            if (jwtError.name === 'TokenExpiredError') {
-                return res.status(401).json({ 
-                    message: 'Token expired.',
-                    code: 'TOKEN_EXPIRED'
-                });
-            }
-            
-            if (jwtError.name === 'JsonWebTokenError') {
-                return res.status(401).json({ 
-                    message: 'Invalid token.',
-                    code: 'INVALID_TOKEN'
-                });
-            }
-            
-            return res.status(401).json({ 
-                message: 'Token verification failed.',
-                code: 'TOKEN_VERIFICATION_FAILED'
-            });
-        }
-    } catch (error) {
-        console.error('Authentication middleware error:', error);
-        return res.status(500).json({ 
-            message: 'Internal server error during authentication.',
-            code: 'AUTH_ERROR'
-        });
+    if (!token) {
+      return res.status(401).json({
+        message: 'Access denied. No token provided.',
+        code: 'NO_TOKEN',
+      });
     }
+
+    // 4️⃣ Verify JWT
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    } catch (err) {
+      console.error('JWT verification error:', err);
+
+      if (err.name === 'TokenExpiredError') {
+        return res.status(401).json({
+          message: 'Token expired.',
+          code: 'TOKEN_EXPIRED',
+        });
+      }
+
+      return res.status(401).json({
+        message: 'Invalid token.',
+        code: 'INVALID_TOKEN',
+      });
+    }
+
+    // 5️⃣ Validate decoded payload
+    if (!decoded.userId) {
+      return res.status(400).json({
+        error: 'Invalid token payload.',
+        message: 'User ID missing in token.',
+      });
+    }
+
+    // 6️⃣ Verify user exists in DB
+    const user = await User.findById(decoded.userId).select('-password');
+    if (!user) {
+      return res.status(401).json({
+        message: 'User not found.',
+        code: 'USER_NOT_FOUND',
+      });
+    }
+
+    // 7️⃣ Attach user to request
+    req.user = user;
+
+    next();
+  } catch (error) {
+    console.error('Authentication middleware error:', error);
+    res.status(500).json({
+      message: 'Internal server error during authentication.',
+      code: 'AUTH_ERROR',
+    });
+  }
 };
+
 module.exports = checkForAuthenticationHeader;
