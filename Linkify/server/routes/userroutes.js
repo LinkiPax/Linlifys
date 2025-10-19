@@ -589,7 +589,9 @@ router.get('/google/callback',
 
             const clientURL = process.env.CLIENT_URL;
             const userDataString = encodeURIComponent(JSON.stringify(userData));
-
+            console.log('Generated Token:', token);
+            console.log('User Data String:', userDataString);
+            console.log('User Data:', userData);
             // Determine where to redirect based on profile completion
             let redirectUrl;
             
