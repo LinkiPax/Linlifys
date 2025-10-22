@@ -129,14 +129,24 @@ import SuggestedConnectionsCard from "../Cards/SuggestedConnectionsCard";
 import TrendingTopicsCard from "../Cards/TrendingCard";
 import Status from "../Status/Status";
 import "./HomePage.css";
+
+// Cookie utility functions
 const setCookie = (name, value, days = 1) => {
   const expires = new Date();
   expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
   
-  const secureFlag = ';secure';
+  const secureFlag = process.env.NODE_ENV === 'production' ? ';secure' : '';
   
-  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;samesite=none${secureFlag}`;
+  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;samesite=lax${secureFlag}`;
 };
+
+const getCookie = (name) => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+};
+
 const HomePage = () => {
   const { userId } = useParams();
   const location = useLocation();
@@ -148,8 +158,10 @@ const HomePage = () => {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
-   console.log('URL param userId:', userId);
-console.log('Stored userId:', localStorage.getItem("userId"));
+  
+  console.log('URL param userId:', userId);
+  console.log('Stored userId:', localStorage.getItem("userId"));
+
   // ✅ Always include credentials for secure cross-origin requests
   useEffect(() => {
     axios.defaults.withCredentials = true;
@@ -162,14 +174,25 @@ console.log('Stored userId:', localStorage.getItem("userId"));
         const urlParams = new URLSearchParams(location.search);
         const tokenFromUrl = urlParams.get("token");
         const userFromUrl = urlParams.get("user");
-        setCookie('auth_token', tokenFromUrl,7);
+        
         console.log(urlParams);
         console.log("Token from URL:", tokenFromUrl);
         console.log("User from URL:", userFromUrl);
         console.log("Full URL:", window.location.href);
+
         if (tokenFromUrl && userFromUrl) {
           // OAuth redirect handling
           const decodedUser = JSON.parse(decodeURIComponent(userFromUrl));
+
+          // ✅ Check if cookie already exists to avoid setting multiple times
+          const existingTokenCookie = getCookie('auth_token');
+          
+          if (!existingTokenCookie || existingTokenCookie !== tokenFromUrl) {
+            console.log('Setting auth_token cookie for the first time');
+            setCookie('auth_token', tokenFromUrl, 7);
+          } else {
+            console.log('Auth token cookie already exists, skipping set');
+          }
 
           // ✅ Save token and user data locally
           localStorage.setItem("auth_token", tokenFromUrl);
@@ -198,6 +221,13 @@ console.log('Stored userId:', localStorage.getItem("userId"));
           return;
         }
 
+        // ✅ Also check if we need to set cookie from localStorage
+        const existingCookie = getCookie('auth_token');
+        if (!existingCookie) {
+          console.log('Setting cookie from localStorage token');
+          setCookie('auth_token', existingToken, 7);
+        }
+
         // ✅ Validate existing token with backend
         axios.defaults.headers.common[
           "Authorization"
@@ -212,6 +242,10 @@ console.log('Stored userId:', localStorage.getItem("userId"));
         localStorage.removeItem("auth_token");
         localStorage.removeItem("userId");
         localStorage.removeItem("user");
+        
+        // Clear cookies too
+        document.cookie = 'auth_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+        
         delete axios.defaults.headers.common["Authorization"];
 
         navigate("/login");
@@ -219,11 +253,13 @@ console.log('Stored userId:', localStorage.getItem("userId"));
     };
 
     initializeAuth();
-  }, [location, navigate]);
+  }, [location, navigate]); // Only run when location or navigate changes
 
   // ✅ Fetch homepage data once authenticated
   useEffect(() => {
-    if (authChecked) fetchData();
+    if (authChecked) {
+      fetchData();
+    }
   }, [authChecked]);
 
   const fetchData = async () => {
@@ -248,6 +284,7 @@ console.log('Stored userId:', localStorage.getItem("userId"));
       if (error.response?.status === 401 || error.response?.status === 403) {
         // Token might have expired or been invalidated
         localStorage.clear();
+        document.cookie = 'auth_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
         navigate("/login");
       }
     } finally {
