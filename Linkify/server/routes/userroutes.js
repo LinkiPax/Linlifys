@@ -530,16 +530,14 @@ passport.deserializeUser(async (id, done) => {
 const setCookie = (res, token) => {
     const isProduction = process.env.NODE_ENV === 'production';
     
-    const cookieOptions = {
-        httpOnly: false, // Changed to true for security
-        secure: true, // true in production, false in development
-        sameSite: 'none', // 'none' for production, 'lax' for development
-        maxAge: 7 * 24 * 3600 * 1000, // 7 days
+        const cookieOptions = {
+        httpOnly: false, // true in production
+        secure: false, // true in production
+        sameSite: 'none', // 'none' for cross-site
+        maxAge: 3600 * 1000, // 1 hour
         path: '/',
-        // domain: isProduction ? '.yourdomain.com' : undefined // Set your actual domain
     };
-    
-    res.cookie('auth_token', token, cookieOptions);
+    res.cookie('auth_token',token, cookieOptions);
 };
 
 // Generate JWT Token
