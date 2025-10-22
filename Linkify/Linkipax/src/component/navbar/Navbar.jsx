@@ -91,6 +91,9 @@ const NavbarComponent = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const urlParams = new URLSearchParams(window.location.search);
+  const tokens = urlParams.get('token');
+  console.log('Token from URL:', tokens);
         const token = localStorage.getItem("auth_token");
         // const token = Cookies.get("auth_token");
         {console.log(token)}
