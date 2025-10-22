@@ -603,7 +603,7 @@ router.get('/google/callback',
             } else {
                 // redirectUrl = `${clientURL}/home/?token=${token}&user=${userDataString}&auth=success&id=${req.user._id}`;
                 
-                redirectUrl = `${clientURL}/home/${req.user._id}?token=${token}&user=${userDataString}&auth=success`;
+                redirectUrl = `${clientURL}/home/${req.user._id}`;
             }
             setCookie(res, token);
             console.log(`Redirecting to: ${redirectUrl}`);
