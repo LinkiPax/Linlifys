@@ -1218,11 +1218,11 @@ router.get('/suggested/:userId', checkForAuthenticationHeader, async (req, res) 
     try {
         const { userId } = req.params;
         console.log('req:', req);
-        console.log('req.user._id:', req.user._id);
+        console.log('req.user._id:', req.user._id.toString());
         console.log('Requested user ID:', userId);
-        console.log('Match:', req.user._id === userId);
+        console.log('Match:', req.user._id.toString() === userId);
         // Check if user is authorized
-        if (req.user._id !== userId) {
+        if (req.user._id.toString() !== userId) {
             return res.status(403).json({ error: 'Unauthorized' });
         }
 
