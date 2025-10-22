@@ -141,7 +141,8 @@ const HomePage = () => {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
-
+   console.log('URL param userId:', userId);
+console.log('Stored userId:', localStorage.getItem("userId"));
   // ✅ Always include credentials for secure cross-origin requests
   useEffect(() => {
     axios.defaults.withCredentials = true;
