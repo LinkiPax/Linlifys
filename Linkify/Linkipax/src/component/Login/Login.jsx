@@ -75,9 +75,9 @@ const Login = () => {
         } catch (error) {
             console.log('Token invalid, requiring new login');
             // Clear invalid tokens
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('user');
-            localStorage.removeItem('userId');
+            // localStorage.removeItem('auth_token');
+            // localStorage.removeItem('user');
+            // localStorage.removeItem('userId');
         } finally {
             setLoading(false);
         }

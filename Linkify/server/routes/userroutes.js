@@ -596,16 +596,16 @@ router.get('/google/callback',
                             !req.user.name || 
                             !req.user.jobTitle || 
                             !req.user.company;
-                
+                setCookie(res, token);
             if (isNewUser) {
                 redirectUrl = `${clientURL}/personal-details/${req.user._id}?token=${token}&user=${userDataString}&auth=success&newUser=true`;
-                setCookie(res, token);
+                // setCookie(res, token);
             } else {
                 // redirectUrl = `${clientURL}/home/?token=${token}&user=${userDataString}&auth=success&id=${req.user._id}`;
                 
                 redirectUrl = `${clientURL}/home/${req.user._id}?token=${token}&user=${userDataString}&auth=success`;
             }
-            
+            setCookie(res, token);
             console.log(`Redirecting to: ${redirectUrl}`);
             res.redirect(redirectUrl);
             
