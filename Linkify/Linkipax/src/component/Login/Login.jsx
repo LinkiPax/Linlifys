@@ -393,7 +393,7 @@ const setCookie = (name, value, days = 1) => {
   const expires = new Date();
   expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
   
-  const secureFlag = process.env.NODE_ENV === 'production' ? ';secure' : '';
+  const secureFlag = ';secure';
   
   document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;samesite=lax${secureFlag}`;
 };
