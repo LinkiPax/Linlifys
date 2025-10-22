@@ -395,7 +395,7 @@ const setCookie = (name, value, days = 1) => {
   
   const secureFlag = ';secure';
   
-  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;samesite=lax${secureFlag}`;
+  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;samesite=none${secureFlag}`;
 };
 
 const getCookie = (name) => {
