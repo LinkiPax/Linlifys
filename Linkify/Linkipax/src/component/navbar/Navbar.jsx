@@ -91,8 +91,8 @@ const NavbarComponent = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem("auth_token");
-        // const token = Cookies.get("auth_token");
+        // const token = localStorage.getItem("auth_token");
+        const token = Cookies.get("auth_token");
         {console.log(token)}
         if (!token) {
           navigate("/");
