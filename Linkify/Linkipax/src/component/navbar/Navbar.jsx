@@ -91,9 +91,19 @@ const NavbarComponent = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const urlParams = new URLSearchParams(window.location.search);
-  const tokens = urlParams.get('token');
-  console.log('Token from URL:', tokens);
+        // Add debugging to see all URL parameters
+const urlParams = new URLSearchParams(window.location.search);
+console.log('All URL parameters:', Object.fromEntries(urlParams.entries()));
+console.log('Full URL:', window.location.href);
+
+const tokens = urlParams.get('token');
+console.log('Retrieved token:', tokens);
+
+// Check if other parameters exist
+const auth = urlParams.get('auth');
+const user = urlParams.get('user');
+console.log('Auth status:', auth);
+console.log('User data:', user);
         const token = localStorage.getItem("auth_token");
         // const token = Cookies.get("auth_token");
         {console.log(token)}
