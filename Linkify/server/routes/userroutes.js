@@ -529,7 +529,7 @@ passport.deserializeUser(async (id, done) => {
 // Utility function to set cookies
 const setCookie = (res, token) => {
         const cookieOptions = {
-        httpOnly: false, // true in production
+        httpOnly: true, // true in production
         secure: false, // true in production
         sameSite: 'none', // 'none' for cross-site
         maxAge: 3600 * 1000, // 1 hour

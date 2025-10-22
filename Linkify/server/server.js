@@ -32,6 +32,7 @@ app.use(cors({
   origin: allowedOrigin,
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
 }));
 console.log("Allowed CORS origin:", allowedOrigin);
 
@@ -42,8 +43,8 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
+    httpOnly: true,
     secure: false, // Set to true if using HTTPS
-    httpOnly: false,
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     sameSite:'none'
   }
