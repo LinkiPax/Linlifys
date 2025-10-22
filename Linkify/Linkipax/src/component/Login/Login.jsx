@@ -102,9 +102,9 @@ const Login = () => {
       setSuccess("Google login successful! Redirecting...");
       setGoogleLoading(false);
       
-      // Clean URL - remove query parameters
-      const cleanUrl = window.location.origin + window.location.pathname;
-      window.history.replaceState({}, '', cleanUrl);
+      // // Clean URL - remove query parameters
+      // const cleanUrl = window.location.origin + window.location.pathname;
+      // window.history.replaceState({}, '', cleanUrl);
       
       // Redirect based on profile completion
       setTimeout(() => {
