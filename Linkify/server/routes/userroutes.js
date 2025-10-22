@@ -528,8 +528,6 @@ passport.deserializeUser(async (id, done) => {
 
 // Utility function to set cookies
 const setCookie = (res, token) => {
-    const isProduction = process.env.NODE_ENV === 'production';
-    
         const cookieOptions = {
         httpOnly: false, // true in production
         secure: false, // true in production
