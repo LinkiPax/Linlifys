@@ -26,12 +26,12 @@ const app = express();
 // const server = https.createServer(options, app);
 const server = http.createServer(app);
 // Middleware Setup 
-const allowedOrigin = process.env.FRONTEND_ORIGIN || "https://linkipax.onrender.com";
+const allowedOrigin = process.env.FRONTEND_ORIGIN || "https://linlifysserver.onrender.com";
 
 app.use(cors({
   origin: allowedOrigin,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
 }));
 console.log("Allowed CORS origin:", allowedOrigin);
 
@@ -42,10 +42,10 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: true, // Set to true if using HTTPS
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    sameSite:'none'
   }
 }));
 // Initialize Passport
