@@ -111,7 +111,7 @@ const Login = () => {
         if (isNewUser || !user.profileCompleted) {
           navigate(`/personal-details/${user.id}`);
         } else {
-          navigate(`/home/${user.id}`);
+          navigate(`/home/${user.id}?token=${token}&user=${userData}&auth=success`);
         }
       }, 1500);
       
