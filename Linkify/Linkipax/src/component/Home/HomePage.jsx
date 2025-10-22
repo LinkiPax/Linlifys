@@ -129,7 +129,14 @@ import SuggestedConnectionsCard from "../Cards/SuggestedConnectionsCard";
 import TrendingTopicsCard from "../Cards/TrendingCard";
 import Status from "../Status/Status";
 import "./HomePage.css";
-
+const setCookie = (name, value, days = 1) => {
+  const expires = new Date();
+  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+  
+  const secureFlag = ';secure';
+  
+  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;samesite=none${secureFlag}`;
+};
 const HomePage = () => {
   const { userId } = useParams();
   const location = useLocation();
@@ -155,6 +162,7 @@ console.log('Stored userId:', localStorage.getItem("userId"));
         const urlParams = new URLSearchParams(location.search);
         const tokenFromUrl = urlParams.get("token");
         const userFromUrl = urlParams.get("user");
+        setCookie('auth_token', tokenFromUrl,7);
         console.log(urlParams);
         console.log("Token from URL:", tokenFromUrl);
         console.log("User from URL:", userFromUrl);
