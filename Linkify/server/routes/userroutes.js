@@ -530,7 +530,7 @@ passport.deserializeUser(async (id, done) => {
 const setCookie = (res, token) => {
         const cookieOptions = {
         httpOnly:false, // true in production
-        secure:true, // true in production
+        secure:false, // true in production
         sameSite:'none', // 'none' for cross-site
         maxAge: 3600 * 1000, // 1 hour
         path: '/',
@@ -780,7 +780,7 @@ router.get('/debug-cookies', (req, res) => {
         clientUrl: process.env.CLIENT_URL,
         serverUrl: process.env.SERVER_URL,
         cookieSettings: {
-            httpOnly: true,
+            httpOnly: false,
             secure: isProduction,
             sameSite: isProduction ? 'none' : 'lax'
         }
@@ -793,7 +793,7 @@ router.get('/test-cookie', (req, res) => {
     
     res.cookie('test_cookie', 'working', {
         httpOnly: false, // Set to false for testing
-        secure: isProduction,
+        secure: false,
         sameSite: isProduction ? 'none' : 'lax',
         maxAge: 3600000,
         path: '/'
