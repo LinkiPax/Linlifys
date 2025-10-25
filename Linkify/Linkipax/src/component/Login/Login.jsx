@@ -586,8 +586,8 @@ const Login = () => {
       
       // Redirect based on profile completion
       setTimeout(() => {
+        setCookie('auth_token', token, 7);
         if (user.profileCompleted) {
-          setCookie('auth_token', token, 7);
           navigate(`/home/${user.id}`);
         } else {
           navigate(`/personal-details/${user.id}`);
