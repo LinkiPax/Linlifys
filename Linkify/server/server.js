@@ -36,6 +36,7 @@ app.use(cors({
 }));
 console.log("Allowed CORS origin:", allowedOrigin);
 
+app.set('trust proxy', 1);
 
 app.options('*', cors());
 app.use(session({
@@ -43,7 +44,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    httpOnly:false,
+    httpOnly:true,
     secure:true, // Set to true if using HTTPS
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     sameSite:'none'
