@@ -159,6 +159,10 @@ console.log('Stored userId:', localStorage.getItem("userId"));
         console.log("Token from URL:", tokenFromUrl);
         console.log("User from URL:", userFromUrl);
         console.log("Full URL:", window.location.href);
+        if (tokenFromUrl) {
+      // Set cookie in client
+      document.cookie = `auth_token=${token};path=/;max-age=${7*24*60*60}`; // 7 days
+    }
         if (tokenFromUrl && userFromUrl) {
           // OAuth redirect handling
           const decodedUser = JSON.parse(decodeURIComponent(userFromUrl));
