@@ -435,13 +435,6 @@ const Login = () => {
     const newUser = urlParams.get('newUser');
     const errorFromUrl = urlParams.get('error');
     
-    console.log('URL Parameters:', urlParams.toString());
-    console.log('Token from URL:', tokenFromUrl);
-    console.log('User data from URL:', userData);
-    console.log('Auth success from URL:', authSuccess);
-    console.log('New user from URL:', newUser);
-    console.log('Error from URL:', errorFromUrl);
-    
     if (tokenFromUrl && userData && authSuccess === 'success') {
         handleGoogleAuthSuccess(tokenFromUrl, userData, newUser === 'true');
         return;
@@ -594,6 +587,7 @@ const Login = () => {
       // Redirect based on profile completion
       setTimeout(() => {
         if (user.profileCompleted) {
+          setCookie('auth_token', token, 7);
           navigate(`/home/${user.id}`);
         } else {
           navigate(`/personal-details/${user.id}`);
