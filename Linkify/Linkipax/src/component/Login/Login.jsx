@@ -416,6 +416,7 @@ const Login = () => {
     
     // Extract token from response data
     const token = data.token;
+    console.log('Token:', token);
     const user = data.user;
     const userId = user?._id || user?.id || data.userId;
     

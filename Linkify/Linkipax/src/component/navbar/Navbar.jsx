@@ -101,7 +101,7 @@ const NavbarComponent = () => {
     }, 1500);
   }
 
-        localStorage.setItem("auth_token", token);
+        
         const userId = localStorage.getItem("userId");
 
         // Fetch user data
