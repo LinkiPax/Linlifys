@@ -1930,31 +1930,38 @@ router.post('/reset-password/:token', [
 // GET: Authenticated User (Profile) 
 router.use(cookieParser());
 // Then use your authentication middleware
-router.get('/me/:id', checkForAuthenticationCookie({ strict: true }), async (req, res) => {
-  let userId = req.params.id;
+router.get('/me/:id', 
+  cookieParser(), // Make sure cookie parser is applied
+  checkForAuthenticationCookie('auth_token', { strict: true }), // Fixed middleware call
+  async (req, res) => {
+    let userId = req.params.id;
 
-  if (userId === "me") {
-    userId = req.user.userId;
-  }
-
-  try {
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    if (userId === "me") {
+      if (!req.user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      userId = req.user.userId;
     }
-    
-    const profileCompleted = isProfileCompleted(user);
-    
-    res.json({
-      ...(user.toPublicJSON ? user.toPublicJSON() : user.toObject()),
-      hasPersonalDetails: profileCompleted,
-      redirectTo: profileCompleted ? `/home/${user._id}` : `/personal-details/${user._id}`
-    });
-  } catch (error) {
-    console.error('Error fetching user:', error);
-    res.status(500).json({ message: 'Error fetching user' });
+
+    try {
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      
+      const profileCompleted = isProfileCompleted(user);
+      
+      res.json({
+        ...(user.toPublicJSON ? user.toPublicJSON() : user.toObject()),
+        hasPersonalDetails: profileCompleted,
+        redirectTo: profileCompleted ? `/home/${user._id}` : `/personal-details/${user._id}`
+      });
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      res.status(500).json({ message: 'Error fetching user' });
+    }
   }
-});
+);
 // Get user connections
 router.get('/connections/:userId', async (req, res) => {
     try {
