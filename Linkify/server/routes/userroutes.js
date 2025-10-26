@@ -1607,7 +1607,8 @@ router.post('/google-auth', async (req, res) => {
         
         // Check if user has completed personal details
         const profileCompleted = isProfileCompleted(user);
-        
+        console.log('Response Headers:', res.getHeaders());
+
         return res.json({
             message: 'Google authentication successful',
             user: user.toPublicJSON ? user.toPublicJSON() : user,
@@ -1700,9 +1701,10 @@ router.post('/Signup', [
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET_KEY, {
             expiresIn: '1h',
         });
-
-        setCookie(res, token);
         
+        setCookie(res, token);
+        console.log('Response Headers:', res.getHeaders());
+
         return res.status(201).json({
             message: 'User created successfully',
             user: user.toPublicJSON ? user.toPublicJSON() : user,
