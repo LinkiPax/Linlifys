@@ -516,7 +516,7 @@ const Login = () => {
       
       // Store authentication data
       const { token, user, userId } = storeAuthData(response.data);
-      
+      console.log('✅ Google auth successful:', { token, user, userId });
       setSuccess("Google login successful! Redirecting...");
       
       // Determine redirect path
