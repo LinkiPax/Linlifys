@@ -161,14 +161,26 @@ const HomePage = () => {
         }
 
         if (tokenFromUrl && userFromUrl) {
+          // ✅ Parse user data from URL
+          let userData;
+          try {
+            userData = JSON.parse(decodeURIComponent(userFromUrl));
+          } catch (parseError) {
+            console.error("Error parsing user data:", parseError);
+            navigate("/login");
+            return;
+          }
+
           // ✅ Save token and user data locally
           localStorage.setItem("auth_token", tokenFromUrl);
-          localStorage.setItem("userId", userId);
+          localStorage.setItem("userId", userData.id);
+          localStorage.setItem("user", userFromUrl);
+          
           // ✅ Apply token to Axios headers
           axios.defaults.headers.common["Authorization"] = `Bearer ${tokenFromUrl}`;
 
           // ✅ Clean the URL (remove query params)
-          const cleanUrl = `${window.location.origin}/home/${userId}`;
+          const cleanUrl = `${window.location.origin}/home/${userData.id}`;
           window.history.replaceState({}, "", cleanUrl);
 
           setAuthChecked(true);
@@ -184,11 +196,17 @@ const HomePage = () => {
           return;
         }
 
-        // ✅ Validate existing token with backend
+        // ✅ Validate existing token with backend - handle the response structure properly
         axios.defaults.headers.common["Authorization"] = `Bearer ${existingToken}`;
-        await axios.get(`${import.meta.env.VITE_API_URL}/user/verify-token`);
+        const verifyResponse = await axios.get(`${import.meta.env.VITE_API_URL}/user/verify-token`);
+        
+        // The response has { success: true, user: userData } structure
+        if (verifyResponse.data.success) {
+          setAuthChecked(true);
+        } else {
+          throw new Error('Token verification failed');
+        }
 
-        setAuthChecked(true);
       } catch (error) {
         console.error("Auth initialization failed:", error);
 
@@ -203,11 +221,13 @@ const HomePage = () => {
     };
 
     initializeAuth();
-  }, [location, navigate]);
+  }, [location, navigate, userId]);
 
   // ✅ Fetch homepage data once authenticated
   useEffect(() => {
-    if (authChecked) fetchData();
+    if (authChecked) {
+      fetchData();
+    }
   }, [authChecked]);
 
   const fetchData = async () => {
@@ -225,12 +245,26 @@ const HomePage = () => {
       setPosts(postRes.data || []);
       setConnections(connRes.data || []);
       setTrendingTopics(trendRes.data || []);
-      setUserProfile(userRes.data);
+      
+      // Handle both response structures for user data
+      const userData = userRes.data;
+      if (userData && userData.user) {
+        // If response has { success: true, user: userData } structure
+        setUserProfile(userData.user);
+      } else {
+        // If response is direct user object
+        setUserProfile(userData);
+      }
+      
     } catch (error) {
       console.error("Error fetching homepage data:", error);
 
       if (error.response?.status === 401 || error.response?.status === 403) {
-        localStorage.clear();
+        // Clear invalid tokens and redirect to login
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("userId");
+        localStorage.removeItem("user");
+        delete axios.defaults.headers.common["Authorization"];
         navigate("/login");
       }
     } finally {
@@ -238,11 +272,21 @@ const HomePage = () => {
     }
   };
 
+  // Handle post creation
+  const handlePostCreated = (newPost) => {
+    setPosts(prevPosts => [newPost, ...prevPosts]);
+  };
+
+  // Handle post deletion
+  const handlePostDeleted = (postId) => {
+    setPosts(prevPosts => prevPosts.filter(post => post._id !== postId));
+  };
+
   // ✅ Loading spinner
   if (loading) {
     return (
-      <div className="text-center mt-5">
-        <Spinner animation="border" role="status">
+      <div className="d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>
+        <Spinner animation="border" role="status" variant="primary">
           <span className="visually-hidden">Loading...</span>
         </Spinner>
       </div>
@@ -265,13 +309,23 @@ const HomePage = () => {
 
           {/* Middle Column */}
           <Col md={6} className="px-2">
-            <Status userProfilePic={userProfile?.profilePicture} />
+            <Status 
+              userProfilePic={userProfile?.profilePicture} 
+              onPostCreated={handlePostCreated}
+            />
             <div className="scrollable-postcards">
               {posts.length > 0 ? (
-                posts.map((post) => <Postcard key={post._id} post={post} />)
+                posts.map((post) => (
+                  <Postcard 
+                    key={post._id} 
+                    post={post} 
+                    onPostDeleted={handlePostDeleted}
+                  />
+                ))
               ) : (
                 <div className="text-center text-muted mt-4">
-                  No posts to display.
+                  <p>No posts to display.</p>
+                  <p>Be the first to share something!</p>
                 </div>
               )}
             </div>

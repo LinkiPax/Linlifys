@@ -173,3 +173,80 @@ body {
     margin: auto;
   }
 }
+.homepage-background {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.main-content {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.sticky-column {
+  position: sticky;
+  top: 80px;
+  height: fit-content;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+
+.scrollable-postcards {
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+/* Custom scrollbar for webkit browsers */
+.scrollable-postcards::-webkit-scrollbar,
+.sticky-column::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollable-postcards::-webkit-scrollbar-track,
+.sticky-column::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.scrollable-postcards::-webkit-scrollbar-thumb,
+.sticky-column::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+.scrollable-postcards::-webkit-scrollbar-thumb:hover,
+.sticky-column::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 0 10px;
+  }
+  
+  .sticky-column {
+    position: relative;
+    top: 0;
+    margin-bottom: 20px;
+  }
+  
+  .px-2 {
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+  }
+}
+
+/* Card spacing */
+.card {
+  margin-bottom: 15px;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+}
+
+.card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transition: box-shadow 0.2s ease-in-out;
+}
