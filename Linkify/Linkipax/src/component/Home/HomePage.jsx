@@ -141,28 +141,25 @@ const HomePage = () => {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
-   console.log('URL param userId:', userId);
-console.log('Stored userId:', localStorage.getItem("userId"));
+
   // ✅ Always include credentials for secure cross-origin requests
   useEffect(() => {
     axios.defaults.withCredentials = true;
   }, []);
 
-  // ✅ Authentication initialization (handles OAuth redirect or existing login)
+  // ✅ Authentication initialization
   useEffect(() => {
     const initializeAuth = async () => {
       try {
         const urlParams = new URLSearchParams(location.search);
         const tokenFromUrl = urlParams.get("token");
         const userFromUrl = urlParams.get("user");
-        console.log(urlParams);
-        console.log("Token from URL:", tokenFromUrl);
-        console.log("User from URL:", userFromUrl);
-        console.log("Full URL:", window.location.href);
+
         if (tokenFromUrl) {
-      // Set cookie in client
-      document.cookie = `auth_token=${tokenFromUrl};path=/;max-age=${7*24*60*60}`; // 7 days
-    }
+          // Set cookie in client
+          document.cookie = `auth_token=${tokenFromUrl};path=/;max-age=${7*24*60*60}`;
+        }
+
         if (tokenFromUrl && userFromUrl) {
           // OAuth redirect handling
           const decodedUser = JSON.parse(decodeURIComponent(userFromUrl));
@@ -173,9 +170,7 @@ console.log('Stored userId:', localStorage.getItem("userId"));
           localStorage.setItem("userId", decodedUser.id);
 
           // ✅ Apply token to Axios headers
-          axios.defaults.headers.common[
-            "Authorization"
-          ] = `Bearer ${tokenFromUrl}`;
+          axios.defaults.headers.common["Authorization"] = `Bearer ${tokenFromUrl}`;
 
           // ✅ Clean the URL (remove query params)
           const cleanUrl = `${window.location.origin}/home/${decodedUser.id}`;
@@ -195,9 +190,7 @@ console.log('Stored userId:', localStorage.getItem("userId"));
         }
 
         // ✅ Validate existing token with backend
-        axios.defaults.headers.common[
-          "Authorization"
-        ] = `Bearer ${existingToken}`;
+        axios.defaults.headers.common["Authorization"] = `Bearer ${existingToken}`;
         await axios.get(`${import.meta.env.VITE_API_URL}/user/verify-token`);
 
         setAuthChecked(true);
@@ -242,7 +235,6 @@ console.log('Stored userId:', localStorage.getItem("userId"));
       console.error("Error fetching homepage data:", error);
 
       if (error.response?.status === 401 || error.response?.status === 403) {
-        // Token might have expired or been invalidated
         localStorage.clear();
         navigate("/login");
       }
@@ -271,9 +263,7 @@ console.log('Stored userId:', localStorage.getItem("userId"));
           {/* Left Column */}
           <Col md={3} className="px-2">
             <div className="sticky-column">
-              <div className="suggested-connections-card">
-                <SuggestedConnectionsCard connections={connections} />
-              </div>
+              <SuggestedConnectionsCard connections={connections} />
               <TrendingTopicsCard topics={trendingTopics} />
             </div>
           </Col>
