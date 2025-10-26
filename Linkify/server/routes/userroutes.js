@@ -1368,12 +1368,14 @@ const setCookie = (res, token) => {
     
     const cookieOptions = {
         httpOnly: false, // true in production
-        secure: true, // true in production
+        secure: false, // true in production
         sameSite: 'none', // 'none' for cross-site
         maxAge: 3600 * 1000, // 1 hour
         path: '/',
     };
+    console.log('🍪 Setting cookie with options:', cookieOptions);
     res.cookie('auth_token', token, cookieOptions);
+    
 };
 
 // Utility function to check if profile is completed

@@ -430,6 +430,7 @@ const Login = () => {
                 }
             );
 
+            console.log(token);
             console.log('✅ Existing token valid:', response.data);
             const user = response.data;
             
