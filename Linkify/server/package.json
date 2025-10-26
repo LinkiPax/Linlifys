@@ -29,6 +29,7 @@
     "express-useragent": "^1.0.15",
     "express-validator": "^7.2.1",
     "g-trends": "^0.0.9",
+    "google-auth-library": "^10.4.2",
     "google-trends-api": "^4.9.2",
     "graphql": "^16.10.0",
     "helmet": "^8.0.0",
