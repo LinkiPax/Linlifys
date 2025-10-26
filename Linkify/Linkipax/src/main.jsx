@@ -29,6 +29,7 @@ import Jobs from "./component/Jobs/Jobs";
 import Startup from "./component/Jobs/Startup";
 import Hackathons from "./component/Jobs/Hackathons";
 import CreatePostCard from "./component/Cards/CreatePostCard";
+
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider store={store}>

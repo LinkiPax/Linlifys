@@ -464,7 +464,7 @@ const Login = () => {
           credential: credentialResponse.credential
         },
         { 
-          credentials: 'include',
+          withCredentials: true,
           headers: {
             'Content-Type': 'application/json'
           }
@@ -534,7 +534,7 @@ const Login = () => {
         `${import.meta.env.VITE_API_URL}/user/Signin`,
         { email, password },
         { 
-          credentials: 'include',
+          withCredentials: true,
           headers: {
             'Content-Type': 'application/json'
           }
