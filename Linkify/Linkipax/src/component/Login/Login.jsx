@@ -412,11 +412,14 @@ const Login = () => {
         const userId = localStorage.getItem('userId');
         
         if (!token || !userId) {
+            console.log('🔍 No existing auth found');
             return;
         }
 
         try {
             setLoading(true);
+            console.log('🔐 Checking existing token...');
+            
             const response = await axios.get(
                 `${import.meta.env.VITE_API_URL}/user/me/${userId}`,
                 {
@@ -427,7 +430,9 @@ const Login = () => {
                 }
             );
 
+            console.log('✅ Existing token valid:', response.data);
             const user = response.data;
+            
             if (user.hasPersonalDetails || user.profileCompleted) {
                 navigate(`/home/${user._id || user.id}`);
             } else {
@@ -435,7 +440,7 @@ const Login = () => {
             }
             
         } catch (error) {
-            console.log('Token invalid, requiring new login');
+            console.log('❌ Token invalid, requiring new login');
             localStorage.removeItem('auth_token');
             localStorage.removeItem('user');
             localStorage.removeItem('userId');
@@ -447,12 +452,52 @@ const Login = () => {
     checkExistingAuth();
   }, [navigate]);
 
+  // Enhanced token storage function
+  const storeAuthData = (data) => {
+    console.log('💾 Storing auth data:', data);
+    
+    // Extract token from different possible response formats
+    const token = data.token || data.access_token || data.jwt;
+    const user = data.user || data;
+    const userId = user?._id || user?.id || data.userId;
+    
+    if (!token) {
+      console.error('❌ No token found in response:', data);
+      throw new Error('No authentication token received');
+    }
+    
+    if (!userId) {
+      console.error('❌ No user ID found in response:', data);
+      throw new Error('No user ID received');
+    }
+
+    // Store in localStorage
+    localStorage.setItem("auth_token", token);
+    localStorage.setItem("userId", userId);
+    if (user) {
+      localStorage.setItem("user", JSON.stringify(user));
+    }
+    
+    // Set axios defaults
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    axios.defaults.withCredentials = true;
+    
+    console.log('✅ Auth data stored:', {
+      token: token.substring(0, 20) + '...',
+      userId,
+      localStorage: localStorage.getItem('auth_token') ? 'SET' : 'MISSING'
+    });
+    
+    return { token, user, userId };
+  };
+
   const handleGoogleSuccess = async (credentialResponse) => {
     setGoogleLoading(true);
     setError("");
 
     try {
-      // Send the Google credential to your backend
+      console.log('🔐 Starting Google authentication...');
+      
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/user/google-auth`,
         {
@@ -466,33 +511,37 @@ const Login = () => {
         }
       );
       
-      const { token, user, redirectTo } = response.data;
+      console.log('📨 Google auth response:', response.data);
       
       // Store authentication data
-      localStorage.setItem("auth_token", token);
-      localStorage.setItem("userId", user._id || user.id);
-      localStorage.setItem("user", JSON.stringify(user));
-      
-      // Set axios default headers
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      axios.defaults.withCredentials = true;
+      const { token, user, userId } = storeAuthData(response.data);
       
       setSuccess("Google login successful! Redirecting...");
       
-      // Redirect based on backend response
+      // Determine redirect path
+      const redirectTo = response.data.redirectTo || 
+                        (response.data.profileCompleted ? `/home/${userId}` : `/personal-details/${userId}`);
+      
+      console.log('🔄 Redirecting to:', redirectTo);
+      
+      // Redirect after short delay
       setTimeout(() => {
-        navigate(redirectTo || `/home/${user._id || user.id}`);
-      }, 1500);
+        navigate(redirectTo);
+      }, 1000);
       
     } catch (error) {
-      console.error('Google auth error:', error);
-      setError(error.response?.data?.message || "Google authentication failed");
+      console.error('❌ Google auth error:', error);
+      const errorMessage = error.response?.data?.message || 
+                          error.message || 
+                          "Google authentication failed";
+      setError(errorMessage);
     } finally {
       setGoogleLoading(false);
     }
   };
 
   const handleGoogleFailure = () => {
+    console.error('❌ Google login failed');
     setError("Google login failed. Please try again.");
     setGoogleLoading(false);
   };
@@ -510,6 +559,8 @@ const Login = () => {
     }
     
     try {
+      console.log('🔐 Starting login process...');
+      
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/user/Signin`,
         { email, password },
@@ -521,24 +572,28 @@ const Login = () => {
         }
       );
       
-      const { token, user, redirectTo } = response.data;
+      console.log('📨 Login response:', response.data);
       
-      localStorage.setItem("userId", user._id || user.id);
-      localStorage.setItem("auth_token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-      
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      axios.defaults.withCredentials = true;
+      // Store authentication data
+      const { token, user, userId } = storeAuthData(response.data);
       
       setSuccess("Login successful! Redirecting...");
       
+      // Determine redirect path
+      const redirectTo = response.data.redirectTo || 
+                        (response.data.profileCompleted ? `/home/${userId}` : `/personal-details/${userId}`);
+      
+      console.log('🔄 Redirecting to:', redirectTo);
+      
+      // Redirect after short delay
       setTimeout(() => {
-        navigate(redirectTo || `/home/${user._id || user.id}`);
-      }, 1500);
+        navigate(redirectTo);
+      }, 1000);
       
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('❌ Login error:', error);
       
+      // Enhanced error handling
       if (error.response?.status === 401) {
         if (error.response?.data?.message?.includes('Google authentication')) {
           setError(
@@ -559,6 +614,8 @@ const Login = () => {
         setError("Server error. Please try again later.");
       } else if (error.code === 'NETWORK_ERROR' || !error.response) {
         setError("Network error. Please check your connection.");
+      } else if (error.message?.includes('No authentication token')) {
+        setError("Authentication failed. No token received from server.");
       } else {
         setError(
           error.response?.data?.message || "An unexpected error occurred"
@@ -568,6 +625,18 @@ const Login = () => {
       setLoading(false);
     }
   };
+
+  // Debug function to check storage
+  const debugStorage = () => {
+    console.log('🔍 Storage Debug:');
+    console.log('localStorage auth_token:', localStorage.getItem('auth_token'));
+    console.log('localStorage userId:', localStorage.getItem('userId'));
+    console.log('localStorage user:', localStorage.getItem('user'));
+    console.log('All localStorage:', { ...localStorage });
+  };
+
+  // Add debug button in development
+  const isDevelopment = import.meta.env.DEV;
 
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
@@ -608,6 +677,18 @@ const Login = () => {
                 </Alert>
               )}
               {success && <Alert variant="success">{success}</Alert>}
+
+              {/* Debug button in development */}
+              {isDevelopment && (
+                <Button 
+                  variant="outline-secondary" 
+                  size="sm" 
+                  className="mb-2"
+                  onClick={debugStorage}
+                >
+                  Debug Storage
+                </Button>
+              )}
 
               {/* Google Login Button */}
               <div className="mb-3">
