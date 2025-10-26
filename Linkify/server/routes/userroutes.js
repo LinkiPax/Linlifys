@@ -1952,7 +1952,6 @@ router.get('/me/:id',
       }
       
       const profileCompleted = isProfileCompleted(user);
-      
       res.json({
         ...(user.toPublicJSON ? user.toPublicJSON() : user.toObject()),
         hasPersonalDetails: profileCompleted,

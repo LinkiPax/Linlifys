@@ -405,51 +405,9 @@ const Login = () => {
     if (videoRef.current) {
         videoRef.current.playbackRate = 0.8;
     }
-
-    // Check if user is already logged in
-    const checkExistingAuth = async () => {
-        const token = localStorage.getItem('auth_token');
-        const userId = localStorage.getItem('userId');
-        
-        if (!token || !userId) {
-            console.log('🔍 No existing auth found');
-            return;
-        }
-
-        try {
-            setLoading(true);
-            console.log('🔐 Checking existing token...');
-            
-            const response = await axios.get(
-                `${import.meta.env.VITE_API_URL}/user/me/${userId}`,
-                {
-                    withCredentials: true,
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                }
-            );
-
-            console.log('✅ Existing token valid:', response.data);
-            const user = response.data;
-            
-            if (user.hasPersonalDetails || user.profileCompleted) {
-                navigate(`/home/${user._id || user.id}`);
-            } else {
-                navigate(`/personal-details/${user._id || user.id}`);
-            }
-            
-        } catch (error) {
-            console.log('❌ Token invalid, requiring new login');
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('user');
-            localStorage.removeItem('userId');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    checkExistingAuth();
+    
+    // Removed checkExistingAuth function to prevent auto-redirect issues
+    console.log('🔍 Auto-auth check disabled');
   }, [navigate]);
 
   // Enhanced token storage function
