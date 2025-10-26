@@ -1,4 +1,171 @@
 
+// require('dotenv').config();
+// const express = require('express');
+// const mongoose = require('mongoose');
+// const cors = require('cors');
+// const helmet = require('helmet');
+// const morgan = require('morgan');
+// const cookieParser = require('cookie-parser');
+// const http = require('http');
+// const { ApolloServer } = require("apollo-server-express");
+// const { typeDefs, resolvers } = require("./GraphQL/messageschema");
+// const path = require('path');
+// const passport = require('passport');
+// const session=require('express-session');
+// const { initializeSocket ,getIO} = require('./socket/socketnadle'); // New socket handler
+// // const fs = require('fs');
+
+// // const options = {
+// //   key: fs.readFileSync('./localhost+1-key.pem'),
+// //   cert: fs.readFileSync('./localhost+1.pem'),
+// //   requestCert: false,
+// //   rejectUnauthorized: false // For development only!
+// // }; 
+// // Initialize Express app and HTTP server 
+// const app = express();
+// // const server = https.createServer(options, app);
+// const server = http.createServer(app);
+// // Middleware Setup 
+// const allowedOrigin = process.env.FRONTEND_ORIGIN;
+
+// app.use(cors({
+//   origin: allowedOrigin,
+//   credentials: true,
+//   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+//   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
+// }));
+// console.log("Allowed CORS origin:", allowedOrigin);
+
+// app.set('trust proxy', 1);
+
+// const isProduction = process.env.NODE_ENV === 'production';
+
+// app.use(session({
+//   secret: process.env.SESSION_SECRET || 'your-fallback-session-secret',
+//   resave: false,
+//   saveUninitialized: false,
+//   cookie: {
+//     httpOnly: false, // you can make this true for better security if frontend doesn’t need direct access
+//     secure: isProduction,          // only true when deployed on HTTPS
+//     sameSite: isProduction ? 'none' : 'lax', // allow cross-site only on HTTPS
+//     maxAge: 24 * 60 * 60 * 1000
+//   }
+// }));
+
+
+// // Initialize Passport
+// app.use(passport.initialize());
+// app.use(passport.session());
+// app.use(express.json()); 
+// app.use(helmet({
+//   crossOriginResourcePolicy: { policy: "cross-origin" }
+// })); 
+// app.use(morgan('tiny'));
+// app.use(cookieParser());
+// app.use("/uploads", express.static("uploads", { 
+//   setHeaders: (res) => {
+//     res.set("Access-Control-Allow-Origin", "*");
+//     res.set("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+//     res.set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+//   }
+// }));
+
+// // MongoDB Connection
+// const connectDB = async () => {
+//   try { 
+//     await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/Linkipax');
+//     console.log('Connected to MongoDB');
+//   } catch (err) {
+//     console.error('MongoDB connection error:', err);
+//     process.exit(1);
+//   }
+// };
+// connectDB();
+
+// // Initialize Socket.IO 
+// initializeSocket(server);
+// app.set('io', getIO());
+// // Apollo GraphQL Setup
+// const apolloServer = new ApolloServer({ typeDefs, resolvers });
+// const startApolloServer = async () => {
+//   await apolloServer.start();
+//   apolloServer.applyMiddleware({ app });
+// };
+// startApolloServer();
+// app.use("/music", express.static(path.join(__dirname, "public", "music")));
+// app.use("/stickers", express.static(path.join(__dirname, "public", "stickers")));
+// app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// // Routes 
+// app.use('/user', require('./routes/userroutes'));
+// app.use('/api/posts', require('./routes/Postroutes'));
+// app.use('/api/comments', require('./routes/Commentroutes'));
+// app.use('/api/users', require('./routes/UsersRoutes'));
+// app.use('/api/user/suggestions', require('./routes/suggestroute'));
+// app.use('/api/trending-topics', require('./routes/Trendingroute'));
+// app.use('/api/events', require('./routes/Eventroute'));
+// app.use('/profile', require('./routes/userDetails'));
+// app.use('/experience', require('./routes/experienceRoutes'));
+// app.use('/education', require('./routes/educationRoutes'));
+// app.use('/openai', require('./routes/openaisuggestroutes'));
+// app.use('/external', require('./routes/externalapitrendingRoutes'));
+// app.use('/profile-view', require('./routes/Profileviewroute'));
+// app.use('/post-impression', require('./routes/PostImpressionroutes'));
+// app.use('/skill', require('./routes/skillroute'));
+// app.use('/', require('./routes/messageroute'));
+// app.use('/api/notifications', require('./routes/notificationroute'));
+// app.use('/upload', require('./routes/Resumeroute'));
+// app.use('/api/room', require('./routes/roomRoute'));   
+// app.use('/', require('./routes/statusroutes'));
+
+// app.use('/api/status', require('./routes/statusedit'));
+// app.use('/api/short', require('./routes/shortRoutes'));
+// app.use("/connections", require('./routes/connectionroute'));
+// app.use('/api/groups', require('./routes/grouproute'));
+// app.use('/jpbs', require('./routes/Jobsroutes'));
+// app.get('/test', (req, res) => {
+//   console.log('Request body:', req.body);
+//   res.json({ success: true });
+// });
+// // Health Check
+// // app.get('/health', (req, res) => {
+// //   res.status(200).send('Server is healthy');
+// // });
+
+// // 404 Handler
+// app.use((req, res) => {
+//   res.status(404).json({ message: `Route ${req.originalUrl} not found` });
+// });
+ 
+// // Global Error Handler
+// app.use((err, req, res, next) => {
+//   console.error(err.stack);
+//   res.status(500).send({ message: 'Something went wrong!', error: err.message });
+// });
+
+// // Graceful Shutdown
+// process.on('SIGINT', async () => {
+//   console.log('Graceful shutdown initiated...');
+//   server.close(async () => {
+//     await mongoose.connection.close();
+//     console.log('MongoDB connection closed.');
+//     process.exit(0);
+//   });
+// });
+ 
+ 
+// // Start Server
+// const port = process.env.PORT || 5001;
+
+// server.listen(port, '0.0.0.0', () => {
+//   console.log(`Server running at https://0.0.0.0:${port}`);
+// });
+
+
+
+
+
+
+
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
@@ -7,92 +174,113 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const http = require('http');
-const { ApolloServer } = require("apollo-server-express");
-const { typeDefs, resolvers } = require("./GraphQL/messageschema");
-const path = require('path');
+const session = require('express-session');
 const passport = require('passport');
-const session=require('express-session');
-const { initializeSocket ,getIO} = require('./socket/socketnadle'); // New socket handler
-// const fs = require('fs');
+const path = require('path');
+const { ApolloServer } = require('apollo-server-express');
+const { typeDefs, resolvers } = require('./GraphQL/messageschema');
+const { initializeSocket, getIO } = require('./socket/socketnadle');
 
-// const options = {
-//   key: fs.readFileSync('./localhost+1-key.pem'),
-//   cert: fs.readFileSync('./localhost+1.pem'),
-//   requestCert: false,
-//   rejectUnauthorized: false // For development only!
-// }; 
-// Initialize Express app and HTTP server 
+// ----------------------
+// 1️⃣ Initialize Express App & HTTP Server
+// ----------------------
 const app = express();
-// const server = https.createServer(options, app);
 const server = http.createServer(app);
-// Middleware Setup 
-const allowedOrigin = process.env.FRONTEND_ORIGIN || "https://linlifysserver.onrender.com";
 
+// ----------------------
+// 2️⃣ Configuration
+// ----------------------
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'https://linlifys.vercel.app';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/Linkipax';
+const PORT = process.env.PORT || 5001;
+const isProduction = process.env.NODE_ENV === 'production';
+
+// ----------------------
+// 3️⃣ Middleware Setup
+// ----------------------
+
+// CORS: allow cookies and headers between frontend & backend
 app.use(cors({
-  origin: allowedOrigin,
+  origin: FRONTEND_ORIGIN,
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
 }));
-console.log("Allowed CORS origin:", allowedOrigin);
+console.log(`✅ CORS Enabled for: ${FRONTEND_ORIGIN}`);
 
+// Trust proxy for correct secure cookies (needed for HTTPS behind proxy like Render, Railway, Vercel)
 app.set('trust proxy', 1);
 
-app.options('*', cors());
+// Secure session cookies for Passport and OAuth
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-fallback-session-secret',
+  secret: process.env.SESSION_SECRET || 'fallback-session-secret',
   resave: false,
   saveUninitialized: false,
   cookie: {
-    httpOnly:false,
-    secure:true, // Set to true if using HTTPS
+    httpOnly: true, // helps prevent XSS
+    secure: true,   // required for HTTPS
+    sameSite: 'none', // required for cross-site cookie sharing
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    sameSite:'none'
-  }
+  },
 }));
+
+// Core middlewares
+app.use(express.json());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+}));
+app.use(morgan('tiny'));
+app.use(cookieParser());
+
 // Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(express.json()); 
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
-})); 
-app.use(morgan('tiny'));
-app.use(cookieParser());
-app.use("/uploads", express.static("uploads", { 
+
+// ----------------------
+// 4️⃣ Static Files
+// ----------------------
+app.use('/music', express.static(path.join(__dirname, 'public', 'music')));
+app.use('/stickers', express.static(path.join(__dirname, 'public', 'stickers')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
   setHeaders: (res) => {
-    res.set("Access-Control-Allow-Origin", "*");
-    res.set("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
-    res.set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  }
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+    res.set('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  },
 }));
 
-// MongoDB Connection
+// ----------------------
+// 5️⃣ Database Connection
+// ----------------------
 const connectDB = async () => {
-  try { 
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/Linkipax');
-    console.log('Connected to MongoDB');
+  try {
+    await mongoose.connect(MONGODB_URI);
+    console.log('✅ MongoDB connected successfully');
   } catch (err) {
-    console.error('MongoDB connection error:', err);
+    console.error('❌ MongoDB connection failed:', err.message);
     process.exit(1);
   }
 };
 connectDB();
 
-// Initialize Socket.IO 
+// ----------------------
+// 6️⃣ Socket.IO Initialization
+// ----------------------
 initializeSocket(server);
 app.set('io', getIO());
-// Apollo GraphQL Setup
+
+// ----------------------
+// 7️⃣ Apollo GraphQL Setup
+// ----------------------
 const apolloServer = new ApolloServer({ typeDefs, resolvers });
-const startApolloServer = async () => {
+(async () => {
   await apolloServer.start();
-  apolloServer.applyMiddleware({ app });
-};
-startApolloServer();
-app.use("/music", express.static(path.join(__dirname, "public", "music")));
-app.use("/stickers", express.static(path.join(__dirname, "public", "stickers")));
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-// Routes 
+  apolloServer.applyMiddleware({ app, cors: false }); // CORS handled above
+})();
+
+// ----------------------
+// 8️⃣ REST API Routes
+// ----------------------
 app.use('/user', require('./routes/userroutes'));
 app.use('/api/posts', require('./routes/Postroutes'));
 app.use('/api/comments', require('./routes/Commentroutes'));
@@ -111,35 +299,40 @@ app.use('/skill', require('./routes/skillroute'));
 app.use('/', require('./routes/messageroute'));
 app.use('/api/notifications', require('./routes/notificationroute'));
 app.use('/upload', require('./routes/Resumeroute'));
-app.use('/api/room', require('./routes/roomRoute'));   
+app.use('/api/room', require('./routes/roomRoute'));
 app.use('/', require('./routes/statusroutes'));
-
 app.use('/api/status', require('./routes/statusedit'));
 app.use('/api/short', require('./routes/shortRoutes'));
-app.use("/connections", require('./routes/connectionroute'));
+app.use('/connections', require('./routes/connectionroute'));
 app.use('/api/groups', require('./routes/grouproute'));
-app.use('/jpbs', require('./routes/Jobsroutes'));
-app.get('/test', (req, res) => {
-  console.log('Request body:', req.body);
-  res.json({ success: true });
-});
-// Health Check
-// app.get('/health', (req, res) => {
-//   res.status(200).send('Server is healthy');
-// });
+app.use('/jobs', require('./routes/Jobsroutes'));
 
-// 404 Handler
+// ----------------------
+// 🔎 Debug / Health Check
+// ----------------------
+app.get('/debug-cookies', (req, res) => {
+  res.json({ cookies: req.cookies, session: req.session });
+});
+
+app.get('/test', (req, res) => {
+  res.json({ success: true, message: 'Server is running fine!' });
+});
+
+// ----------------------
+// 9️⃣ Error Handling
+// ----------------------
 app.use((req, res) => {
   res.status(404).json({ message: `Route ${req.originalUrl} not found` });
 });
- 
-// Global Error Handler
+
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send({ message: 'Something went wrong!', error: err.message });
+  console.error('🔥 Server Error:', err.stack);
+  res.status(500).json({ message: 'Something went wrong!', error: err.message });
 });
 
-// Graceful Shutdown
+// ----------------------
+// 🔟 Graceful Shutdown
+// ----------------------
 process.on('SIGINT', async () => {
   console.log('Graceful shutdown initiated...');
   server.close(async () => {
@@ -148,12 +341,11 @@ process.on('SIGINT', async () => {
     process.exit(0);
   });
 });
- 
- 
-// Start Server
-const port = process.env.PORT || 5001;
 
-server.listen(port, '0.0.0.0', () => {
-  console.log(`Server running at https://0.0.0.0:${port}`);
+// ----------------------
+// 🚀 Start Server
+// ----------------------
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running at port ${PORT}`);
+  console.log(`🌍 CORS Origin: ${FRONTEND_ORIGIN}`);
 });
-    

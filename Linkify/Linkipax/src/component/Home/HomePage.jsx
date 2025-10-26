@@ -121,7 +121,6 @@ import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Spinner } from "react-bootstrap";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import Cookies from "js-cookie";
 import NavbarComponent from "../navbar/Navbar";
 import Postcard from "../Cards/Postcard";
 import EventsCard from "../Cards/EventsCard";
@@ -142,59 +141,75 @@ const HomePage = () => {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
-
-  // ✅ Ensure axios sends cookies automatically
+   console.log('URL param userId:', userId);
+console.log('Stored userId:', localStorage.getItem("userId"));
+  // ✅ Always include credentials for secure cross-origin requests
   useEffect(() => {
     axios.defaults.withCredentials = true;
   }, []);
 
-  // ✅ Authentication setup (cookie + URL handling)
+  // ✅ Authentication initialization (handles OAuth redirect or existing login)
   useEffect(() => {
     const initializeAuth = async () => {
       try {
         const urlParams = new URLSearchParams(location.search);
         const tokenFromUrl = urlParams.get("token");
         const userFromUrl = urlParams.get("user");
-
-        // ✅ Step 1: If OAuth redirect — save token in cookie
+        console.log(urlParams);
+        console.log("Token from URL:", tokenFromUrl);
+        console.log("User from URL:", userFromUrl);
+        console.log("Full URL:", window.location.href);
+        if (tokenFromUrl) {
+      // Set cookie in client
+      document.cookie = `auth_token=${tokenFromUrl};path=/;max-age=${7*24*60*60}`; // 7 days
+    }
         if (tokenFromUrl && userFromUrl) {
+          // OAuth redirect handling
           const decodedUser = JSON.parse(decodeURIComponent(userFromUrl));
 
-          // Save token in cookie (7 days expiry)
-          document.cookie = `auth_token=${tokenFromUrl}; path=/; max-age=${7 * 24 * 60 * 60}; secure; samesite=None`;
-
-          // Also keep minimal data in localStorage
-          localStorage.setItem("userId", decodedUser.id);
+          // ✅ Save token and user data locally
+          localStorage.setItem("auth_token", tokenFromUrl);
           localStorage.setItem("user", JSON.stringify(decodedUser));
+          localStorage.setItem("userId", decodedUser.id);
 
-          // Clean URL
+          // ✅ Apply token to Axios headers
+          axios.defaults.headers.common[
+            "Authorization"
+          ] = `Bearer ${tokenFromUrl}`;
+
+          // ✅ Clean the URL (remove query params)
           const cleanUrl = `${window.location.origin}/home/${decodedUser.id}`;
           window.history.replaceState({}, "", cleanUrl);
+
+          setAuthChecked(true);
+          return;
         }
 
-        // ✅ Step 2: Read cookie
-        const cookieToken = Cookies.get("auth_token");
+        // ✅ If no token in URL, check stored session
+        const existingToken = localStorage.getItem("auth_token");
+        const storedUserId = localStorage.getItem("userId");
 
-        if (!cookieToken) {
-          console.warn("No auth cookie found — redirecting to login");
+        if (!existingToken || !storedUserId) {
           navigate("/login");
           return;
         }
 
-        // ✅ Step 3: Verify token with backend
-        await axios.get(`${import.meta.env.VITE_API_URL}/user/verify-token`, {
-          headers: { Authorization: `Bearer ${cookieToken}` },
-        });
+        // ✅ Validate existing token with backend
+        axios.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${existingToken}`;
+        await axios.get(`${import.meta.env.VITE_API_URL}/user/verify-token`);
 
-        // ✅ Step 4: Apply token globally
-        axios.defaults.headers.common["Authorization"] = `Bearer ${cookieToken}`;
         setAuthChecked(true);
       } catch (error) {
         console.error("Auth initialization failed:", error);
-        // Clear all data and redirect
-        Cookies.remove("auth_token");
-        localStorage.clear();
+
+        // Clear any invalid data and redirect to login
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("userId");
+        localStorage.removeItem("user");
         delete axios.defaults.headers.common["Authorization"];
+
         navigate("/login");
       }
     };
@@ -202,7 +217,7 @@ const HomePage = () => {
     initializeAuth();
   }, [location, navigate]);
 
-  // ✅ Fetch homepage data once authentication is confirmed
+  // ✅ Fetch homepage data once authenticated
   useEffect(() => {
     if (authChecked) fetchData();
   }, [authChecked]);
@@ -227,7 +242,7 @@ const HomePage = () => {
       console.error("Error fetching homepage data:", error);
 
       if (error.response?.status === 401 || error.response?.status === 403) {
-        Cookies.remove("auth_token");
+        // Token might have expired or been invalidated
         localStorage.clear();
         navigate("/login");
       }
@@ -236,8 +251,8 @@ const HomePage = () => {
     }
   };
 
-  // ✅ Loading spinner while checking auth or fetching data
-  if (loading || !authChecked) {
+  // ✅ Loading spinner
+  if (loading) {
     return (
       <div className="text-center mt-5">
         <Spinner animation="border" role="status">
@@ -253,13 +268,17 @@ const HomePage = () => {
       <NavbarComponent />
       <Container fluid className="mt-3 px-3 main-content">
         <Row>
+          {/* Left Column */}
           <Col md={3} className="px-2">
             <div className="sticky-column">
-              <SuggestedConnectionsCard connections={connections} />
+              <div className="suggested-connections-card">
+                <SuggestedConnectionsCard connections={connections} />
+              </div>
               <TrendingTopicsCard topics={trendingTopics} />
             </div>
           </Col>
 
+          {/* Middle Column */}
           <Col md={6} className="px-2">
             <Status userProfilePic={userProfile?.profilePicture} />
             <div className="scrollable-postcards">
@@ -273,6 +292,7 @@ const HomePage = () => {
             </div>
           </Col>
 
+          {/* Right Column */}
           <Col md={3} className="px-2">
             <div className="sticky-column">
               <EventsCard />
