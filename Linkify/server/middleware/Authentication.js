@@ -55,6 +55,7 @@ const checkForAuthenticationHeader = async (req, res, next) => {
     let decoded;
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+      console.log('Decoded token:', decoded); // Add this for debugging
     } catch (err) {
       console.error('JWT verification error:', err);
 
@@ -71,16 +72,20 @@ const checkForAuthenticationHeader = async (req, res, next) => {
       });
     }
 
-    // 5️⃣ Validate decoded payload
-    if (!decoded.userId) {
+    // 5️⃣ Validate decoded payload - Check for both userId and userId
+    const userId = decoded.userId || decoded.userId;
+    
+    if (!userId) {
+      console.error('Token payload missing user ID:', decoded);
       return res.status(400).json({
         error: 'Invalid token payload.',
         message: 'User ID missing in token.',
+        decoded: decoded // Include decoded for debugging
       });
     }
 
     // 6️⃣ Verify user exists in DB
-    const user = await User.findById(decoded.userId).select('-password');
+    const user = await User.findById(userId).select('-password');
     if (!user) {
       return res.status(401).json({
         message: 'User not found.',

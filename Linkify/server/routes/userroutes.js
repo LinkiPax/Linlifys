@@ -539,14 +539,14 @@ const setCookie = (res, token) => {
 };
 
 // Generate JWT Token
+// In your generateToken function, use consistent casing:
 const generateToken = (user) => {
-    return jwt.sign({ 
-        userId: user._id,
-        email: user.email,
-        username: user.username
-    }, process.env.JWT_SECRET_KEY, { expiresIn: '7d' });
+  return jwt.sign({ 
+    userId: user._id, 
+    email: user.email,
+    username: user.username
+  }, process.env.JWT_SECRET_KEY, { expiresIn: '7d' });
 };
-
 // Google OAuth Routes
 router.get('/google',
     passport.authenticate('google', { 

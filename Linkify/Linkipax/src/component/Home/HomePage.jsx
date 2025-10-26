@@ -140,84 +140,90 @@ const HomePage = () => {
   const [trendingTopics, setTrendingTopics] = useState([]);
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [authChecked, setAuthChecked] = useState(false);
 
   // ✅ Always include credentials for secure cross-origin requests
   useEffect(() => {
     axios.defaults.withCredentials = true;
   }, []);
 
-  // ✅ Authentication initialization
+  // ✅ Authentication & Data Fetching
   useEffect(() => {
-    const initializeAuth = async () => {
+    const initializeAuthAndFetchData = async () => {
       try {
         const urlParams = new URLSearchParams(location.search);
         const tokenFromUrl = urlParams.get("token");
         const userFromUrl = urlParams.get("user");
 
-        if (tokenFromUrl) {
-          // Set cookie in client
-          document.cookie = `auth_token=${tokenFromUrl};path=/;max-age=${7*24*60*60}`;
-        }
+        let finalToken = tokenFromUrl;
+        let finalUser = userFromUrl;
 
+        // ✅ Handle OAuth redirect
         if (tokenFromUrl && userFromUrl) {
-          // OAuth redirect handling
           const decodedUser = JSON.parse(decodeURIComponent(userFromUrl));
-
-          // ✅ Save token and user data locally
+          
+          // Save to localStorage
           localStorage.setItem("auth_token", tokenFromUrl);
           localStorage.setItem("user", JSON.stringify(decodedUser));
           localStorage.setItem("userId", decodedUser.id);
 
-          // ✅ Apply token to Axios headers
+          // Set Axios header
           axios.defaults.headers.common["Authorization"] = `Bearer ${tokenFromUrl}`;
 
-          // ✅ Clean the URL (remove query params)
-          const cleanUrl = `${window.location.origin}/home/${decodedUser.id}`;
-          window.history.replaceState({}, "", cleanUrl);
+          // Clean URL
+          window.history.replaceState({}, "", `/home/${decodedUser.id}`);
+        } else {
+          // ✅ Check existing session
+          const existingToken = localStorage.getItem("auth_token");
+          const storedUser = localStorage.getItem("user");
+          
+          if (!existingToken || !storedUser) {
+            navigate("/login");
+            return;
+          }
 
-          setAuthChecked(true);
-          return;
+          finalToken = existingToken;
+          finalUser = storedUser;
+          axios.defaults.headers.common["Authorization"] = `Bearer ${existingToken}`;
         }
 
-        // ✅ If no token in URL, check stored session
-        const existingToken = localStorage.getItem("auth_token");
-        const storedUserId = localStorage.getItem("userId");
-
-        if (!existingToken || !storedUserId) {
+        // ✅ Verify token with backend
+        try {
+          await axios.get(`${import.meta.env.VITE_API_URL}/user/verify-token`);
+        } catch (error) {
+          console.error("Token verification failed:", error);
+          // Token is invalid, clear storage and redirect
+          localStorage.clear();
+          delete axios.defaults.headers.common["Authorization"];
           navigate("/login");
           return;
         }
 
-        // ✅ Validate existing token with backend
-        axios.defaults.headers.common["Authorization"] = `Bearer ${existingToken}`;
-        await axios.get(`${import.meta.env.VITE_API_URL}/user/verify-token`);
+        // ✅ Parse user data
+        const userData = JSON.parse(finalUser || localStorage.getItem("user") || "{}");
+        const currentUserId = userData.id || localStorage.getItem("userId");
 
-        setAuthChecked(true);
+        if (!currentUserId) {
+          navigate("/login");
+          return;
+        }
+
+        // ✅ Fetch all data
+        await fetchData(currentUserId);
+
       } catch (error) {
-        console.error("Auth initialization failed:", error);
-
-        // Clear any invalid data and redirect to login
-        localStorage.removeItem("auth_token");
-        localStorage.removeItem("userId");
-        localStorage.removeItem("user");
-        delete axios.defaults.headers.common["Authorization"];
-
+        console.error("Initialization failed:", error);
+        localStorage.clear();
         navigate("/login");
+      } finally {
+        setLoading(false);
       }
     };
 
-    initializeAuth();
+    initializeAuthAndFetchData();
   }, [location, navigate]);
 
-  // ✅ Fetch homepage data once authenticated
-  useEffect(() => {
-    if (authChecked) fetchData();
-  }, [authChecked]);
-
-  const fetchData = async () => {
+  const fetchData = async (currentUserId) => {
     try {
-      const currentUserId = localStorage.getItem("userId");
       const apiBase = import.meta.env.VITE_API_URL;
 
       const [postRes, connRes, trendRes, userRes] = await Promise.all([
@@ -232,14 +238,11 @@ const HomePage = () => {
       setTrendingTopics(trendRes.data || []);
       setUserProfile(userRes.data);
     } catch (error) {
-      console.error("Error fetching homepage data:", error);
-
+      console.error("Error fetching data:", error);
       if (error.response?.status === 401 || error.response?.status === 403) {
         localStorage.clear();
         navigate("/login");
       }
-    } finally {
-      setLoading(false);
     }
   };
 
