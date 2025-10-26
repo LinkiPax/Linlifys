@@ -1360,13 +1360,14 @@ const router = Router();
 const checkForAuthenticationHeader = require('../middleware/Authentication');
 const Connection = require('../model/connectionmodel');
 const { OAuth2Client } = require('google-auth-library');
+
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 // Utility function to set cookies
 const setCookie = (res, token) => {
     const isProduction = process.env.NODE_ENV === 'production';
     
     const cookieOptions = {
-        httpOnly: true, // true in production
+        httpOnly: false, // true in production
         secure: true, // true in production
         sameSite: 'none', // 'none' for cross-site
         maxAge: 3600 * 1000, // 1 hour
@@ -1928,33 +1929,32 @@ router.post('/reset-password/:token', [
 
 // GET: Authenticated User (Profile) 
 router.use(cookieParser());
-router.get('/me/:id', checkForAuthenticationHeader(), async (req, res) => {
-    let userId = req.params.id;
-  
-    if (userId === "me") {
-        userId = req.user.userId;
-    }
-  
-    try {
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        
-        // Check if user has completed personal details
-        const profileCompleted = isProfileCompleted(user);
-        
-        res.json({
-            ...(user.toPublicJSON ? user.toPublicJSON() : user.toObject()),
-            hasPersonalDetails: profileCompleted,
-            redirectTo: profileCompleted ? `/home/${user._id}` : `/personal-details/${user._id}`
-        });
-    } catch (error) {
-        console.error('Error fetching user:', error);
-        res.status(500).json({ message: 'Error fetching user' });
-    }
-});
+// Then use your authentication middleware
+router.get('/me/:id', checkForAuthenticationCookie({ strict: true }), async (req, res) => {
+  let userId = req.params.id;
 
+  if (userId === "me") {
+    userId = req.user.userId;
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    const profileCompleted = isProfileCompleted(user);
+    
+    res.json({
+      ...(user.toPublicJSON ? user.toPublicJSON() : user.toObject()),
+      hasPersonalDetails: profileCompleted,
+      redirectTo: profileCompleted ? `/home/${user._id}` : `/personal-details/${user._id}`
+    });
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({ message: 'Error fetching user' });
+  }
+});
 // Get user connections
 router.get('/connections/:userId', async (req, res) => {
     try {
