@@ -1369,7 +1369,7 @@ const setCookie = (res, token) => {
     const cookieOptions = {
         httpOnly: false, // true in production
         secure: true, // true in production
-        sameSite: 'None', // 'none' for cross-site
+        sameSite: 'none', // 'none' for cross-site
         maxAge: 3600 * 1000, // 1 hour
         path: '/',
     };
@@ -1598,13 +1598,13 @@ router.post('/google-auth', async (req, res) => {
             user.isOnline = true;
             await user.save();
         }
-
+        
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET_KEY, {
             expiresIn: '1h',
         });
 
         setCookie(res, token);
-        
+        res.setHeader('Set-Cookie', `auth_token=${token};Path=/; Max-Age=${24*60*60}; SameSite=None; Secure`);
         // Check if user has completed personal details
         const profileCompleted = isProfileCompleted(user);
         console.log('Response Headers:', res.getHeaders());
