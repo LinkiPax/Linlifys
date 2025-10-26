@@ -95,9 +95,11 @@ const NavbarComponent = () => {
         const token = Cookies.get("auth_token");
         {console.log(token)}
         if (!token) {
-          navigate("/");
-          return;
-        }
+    // Don't redirect yet
+    setTimeout(() => {
+      if (!Cookies.get("auth_token")) navigate("/");
+    }, 1500);
+  }
 
         localStorage.setItem("auth_token", token);
         const userId = localStorage.getItem("userId");

@@ -45,7 +45,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly:false,
-    secure:false, // Set to true if using HTTPS
+    secure:true, // Set to true if using HTTPS
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     sameSite:'none'
   }
