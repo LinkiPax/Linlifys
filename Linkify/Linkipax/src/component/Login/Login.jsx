@@ -380,34 +380,12 @@
 // };
 
 // export default Login;
-
 import "bootstrap/dist/css/bootstrap.min.css";
 import React, { useState, useRef, useEffect } from "react";
 import { Form, Button, Alert, Spinner } from "react-bootstrap";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import "./Login.css";
-
-// Cookie utility functions
-const setCookie = (name, value, days = 1) => {
-  const expires = new Date();
-  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
-  
-  const secureFlag = ';secure';
-  
-  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;samesite=none${secureFlag}`;
-};
-
-const getCookie = (name) => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(';').shift();
-  return null;
-};
-
-const deleteCookie = (name) => {
-  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-};
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -435,6 +413,14 @@ const Login = () => {
     const newUser = urlParams.get('newUser');
     const errorFromUrl = urlParams.get('error');
     
+    console.log('URL Parameters:', {
+      token: tokenFromUrl,
+      user: userData,
+      auth: authSuccess,
+      newUser: newUser,
+      error: errorFromUrl
+    });
+
     if (tokenFromUrl && userData && authSuccess === 'success') {
         handleGoogleAuthSuccess(tokenFromUrl, userData, newUser === 'true');
         return;
@@ -446,12 +432,10 @@ const Login = () => {
         return;
     }
 
-    // Check if user is already logged in via token verification (using cookies now)
+    // Check if user is already logged in via token verification
     const checkExistingAuth = async () => {
-        const token = getCookie('auth_token');
-        const userId = getCookie('userId');
-        
-        console.log('Existing cookies - Token:', !!token, 'UserID:', userId);
+        const token = localStorage.getItem('auth_token');
+        const userId = localStorage.getItem('userId');
         
         if (!token || !userId) {
             return; // No existing auth
@@ -475,28 +459,23 @@ const Login = () => {
             
         } catch (error) {
             console.log('Token invalid, requiring new login');
-            // Clear invalid cookies
-            deleteCookie('auth_token');
-            deleteCookie('userId');
-            deleteCookie('user_data');
+            // Clear invalid tokens
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('userId');
         } finally {
             setLoading(false);
         }
     };
 
     checkExistingAuth();
-}, [navigate]);
+  }, [navigate]);
 
   const handleGoogleAuthSuccess = (token, userData, isNewUser) => {
     try {
       const user = JSON.parse(decodeURIComponent(userData));
       
-      // Store token and user data in COOKIES (not localStorage)
-      setCookie('auth_token', token, 7); // 7 days
-      setCookie('userId', user.id, 7);
-      setCookie('user_data', userData, 7);
-      
-      // Also store in localStorage as fallback
+      // Store token and user data in localStorage
       localStorage.setItem('auth_token', token);
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('userId', user.id);
@@ -556,7 +535,7 @@ const Login = () => {
         `${import.meta.env.VITE_API_URL}/user/signin`,
         { email, password },
         { 
-          withCredentials: true,
+          withCredentials: true, // Essential for cookies
           headers: {
             'Content-Type': 'application/json'
           }
@@ -567,12 +546,7 @@ const Login = () => {
       
       console.log('Login response:', { token, user, cookieSet });
       
-      // Store user data in COOKIES (primary storage)
-      setCookie('auth_token', token, 7); // 7 days
-      setCookie('userId', user.id, 7);
-      setCookie('user_data', JSON.stringify(user), 7);
-      
-      // Also store in localStorage as fallback
+      // Store user data in localStorage
       localStorage.setItem("userId", user.id);
       localStorage.setItem("auth_token", token);
       localStorage.setItem("user", JSON.stringify(user));
@@ -586,7 +560,6 @@ const Login = () => {
       
       // Redirect based on profile completion
       setTimeout(() => {
-        // setCookie('auth_token', token, 7);
         if (user.profileCompleted) {
           navigate(`/home/${user.id}`);
         } else {
@@ -626,50 +599,17 @@ const Login = () => {
     }
   };
 
-  // Enhanced cookie test functionality
+  // Test cookie functionality
   const testCookies = async () => {
     try {
-      // Test frontend cookies
-      console.log('All cookies:', document.cookie);
-      console.log('Auth token cookie:', getCookie('auth_token'));
-      console.log('User ID cookie:', getCookie('userId'));
-      console.log('User data cookie:', getCookie('user_data'));
-      
-      // Test backend cookies
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL}/user/debug-cookies`,
         { withCredentials: true }
       );
-      console.log('Backend cookie debug info:', response.data);
-      
-      // Set a test cookie
-      setCookie('test_cookie', 'frontend_cookie_works', 1);
-      console.log('Test cookie set, refreshing in 2 seconds...');
-      
-      setTimeout(() => {
-        console.log('Test cookie after refresh:', getCookie('test_cookie'));
-      }, 2000);
-      
+      console.log('Cookie debug info:', response.data);
     } catch (error) {
       console.error('Cookie test failed:', error);
     }
-  };
-
-  // Clear all auth data (for testing)
-  const clearAuthData = () => {
-    // Clear cookies
-    deleteCookie('auth_token');
-    deleteCookie('userId');
-    deleteCookie('user_data');
-    deleteCookie('test_cookie');
-    
-    // Clear localStorage
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('userId');
-    
-    console.log('All auth data cleared');
-    setSuccess('All authentication data cleared successfully');
   };
 
   return (
@@ -707,25 +647,16 @@ const Login = () => {
             {error && <Alert variant="danger">{error}</Alert>}
             {success && <Alert variant="success">{success}</Alert>}
 
-            {/* Debug buttons - remove in production */}
+            {/* Debug button - remove in production */}
             {import.meta.env.DEV && (
-              <div className="mb-2">
-                <Button 
-                  variant="outline-secondary" 
-                  size="sm" 
-                  className="me-2"
-                  onClick={testCookies}
-                >
-                  Debug Cookies
-                </Button>
-                <Button 
-                  variant="outline-warning" 
-                  size="sm"
-                  onClick={clearAuthData}
-                >
-                  Clear Auth Data
-                </Button>
-              </div>
+              <Button 
+                variant="outline-secondary" 
+                size="sm" 
+                className="mb-2"
+                onClick={testCookies}
+              >
+                Debug Cookies
+              </Button>
             )}
 
             {/* Google Login Button */}
@@ -791,9 +722,9 @@ const Login = () => {
                   label="Remember me"
                   className="small-text"
                 />
-                <a href="/forgot-password" className="link-text small-text">
+                <Link to="/forgot-password" className="link-text small-text">
                   Forgot Password?
-                </a>
+                </Link>
               </div>
 
               <Button

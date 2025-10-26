@@ -324,3 +324,332 @@ a.link-text:hover {
   opacity: 0.7;
   cursor: not-allowed;
 }
+.login-container {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Aurora Background */
+.aurora-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.aurora-1, .aurora-2, .aurora-3 {
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  border-radius: 45%;
+  animation: aurora 12s infinite linear;
+  opacity: 0.1;
+}
+
+.aurora-1 {
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  top: -50%;
+  left: -50%;
+  animation-delay: 0s;
+}
+
+.aurora-2 {
+  background: linear-gradient(45deg, #f093fb, #f5576c);
+  top: -60%;
+  left: -40%;
+  animation-delay: -4s;
+}
+
+.aurora-3 {
+  background: linear-gradient(45deg, #4facfe, #00f2fe);
+  top: -55%;
+  left: -45%;
+  animation-delay: -8s;
+}
+
+@keyframes aurora {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.2);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+/* Video Container */
+.video-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.background-video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: cover;
+}
+
+.video-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    rgba(102, 126, 234, 0.3) 0%,
+    rgba(118, 75, 162, 0.3) 100%
+  );
+}
+
+.video-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  text-align: center;
+  padding: 2rem;
+}
+
+.logo-top {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.welcome-text h2 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  font-weight: 300;
+}
+
+.welcome-text p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  max-width: 400px;
+}
+
+/* Form Container */
+.form-container {
+  flex: 0 0 450px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  position: relative;
+}
+
+.login-content {
+  width: 100%;
+  max-width: 350px;
+}
+
+.login-form {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.login-form h2 {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: #666;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 0.9rem;
+}
+
+/* Input Fields */
+.input-field {
+  border: 2px solid #e1e5e9;
+  border-radius: 10px;
+  padding: 12px 15px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  background: #f8f9fa;
+}
+
+.input-field:focus {
+  border-color: #667eea;
+  background: white;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.1);
+}
+
+/* Buttons */
+.google-login-button {
+  border: 2px solid #db4437;
+  border-radius: 10px;
+  padding: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  background: white;
+  color: #db4437;
+}
+
+.google-login-button:hover {
+  background: #db4437;
+  color: white;
+  border-color: #db4437;
+}
+
+.login-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.login-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.login-button:disabled {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Separator */
+.separator {
+  text-align: center;
+  margin: 1.5rem 0;
+  position: relative;
+}
+
+.separator::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #e1e5e9;
+}
+
+.separator span {
+  background: white;
+  padding: 0 1rem;
+  color: #666;
+  font-size: 0.8rem;
+}
+
+/* Links and Text */
+.small-text {
+  font-size: 0.8rem;
+}
+
+.link-text {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.link-text:hover {
+  color: #764ba2;
+  text-decoration: underline;
+}
+
+.signup-link p {
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.signup-link-button {
+  display: inline-block;
+  padding: 8px 20px;
+  border: 2px solid #667eea;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.signup-link-button:hover {
+  background: #667eea;
+  color: white;
+  text-decoration: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+  }
+  
+  .video-container {
+    flex: 0 0 200px;
+  }
+  
+  .form-container {
+    flex: 1;
+  }
+  
+  .video-content {
+    padding: 1rem;
+  }
+  
+  .logo-top {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .welcome-text h2 {
+    font-size: 1.5rem;
+  }
+  
+  .welcome-text p {
+    font-size: 1rem;
+  }
+}
+
+/* Loading States */
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Alert Styles */
+.alert {
+  border-radius: 10px;
+  border: none;
+  font-size: 0.9rem;
+}
+
+.alert-danger {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+.alert-success {
+  background: rgba(40, 167, 69, 0.1);
+  color: #28a745;
+}
