@@ -218,9 +218,10 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: false, // helps prevent XSS
-    secure: false,   // required for HTTPS
-    sameSite: 'none', // required for cross-site cookie sharing
+    secure: true,   // required for HTTPS
+    sameSite: 'None', // required for cross-site cookie sharing
     maxAge: 3600 * 1000, // 24 hours
+    path: '/',
   },
 }));
 

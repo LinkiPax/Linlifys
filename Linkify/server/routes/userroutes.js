@@ -1368,8 +1368,8 @@ const setCookie = (res, token) => {
     
     const cookieOptions = {
         httpOnly: false, // true in production
-        secure: false, // true in production
-        sameSite: 'none', // 'none' for cross-site
+        secure: true, // true in production
+        sameSite: 'None', // 'none' for cross-site
         maxAge: 3600 * 1000, // 1 hour
         path: '/',
     };
