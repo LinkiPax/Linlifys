@@ -430,7 +430,6 @@ const Login = () => {
                 }
             );
 
-            console.log(token);
             console.log('✅ Existing token valid:', response.data);
             const user = response.data;
             
@@ -457,19 +456,19 @@ const Login = () => {
   const storeAuthData = (data) => {
     console.log('💾 Storing auth data:', data);
     
-    // Extract token from different possible response formats
-    const token = data.token || data.access_token || data.jwt;
-    const user = data.user || data;
+    // Extract token from response data
+    const token = data.token;
+    const user = data.user;
     const userId = user?._id || user?.id || data.userId;
     
     if (!token) {
       console.error('❌ No token found in response:', data);
-      throw new Error('No authentication token received');
+      throw new Error('No authentication token received from server');
     }
     
     if (!userId) {
       console.error('❌ No user ID found in response:', data);
-      throw new Error('No user ID received');
+      throw new Error('No user ID received from server');
     }
 
     // Store in localStorage
@@ -479,14 +478,14 @@ const Login = () => {
       localStorage.setItem("user", JSON.stringify(user));
     }
     
-    // Set axios defaults
+    // Set axios defaults for future requests
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     axios.defaults.withCredentials = true;
     
-    console.log('✅ Auth data stored:', {
+    console.log('✅ Auth data stored successfully:', {
       token: token.substring(0, 20) + '...',
       userId,
-      localStorage: localStorage.getItem('auth_token') ? 'SET' : 'MISSING'
+      hasUser: !!user
     });
     
     return { token, user, userId };
@@ -498,6 +497,7 @@ const Login = () => {
 
     try {
       console.log('🔐 Starting Google authentication...');
+      console.log('📨 Google credential received');
       
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/user/google-auth`,
@@ -512,11 +512,16 @@ const Login = () => {
         }
       );
       
-      console.log('📨 Google auth response:', response.data);
+      console.log('📨 Google auth response received:', response.data);
       
-      // Store authentication data
+      if (!response.data.token) {
+        throw new Error('No token received from server');
+      }
+
+      // Store authentication data from response
       const { token, user, userId } = storeAuthData(response.data);
-      console.log('✅ Google auth successful:', { token, user, userId });
+      
+      console.log('✅ Google auth successful');
       setSuccess("Google login successful! Redirecting...");
       
       // Determine redirect path
@@ -532,7 +537,10 @@ const Login = () => {
       
     } catch (error) {
       console.error('❌ Google auth error:', error);
+      console.error('Error details:', error.response?.data);
+      
       const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error ||
                           error.message || 
                           "Google authentication failed";
       setError(errorMessage);
@@ -561,6 +569,7 @@ const Login = () => {
     
     try {
       console.log('🔐 Starting login process...');
+      console.log('📧 Email:', email);
       
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/user/Signin`,
@@ -573,11 +582,17 @@ const Login = () => {
         }
       );
       
-      console.log('📨 Login response:', response.data);
+      console.log('📨 Login response received:', response.data);
       
-      // Store authentication data
+      // Check if token exists in response
+      if (!response.data.token) {
+        throw new Error('No token received from server');
+      }
+
+      // Store authentication data from response
       const { token, user, userId } = storeAuthData(response.data);
       
+      console.log('✅ Login successful');
       setSuccess("Login successful! Redirecting...");
       
       // Determine redirect path
@@ -593,6 +608,7 @@ const Login = () => {
       
     } catch (error) {
       console.error('❌ Login error:', error);
+      console.error('Error response:', error.response?.data);
       
       // Enhanced error handling
       if (error.response?.status === 401) {
@@ -619,7 +635,9 @@ const Login = () => {
         setError("Authentication failed. No token received from server.");
       } else {
         setError(
-          error.response?.data?.message || "An unexpected error occurred"
+          error.response?.data?.message || 
+          error.response?.data?.error ||
+          "An unexpected error occurred"
         );
       }
     } finally {
@@ -630,13 +648,22 @@ const Login = () => {
   // Debug function to check storage
   const debugStorage = () => {
     console.log('🔍 Storage Debug:');
-    console.log('localStorage auth_token:', localStorage.getItem('auth_token'));
+    console.log('localStorage auth_token:', localStorage.getItem('auth_token') ? 'PRESENT' : 'MISSING');
     console.log('localStorage userId:', localStorage.getItem('userId'));
     console.log('localStorage user:', localStorage.getItem('user'));
-    console.log('All localStorage:', { ...localStorage });
+    console.log('Axios default headers:', axios.defaults.headers.common['Authorization'] ? 'SET' : 'NOT SET');
   };
 
-  // Add debug button in development
+  // Clear storage function for debugging
+  const clearStorage = () => {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('user');
+    axios.defaults.headers.common['Authorization'] = null;
+    console.log('🧹 Storage cleared');
+    setSuccess('Storage cleared. Please login again.');
+  };
+
   const isDevelopment = import.meta.env.DEV;
 
   return (
@@ -679,16 +706,24 @@ const Login = () => {
               )}
               {success && <Alert variant="success">{success}</Alert>}
 
-              {/* Debug button in development */}
+              {/* Debug buttons in development */}
               {isDevelopment && (
-                <Button 
-                  variant="outline-secondary" 
-                  size="sm" 
-                  className="mb-2"
-                  onClick={debugStorage}
-                >
-                  Debug Storage
-                </Button>
+                <div className="mb-3 d-flex gap-2">
+                  <Button 
+                    variant="outline-secondary" 
+                    size="sm" 
+                    onClick={debugStorage}
+                  >
+                    Debug Storage
+                  </Button>
+                  <Button 
+                    variant="outline-danger" 
+                    size="sm" 
+                    onClick={clearStorage}
+                  >
+                    Clear Storage
+                  </Button>
+                </div>
               )}
 
               {/* Google Login Button */}
@@ -701,7 +736,14 @@ const Login = () => {
                   size="large"
                   text="continue_with"
                   width="100%"
+                  disabled={loading || googleLoading}
                 />
+                {googleLoading && (
+                  <div className="text-center mt-2">
+                    <Spinner animation="border" size="sm" variant="primary" />
+                    <span className="ms-2 small">Processing Google login...</span>
+                  </div>
+                )}
               </div>
 
               <div className="separator">
@@ -710,9 +752,10 @@ const Login = () => {
 
               <Form onSubmit={handleSubmit}>
                 <Form.Group controlId="email" className="mb-3">
+                  <Form.Label className="small text-muted">Email</Form.Label>
                   <Form.Control
                     type="email"
-                    placeholder="Email address"
+                    placeholder="Enter your email address"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -722,9 +765,10 @@ const Login = () => {
                 </Form.Group>
 
                 <Form.Group controlId="password" className="mb-3">
+                  <Form.Label className="small text-muted">Password</Form.Label>
                   <Form.Control
                     type="password"
-                    placeholder="Password"
+                    placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -775,6 +819,14 @@ const Login = () => {
                   Join now
                 </Link>
               </div>
+
+              {/* Debug info in development */}
+              {isDevelopment && (
+                <div className="mt-3 p-2 bg-light rounded small">
+                  <div>API URL: {import.meta.env.VITE_API_URL}</div>
+                  <div>Google Client ID: {import.meta.env.VITE_GOOGLE_CLIENT_ID ? 'SET' : 'MISSING'}</div>
+                </div>
+              )}
             </div>
           </div>
         </div>
