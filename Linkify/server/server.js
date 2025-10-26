@@ -217,7 +217,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    httpOnly: true, // helps prevent XSS
+    httpOnly: false, // helps prevent XSS
     secure: true,   // required for HTTPS
     sameSite: 'none', // required for cross-site cookie sharing
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
