@@ -517,3 +517,21 @@
   position: relative;
   text-align: center;
 }
+/* Google Sign-In Button Styles */
+#google-signin-button {
+  display: flex;
+  justify-content: center;
+}
+
+/* Social signup section */
+.social-signup {
+  margin-bottom: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .signup-form-container {
+    max-height: none !important;
+    overflow-y: visible !important;
+  }
+}
