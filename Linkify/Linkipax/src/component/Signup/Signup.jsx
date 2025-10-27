@@ -320,7 +320,7 @@ const Signup = () => {
                     )}
                   </div>
 
-                  <div className="separator" style={{ margin: '1rem 0' }}>
+                  <div className="separators" style={{ margin: '1rem 0' }}>
                     <span style={{ fontSize: '0.85rem' }}>Or continue with email</span>
                   </div>
 

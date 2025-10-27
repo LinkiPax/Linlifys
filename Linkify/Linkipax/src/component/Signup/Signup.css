@@ -367,7 +367,10 @@
   border-bottom: 1px solid #e2e8f0;
 }
 
-.separator span {
+.separators span {
+  z-index: 2;
+  color: #858b92;
+  margin: 0 0.8rem;
   padding: 0 0.8rem;
 }
 
