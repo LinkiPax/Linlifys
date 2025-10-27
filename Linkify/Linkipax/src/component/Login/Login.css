@@ -75,7 +75,7 @@ body, html {
   50% { transform: translateY(-20px) rotate(180deg); }
 }
 
-.video-container {
+.video-containerlogin {
   flex: 1;
   position: relative;
   height: 100vh;
@@ -85,7 +85,7 @@ body, html {
   justify-content: center;
 }
 
-.video-container video {
+.video-containerlogin video {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -501,7 +501,7 @@ body, html {
     min-height: 100vh;
   }
 
-  .video-container {
+  .video-containerlogin {
     height: 40vh;
     min-height: 300px;
     flex: none;

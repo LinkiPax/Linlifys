@@ -1496,7 +1496,7 @@ const handleRemoteStream = (userId, remoteStream) => {
             </Button>
           </div>
           
-          <div className={`video-container ${!showChat ? "full-width" : ""}`}>
+          <div className={`video-containers ${!showChat ? "full-width" : ""}`}>
             <div className="main-video">
               <video
                 ref={localVideoRef}
