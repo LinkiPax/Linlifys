@@ -216,7 +216,7 @@ const Login = () => {
         </div>
 
         {/* Left side with video */}
-        <div className="video-container">
+        <div className="video-containerlogin">
           <video ref={videoRef} autoPlay muted loop className="background-video">
             <source src={videoSource} type="video/mp4" />
             Your browser does not support the video tag.

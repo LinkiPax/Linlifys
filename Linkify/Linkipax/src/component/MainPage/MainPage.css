@@ -115,11 +115,13 @@ nav {
 }
 
 .tablet-wrapper {
+  display: inline-flex;
+  justify-content: center;
   padding: 10px;
   background: linear-gradient(135deg, rgba(128, 0, 128, 0.7), rgba(40, 0, 80, 0.9));
   border-radius: 26px;
   box-shadow: 0 0 60px rgba(129, 62, 157, 0.5);
-  max-width: 95vw;
+  max-width: fit-content;
 }
 
 .tablet-normal {
