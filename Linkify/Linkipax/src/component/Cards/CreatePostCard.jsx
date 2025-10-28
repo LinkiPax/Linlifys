@@ -133,72 +133,39 @@ const CreatePostCard = ({ userId }) => {
     }
   };
 
-  // const handleMediaUpload = async (file) => {
-  //   try {
-  //     setLoading(true);
-  //     setError("");
+  const handleMediaUpload = async (file) => {
+    try {
+      setLoading(true);
+      setError("");
 
-  //     const formData = new FormData();
-  //     formData.append("file", file);
-  //     formData.append(
-  //       "upload_preset",
-  //       import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
-  //     );
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append(
+        "upload_preset",
+        import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
+      );
 
-  //     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-  //     if (!cloudName) {
-  //       throw new Error(
-  //         "Cloudinary cloud name not defined in environment variables"
-  //       );
-  //     }
+      const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+      if (!cloudName) {
+        throw new Error(
+          "Cloudinary cloud name not defined in environment variables"
+        );
+      }
 
-  //     const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/upload`;
+      const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/upload`;
 
-  //     const response = await axios.post(cloudinaryUrl, formData);
+      const response = await axios.post(cloudinaryUrl, formData);
 
-  //     setMediaUrl(response.data.secure_url);
-  //     setMediaType(file.type.startsWith("image") ? "image" : "video");
-  //     setSelectedGif(null); // Clear any selected GIF
-  //   } catch (error) {
-  //     console.error("Cloudinary upload error:", error);
-  //     setError("Failed to upload media. Please try again.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-const handleMediaUpload = async (file) => {
-  try {
-    setLoading(true);
-    setError("");
-
-    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-
-    if (!cloudName || !uploadPreset) {
-      throw new Error("Missing Cloudinary configuration in environment variables.");
+      setMediaUrl(response.data.secure_url);
+      setMediaType(file.type.startsWith("image") ? "image" : "video");
+      setSelectedGif(null); // Clear any selected GIF
+    } catch (error) {
+      console.error("Cloudinary upload error:", error);
+      setError("Failed to upload media. Please try again.");
+    } finally {
+      setLoading(false);
     }
-
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", uploadPreset); // 🔥 Required for unsigned uploads
-
-    const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/upload`;
-
-    const response = await axios.post(cloudinaryUrl, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-      withCredentials: false, // 🔥 VERY IMPORTANT for Cloudinary
-    });
-
-    setMediaUrl(response.data.secure_url);
-    setMediaType(file.type.startsWith("image") ? "image" : "video");
-    setSelectedGif(null); // Clear any selected GIF
-  } catch (error) {
-    console.error("❌ Cloudinary upload error:", error);
-    setError("Failed to upload media. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handlePost = async () => {
     if (!content.trim()) {
