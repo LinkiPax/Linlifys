@@ -1048,16 +1048,6 @@ const ProfileHeader = ({ userId }) => {
               Edit Profile
             </Button>
           </ActionButtons>
-
-          <ProfileCompletion>
-            <CompletionHeader>
-              <span>Profile Strength</span>
-              <span>{profile.profileCompletion || 0}%</span>
-            </CompletionHeader>
-            <ProgressBarContainer>
-              <ProgressBar width={profile.profileCompletion || 0} />
-            </ProgressBarContainer>
-          </ProfileCompletion>
         </ProfileContent>
       </ProfileHeaderContainer>
 
