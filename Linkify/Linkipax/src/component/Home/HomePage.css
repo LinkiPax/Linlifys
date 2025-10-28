@@ -194,7 +194,7 @@ body {
 .scrollable-postcards {
   max-height: calc(100vh - 200px);
   overflow-y: auto;
-  padding-right: 5px;
+  padding: 34px;
 }
 
 /* Custom scrollbar for webkit browsers */
