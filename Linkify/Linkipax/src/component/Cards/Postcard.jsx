@@ -808,47 +808,6 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
                 Video failed to load. The file may be corrupted or in an unsupported format.
               </Alert>
             )}
-            
-            {poll && (
-              <div className="post-poll-section mt-3">
-                <h6>{poll.question}</h6>
-                {poll.options.map((option) => {
-                  const percentage = voted 
-                    ? option.votes.length > 0 
-                      ? Math.round((option.votes.length / poll.totalVotes) * 100) 
-                      : 0 
-                    : null;
-                  
-                  return (
-                    <div 
-                      key={option._id} 
-                      className={`post-poll-option ${voted ? 'voted' : ''} ${selectedPollOption === option._id ? 'selected' : ''}`}
-                      onClick={() => !voted && handlePollVote(option._id)}
-                    >
-                      <div className="post-poll-option-text">
-                        <span>{option.text}</span>
-                        {voted && <span className="post-poll-percentage">{percentage}%</span>}
-                      </div>
-                      {voted && (
-                        <div className="post-poll-progress">
-                          <div 
-                            className="post-poll-progress-bar" 
-                            style={{ width: `${percentage}%` }}
-                          ></div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-                <div className="post-poll-footer">
-                  <small className="text-muted">
-                    {poll.totalVotes} vote{poll.totalVotes !== 1 ? 's' : ''} • 
-                    {voted ? ' You voted' : ' Not voted yet'} • 
-                    Ends {formatDate(poll.endTime)}
-                  </small>
-                </div>
-              </div>
-            )}
           </Card.Body>
 
           <Card.Footer className="post-footer-section">
