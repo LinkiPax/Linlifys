@@ -908,7 +908,7 @@ import {
   Trash
 } from "react-bootstrap-icons";
 import { useNavigate } from "react-router-dom";
-import "./StatusViewer.css";
+import "./Status.css";
 
 const Status = ({ userProfilePic }) => {
   const navigate = useNavigate();
