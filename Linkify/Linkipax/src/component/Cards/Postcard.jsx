@@ -791,21 +791,27 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
               </div>
             )}
             
-            {resolvedVideoUrl && !videoError && (
-  <div className="post-video-wrapper">
-    <ReactPlayer
-      key={`${postId}-${resolvedVideoUrl}`}   // ✅ PERFECT
-      url={resolvedVideoUrl}
-      playing={activeVideo === postId}
-  onPlay={() => setActiveVideo(postId)}
-  controls
-      width="100%"
-      height="360px"
-      playsinline
-      onError={handleVideoError}
+            {resolvedVideoUrl && (
+  <div
+    style={{
+      width: "100%",
+      height: "360px",
+      background: "black",
+    }}
+  >
+    <video
+      src={resolvedVideoUrl}
+      controls
+      style={{
+        width: "100%",
+        height: "100%",
+        objectFit: "contain",
+      }}
+      onError={(e) => console.error("HTML5 VIDEO ERROR", e)}
     />
   </div>
 )}
+
 
             {videoError && (
               <Alert variant="warning" className="mt-3">
