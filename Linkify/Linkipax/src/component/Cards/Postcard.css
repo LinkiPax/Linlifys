@@ -1670,35 +1670,34 @@
     background: rgba(45, 55, 72, 0.8) !important;
   }
 }
+/* OUTER CARD */
 .post-video-wrapper {
   width: 100%;
-  max-width: 100%;
-  aspect-ratio: 16 / 9;          /* ✅ Responsive HD */
-  background: #000;
+  margin-top: 12px;
   border-radius: 14px;
   overflow: hidden;
-  box-shadow: 
-    0 8px 24px rgba(0, 0, 0, 0.25),
-    0 0 0 1px rgba(255, 255, 255, 0.06);
-  margin-top: 12px;
-}
-.post-video {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;   /* No stretch, letterbox */
   background: #000;
-  display: block;
-}
-@media (max-width: 768px) {
-  .post-video-wrapper {
-    aspect-ratio: 4 / 5;   /* Instagram-style portrait */
-  }
-}
-.post-video::-webkit-media-controls {
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
-.post-video-wrapper:hover .post-video::-webkit-media-controls {
-  opacity: 1;
+/* RESPONSIVE HEIGHT (16:9) */
+.post-video-inner {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 ratio */
+  background: #000;
+}
+
+/* VIDEO */
+.post-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* HD look, no stretch */
+  background: #000;
+  display: block;
 }

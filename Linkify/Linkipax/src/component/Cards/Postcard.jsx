@@ -793,18 +793,22 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
             
             {resolvedVideoUrl && (
   <div className="post-video-wrapper">
-    <video
-      src={resolvedVideoUrl}
-      className="post-video"
-      controls
-      autoPlay
-      muted          // 🔴 REQUIRED for autoplay
-      loop
-      playsInline
-      preload="metadata"
-    />
+    <div className="post-video-inner">
+      <video
+        src={resolvedVideoUrl}
+        className="post-video"
+        controls
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        onError={(e) => console.error("VIDEO ERROR", e)}
+      />
+    </div>
   </div>
 )}
+
             {videoError && (
               <Alert variant="warning" className="mt-3">
                 <FaImage className="me-2" />
