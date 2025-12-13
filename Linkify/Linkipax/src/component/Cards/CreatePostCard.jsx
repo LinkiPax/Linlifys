@@ -12,10 +12,11 @@ import {
   Col,
 } from "react-bootstrap";
 import axios from "axios";
-import { FiImage, FiVideo, FiFile, FiX, FiGift } from "react-icons/fi";
+import { FiImage, FiVideo, FiX, FiGift } from "react-icons/fi";
 import "./CreatePostCard.css";
-import Navbar from '../navbar/Navbar';
+import Navbar from "../navbar/Navbar";
 import { uploadToCloudinary } from "../../Cloudinary/cloudinary";
+
 const CreatePostCard = ({ userId }) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -31,11 +32,9 @@ const CreatePostCard = ({ userId }) => {
   const [gifSearch, setGifSearch] = useState("");
   const [selectedGif, setSelectedGif] = useState(null);
 
-  // Push notification states
   const [pushPermission, setPushPermission] = useState(Notification.permission);
   const [isSubscribed, setIsSubscribed] = useState(false);
 
-  // On mount, check existing subscription
   useEffect(() => {
     async function checkSubscription() {
       if ("serviceWorker" in navigator && "PushManager" in window) {
@@ -46,31 +45,30 @@ const CreatePostCard = ({ userId }) => {
     checkSubscription();
   }, []);
 
-  // Search for GIFs
   const searchGifs = async (query) => {
     try {
       const apiUrl = import.meta.env.VITE_API_URL;
-      const response = await axios.get(`${apiUrl}/api/posts/gifs/search?query=${query}`);
+      const response = await axios.get(
+        `${apiUrl}/api/posts/gifs/search?query=${query}`
+      );
       setGifs(response.data);
-    } catch (error) {
-      console.error("Error searching GIFs:", error);
-      setError("Failed to search GIFs");
+    } catch {
+      setError("Unable to load GIFs. Please try again.");
     }
   };
 
-  // Get trending GIFs
   const getTrendingGifs = async () => {
     try {
       const apiUrl = import.meta.env.VITE_API_URL;
-      const response = await axios.get(`${apiUrl}/api/posts/gifs/trending`);
+      const response = await axios.get(
+        `${apiUrl}/api/posts/gifs/trending`
+      );
       setGifs(response.data);
-    } catch (error) {
-      console.error("Error fetching trending GIFs:", error);
-      setError("Failed to fetch trending GIFs");
+    } catch {
+      setError("Unable to fetch trending GIFs.");
     }
   };
 
-  // Handle GIF selection
   const handleGifSelect = (gif) => {
     setSelectedGif(gif);
     setMediaUrl(gif.url);
@@ -78,119 +76,23 @@ const CreatePostCard = ({ userId }) => {
     setShowGifModal(false);
   };
 
-  // Request permission and subscribe to push notifications
-  const subscribeToPush = async () => {
+  const handleMediaUpload = async (file) => {
     try {
-      if (!("serviceWorker" in navigator && "PushManager" in window)) {
-        alert("Push notifications are not supported in this browser.");
-        return false;
-      }
-
-      if (pushPermission !== "granted") {
-        const permission = await Notification.requestPermission();
-        setPushPermission(permission);
-        if (permission !== "granted") {
-          alert("Push notification permission denied.");
-          return false;
-        }
-      }
-
-      // This would be your actual subscription logic
-      setIsSubscribed(true);
-      return true;
-    } catch (err) {
-      console.error("Push subscription error:", err);
-      setError("Failed to subscribe to push notifications.");
-      return false;
+      setLoading(true);
+      const data = await uploadToCloudinary(file);
+      setMediaUrl(data.secure_url);
+      setMediaType(file.type.startsWith("image") ? "image" : "video");
+      setSelectedGif(null);
+    } catch {
+      setError("Media upload failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
-
-  // Function to send notification
-  const sendPostNotification = async (postId) => {
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL;
-
-      const notificationTitle = title
-        ? `New Post: ${title}`
-        : "New Post Created";
-      const notificationMessage = content
-        ? `You created: "${content.substring(0, 30)}${
-            content.length > 30 ? "..." : ""
-          }"`
-        : "You created a new post";
-
-      await axios.post(`${apiUrl}/api/notifications`, {
-        userId,
-        title: notificationTitle,
-        message: notificationMessage,
-        type: "post",
-        status: "unread",
-        actionUrl: `/posts/${postId}`,
-        createdBy: userId,
-      });
-    } catch (error) {
-      console.error("Failed to send notification:", error);
-    }
-  };
-
-  // const handleMediaUpload = async (file) => {
-  //   try {
-  //     setLoading(true);
-  //     setError("");
-
-  //     const formData = new FormData();
-  //     formData.append("file", file);
-  //     formData.append(
-  //       "upload_preset",
-  //       import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
-  //     );
-
-  //     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-  //     if (!cloudName) {
-  //       throw new Error(
-  //         "Cloudinary cloud name not defined in environment variables"
-  //       );
-  //     }
-
-  //     const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/upload`;
-
-  //     const response = await axios.post(cloudinaryUrl, formData);
-
-  //     setMediaUrl(response.data.secure_url);
-  //     setMediaType(file.type.startsWith("image") ? "image" : "video");
-  //     setSelectedGif(null); // Clear any selected GIF
-  //   } catch (error) {
-  //     console.error("Cloudinary upload error:", error);
-  //     setError("Failed to upload media. Please try again.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-
-const handleMediaUpload = async (file) => {
-  try {
-    setLoading(true);
-    setError("");
-
-    // ✅ Use your helper to upload
-    const data = await uploadToCloudinary(file);
-
-    // ✅ Save response data
-    setMediaUrl(data.secure_url);
-    setMediaType(file.type.startsWith("image") ? "image" : "video");
-    setSelectedGif(null); // clear any GIF
-  } catch (error) {
-    console.error("Cloudinary upload error:", error);
-    setError("Failed to upload media. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
 
   const handlePost = async () => {
     if (!content.trim()) {
-      setError("Post content cannot be empty!");
+      setError("Your post cannot be empty.");
       return;
     }
 
@@ -204,31 +106,17 @@ const handleMediaUpload = async (file) => {
         imageUrl: mediaType === "image" || mediaType === "gif" ? mediaUrl : "",
         videoUrl: mediaType === "video" ? mediaUrl : "",
         createdBy: userId,
-        tags: tags
-          .split(",")
-          .map((tag) => tag.trim())
-          .filter(Boolean),
+        tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
         category,
         isPublic,
         postType: mediaType || "text",
       };
 
       const apiUrl = import.meta.env.VITE_API_URL;
-      if (!apiUrl)
-        throw new Error("API URL not defined in environment variables");
-
       const response = await axios.post(`${apiUrl}/api/posts`, newPost);
 
       if (response.status === 200 || response.status === 201) {
-        // After post creation, send notification in app
-        await sendPostNotification(response.data._id);
-
-        // Try to subscribe to push notifications (only if not subscribed)
-        if (!isSubscribed) {
-          await subscribeToPush();
-        }
-
-        alert("Post created successfully!");
+        alert("🎉 Your post has been published!");
         setTitle("");
         setContent("");
         setMediaUrl("");
@@ -237,17 +125,9 @@ const handleMediaUpload = async (file) => {
         setCategory("general");
         setIsPublic(true);
         setSelectedGif(null);
-      } else {
-        throw new Error("Failed to create post: " + response.statusText);
       }
-    } catch (error) {
-      console.error(
-        "Post error:",
-        error.response ? error.response.data : error.message
-      );
-      setError(
-        "Something went wrong while creating the post. Please try again."
-      );
+    } catch {
+      setError("Something went wrong while publishing your post.");
     } finally {
       setLoading(false);
     }
@@ -256,25 +136,19 @@ const handleMediaUpload = async (file) => {
   const handleDrop = (e) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
-    if (
-      file &&
-      (file.type.startsWith("image") || file.type.startsWith("video"))
-    ) {
+    if (file && (file.type.startsWith("image") || file.type.startsWith("video"))) {
       handleMediaUpload(file);
     } else {
-      setError("Please upload a valid image or video file.");
+      setError("Please upload an image or video file only.");
     }
   };
 
   const handleFileInput = (e) => {
     const file = e.target.files[0];
-    if (
-      file &&
-      (file.type.startsWith("image") || file.type.startsWith("video"))
-    ) {
+    if (file && (file.type.startsWith("image") || file.type.startsWith("video"))) {
       handleMediaUpload(file);
     } else {
-      setError("Please upload a valid image or video file.");
+      setError("Invalid file type selected.");
     }
   };
 
@@ -288,37 +162,41 @@ const handleMediaUpload = async (file) => {
     <>
       <Navbar />
       <div className="container mt-4">
-        <h1 className="text-center text-primary mb-4">Create a New Post</h1>
-        
-        <Card className="create-post-card shadow">
+        <h2 className="text-center fw-bold mb-4">
+          Create a Post
+        </h2>
+
+        <Card
+          className="create-post-card shadow"
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={handleDrop}
+        >
           <Card.Header className="bg-primary text-white">
-            <h5 className="mb-0">Share Your Thoughts</h5>
+            <h6 className="mb-0">Start a conversation</h6>
           </Card.Header>
-          
-          <Card.Body onDragOver={(e) => e.preventDefault()} onDrop={handleDrop}>
-            {error && (
-              <Alert variant="danger" className="mt-3">
-                {error}
-              </Alert>
-            )}
+
+          <Card.Body>
+            {error && <Alert variant="danger">{error}</Alert>}
 
             <Form.Group className="mb-3">
-              <Form.Label>Title (Optional)</Form.Label>
+              <Form.Label>Post title (optional)</Form.Label>
               <Form.Control
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Add a title to your post..."
+                placeholder="Add a short, catchy title..."
                 className="post-title-input"
               />
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>Content <span className="text-danger">*</span></Form.Label>
+              <Form.Label>
+                What's on your mind? <span className="text-danger">*</span>
+              </Form.Label>
               <Form.Control
                 as="textarea"
                 rows={4}
-                placeholder="What's on your mind?"
+                placeholder="Share your thoughts, ideas, or updates..."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 className="post-content-input"
@@ -327,167 +205,112 @@ const handleMediaUpload = async (file) => {
 
             <Row className="mb-3">
               <Col md={6}>
-                <Form.Group>
-                  <Form.Label>Tags</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={tags}
-                    onChange={(e) => setTags(e.target.value)}
-                    placeholder="e.g., news, coding, tech (comma separated)"
-                  />
-                </Form.Group>
+                <Form.Control
+                  placeholder="Tags (e.g. react, tech, news)"
+                  value={tags}
+                  onChange={(e) => setTags(e.target.value)}
+                />
               </Col>
               <Col md={6}>
-                <Form.Group>
-                  <Form.Label>Category</Form.Label>
-                  <Form.Select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                  >
-                    <option value="general">General</option>
-                    <option value="news">News</option>
-                    <option value="technology">Technology</option>
-                    <option value="entertainment">Entertainment</option>
-                    <option value="sports">Sports</option>
-                    <option value="education">Education</option>
-                  </Form.Select>
-                </Form.Group>
+                <Form.Select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                >
+                  <option value="general">General</option>
+                  <option value="technology">Technology</option>
+                  <option value="education">Education</option>
+                  <option value="news">News</option>
+                  <option value="entertainment">Entertainment</option>
+                  <option value="sports">Sports</option>
+                </Form.Select>
               </Col>
             </Row>
 
-            <Form.Group className="mb-3">
-              <Form.Check
-                type="switch"
-                id="custom-switch"
-                label="Make this post public"
-                checked={isPublic}
-                onChange={(e) => setIsPublic(e.target.checked)}
-              />
-            </Form.Group>
+            <Form.Check
+              type="switch"
+              label="Make this post public"
+              checked={isPublic}
+              onChange={(e) => setIsPublic(e.target.checked)}
+              className="mb-3"
+            />
 
             {mediaUrl && (
-              <div className="media-preview mb-3 p-3 border rounded">
-                <div className="d-flex justify-content-between align-items-center mb-2">
-                  <h6>Media Preview</h6>
-                  <Button variant="outline-danger" size="sm" onClick={removeMedia}>
+              <div className="media-preview p-3 mb-3">
+                <div className="d-flex justify-content-between">
+                  <strong>Attached media</strong>
+                  <Button size="sm" variant="outline-danger" onClick={removeMedia}>
                     <FiX /> Remove
                   </Button>
                 </div>
-                {mediaType === "image" && (
-                  <img
-                    src={mediaUrl}
-                    alt="Post media"
-                    className="img-fluid rounded"
-                  />
-                )}
-                {mediaType === "video" && (
-                  <video src={mediaUrl} controls className="w-100 rounded" />
-                )}
+                {mediaType === "image" && <img src={mediaUrl} alt="" />}
+                {mediaType === "video" && <video src={mediaUrl} controls />}
                 {mediaType === "gif" && (
-                  <div>
-                    <img
-                      src={mediaUrl}
-                      alt="Selected GIF"
-                      className="img-fluid rounded"
-                    />
+                  <>
+                    <img src={mediaUrl} alt="" />
                     <Badge bg="info" className="mt-2">GIF</Badge>
-                  </div>
+                  </>
                 )}
               </div>
             )}
 
-            <div className="d-flex justify-content-between align-items-center mt-3">
+            <div className="d-flex justify-content-between mt-3">
               <div className="d-flex gap-2">
                 <input
                   type="file"
                   id="media-upload"
+                  hidden
                   accept="image/*,video/*"
-                  style={{ display: "none" }}
                   onChange={handleFileInput}
                 />
-                <label
-                  htmlFor="media-upload"
-                  className="btn btn-outline-primary d-flex align-items-center"
-                >
-                  <FiImage className="me-1" /> Image/Video
+                <label htmlFor="media-upload" className="btn btn-outline-primary">
+                  <FiImage /> Media
                 </label>
-                
+
                 <Button
                   variant="outline-info"
-                  className="d-flex align-items-center"
                   onClick={() => {
                     setShowGifModal(true);
                     getTrendingGifs();
                   }}
                 >
-                  <FiGift className="me-1" /> GIF
+                  <FiGift /> GIF
                 </Button>
               </div>
 
               <Button
-                variant="primary"
-                onClick={handlePost}
+                className="post-button"
                 disabled={loading || !content.trim()}
-                className="d-flex align-items-center"
+                onClick={handlePost}
               >
-                {loading ? (
-                  <>
-                    <Spinner
-                      as="span"
-                      animation="border"
-                      size="sm"
-                      role="status"
-                      aria-hidden="true"
-                      className="me-2"
-                    />
-                    Posting...
-                  </>
-                ) : (
-                  "Publish Post"
-                )}
+                {loading ? "Publishing..." : "Publish"}
               </Button>
             </div>
           </Card.Body>
         </Card>
 
-        {/* GIF Modal */}
+        {/* GIF MODAL */}
         <Modal show={showGifModal} onHide={() => setShowGifModal(false)} size="lg">
           <Modal.Header closeButton>
-            <Modal.Title>Select a GIF</Modal.Title>
+            <Modal.Title>Choose a GIF</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <InputGroup className="mb-3">
               <Form.Control
-                type="text"
-                placeholder="Search for GIFs..."
+                placeholder="Search GIFs..."
                 value={gifSearch}
                 onChange={(e) => setGifSearch(e.target.value)}
               />
-              <Button 
-                variant="primary" 
-                onClick={() => searchGifs(gifSearch)}
-              >
-                Search
-              </Button>
+              <Button onClick={() => searchGifs(gifSearch)}>Search</Button>
             </InputGroup>
-            
+
             <div className="gif-grid">
               {gifs.map((gif) => (
-                <div 
-                  key={gif.id} 
-                  className="gif-item"
-                  onClick={() => handleGifSelect(gif)}
-                >
+                <div key={gif.id} className="gif-item" onClick={() => handleGifSelect(gif)}>
                   <img src={gif.preview || gif.url} alt={gif.title} />
                 </div>
               ))}
             </div>
           </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowGifModal(false)}>
-              Cancel
-            </Button>
-          </Modal.Footer>
         </Modal>
       </div>
     </>
