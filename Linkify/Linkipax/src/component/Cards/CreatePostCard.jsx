@@ -323,17 +323,14 @@ import {
   Card,
   Button,
   Form,
-  InputGroup,
-  Spinner,
   Alert,
   Modal,
   Badge,
   Row,
   Col,
-  ProgressBar,
 } from "react-bootstrap";
 import axios from "axios";
-import { FiImage, FiVideo, FiX, FiGift } from "react-icons/fi";
+import { FiImage, FiX, FiGift } from "react-icons/fi";
 import "./CreatePostCard.css";
 import Navbar from "../navbar/Navbar";
 import { uploadToCloudinary } from "../../Cloudinary/cloudinary";
@@ -355,13 +352,14 @@ const CreatePostCard = ({ userId }) => {
 
   const [uploadProgress, setUploadProgress] = useState(0);
 
+  /* Simulated progress for smooth UX */
   useEffect(() => {
     if (loading) {
-      let val = 0;
+      let value = 0;
       const timer = setInterval(() => {
-        val += 10;
-        setUploadProgress(val);
-        if (val >= 100) clearInterval(timer);
+        value += 10;
+        setUploadProgress(value);
+        if (value >= 100) clearInterval(timer);
       }, 150);
       return () => clearInterval(timer);
     } else {
@@ -377,7 +375,7 @@ const CreatePostCard = ({ userId }) => {
       setMediaType(file.type.startsWith("image") ? "image" : "video");
       setSelectedGif(null);
     } catch {
-      setError("🚫 Media upload failed. Please try again.");
+      setError("Media upload failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -385,7 +383,7 @@ const CreatePostCard = ({ userId }) => {
 
   const handlePost = async () => {
     if (!content.trim()) {
-      setError("✍️ Please write something before posting.");
+      setError("Post content cannot be empty.");
       return;
     }
 
@@ -399,7 +397,7 @@ const CreatePostCard = ({ userId }) => {
         imageUrl: mediaType === "image" || mediaType === "gif" ? mediaUrl : "",
         videoUrl: mediaType === "video" ? mediaUrl : "",
         createdBy: userId,
-        tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
+        tags: tags.split(",").map(t => t.trim()).filter(Boolean),
         category,
         isPublic,
         postType: mediaType || "text",
@@ -408,7 +406,7 @@ const CreatePostCard = ({ userId }) => {
       const apiUrl = import.meta.env.VITE_API_URL;
       await axios.post(`${apiUrl}/api/posts`, newPost);
 
-      alert("🎉 Post published successfully!");
+      alert("Post published successfully");
       setTitle("");
       setContent("");
       setMediaUrl("");
@@ -418,7 +416,7 @@ const CreatePostCard = ({ userId }) => {
       setIsPublic(true);
       setSelectedGif(null);
     } catch {
-      setError("❌ Something went wrong while publishing.");
+      setError("Something went wrong while publishing.");
     } finally {
       setLoading(false);
     }
@@ -429,48 +427,50 @@ const CreatePostCard = ({ userId }) => {
       <Navbar />
 
       <div className="container mt-4">
-        <h2 className="text-center fw-bold mb-1">🚀 Create a New Post</h2>
-        <p className="text-center text-muted mb-4">
-          Share your thoughts, ideas, or moments with the community ✨
+        <h2 className="text-center fw-semibold mb-1 create-heading">
+          Create Post
+        </h2>
+        <p className="text-center text-muted mb-4 create-subheading">
+          Write, upload, preview, and publish
         </p>
 
         <Row className="g-4">
-          {/* LEFT SIDE – POST CREATOR */}
+          {/* LEFT SIDE */}
           <Col md={6}>
-            <Card className="create-post-card shadow">
-              <Card.Header className="bg-primary text-white">
-                ✍️ Start Writing
+            <Card className="create-post-card">
+              <Card.Header className="creator-header">
+                Create your content
               </Card.Header>
 
               <Card.Body>
                 {error && <Alert variant="danger">{error}</Alert>}
 
                 <Form.Group className="mb-3">
-                  <Form.Label>📌 Title (optional)</Form.Label>
+                  <Form.Label>Title (optional)</Form.Label>
                   <Form.Control
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Give your post a catchy headline..."
+                    placeholder="Add a short title"
                   />
                 </Form.Group>
 
                 <Form.Group className="mb-3">
                   <Form.Label>
-                    💬 What's on your mind? <span className="text-danger">*</span>
+                    Post content <span className="text-danger">*</span>
                   </Form.Label>
                   <Form.Control
                     as="textarea"
                     rows={4}
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
-                    placeholder="Write something amazing..."
+                    placeholder="Write your thoughts here"
                   />
                 </Form.Group>
 
                 <Row className="mb-3">
                   <Col>
                     <Form.Control
-                      placeholder="🏷️ Tags (react, tech, news)"
+                      placeholder="Tags (react, tech, news)"
                       value={tags}
                       onChange={(e) => setTags(e.target.value)}
                     />
@@ -480,24 +480,23 @@ const CreatePostCard = ({ userId }) => {
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
                     >
-                      <option value="general">🌍 General</option>
-                      <option value="technology">💻 Technology</option>
-                      <option value="education">📚 Education</option>
-                      <option value="news">📰 News</option>
-                      <option value="sports">⚽ Sports</option>
+                      <option value="general">General</option>
+                      <option value="technology">Technology</option>
+                      <option value="education">Education</option>
+                      <option value="news">News</option>
+                      <option value="sports">Sports</option>
                     </Form.Select>
                   </Col>
                 </Row>
 
                 <Form.Check
                   type="switch"
-                  label="🌐 Make post public"
+                  label="Public visibility"
                   checked={isPublic}
                   onChange={(e) => setIsPublic(e.target.checked)}
                   className="mb-3"
                 />
 
-                {/* Upload buttons */}
                 <div className="d-flex gap-2 mb-3">
                   <input
                     type="file"
@@ -507,7 +506,7 @@ const CreatePostCard = ({ userId }) => {
                     onChange={(e) => handleMediaUpload(e.target.files[0])}
                   />
                   <label htmlFor="media-upload" className="btn btn-outline-primary">
-                    <FiImage /> Upload Media
+                    <FiImage /> Upload media
                   </label>
 
                   <Button
@@ -518,7 +517,6 @@ const CreatePostCard = ({ userId }) => {
                   </Button>
                 </div>
 
-                {/* Circular Loader */}
                 {loading && (
                   <div className="upload-circle">
                     <svg>
@@ -528,7 +526,8 @@ const CreatePostCard = ({ userId }) => {
                         cy="50"
                         r="45"
                         style={{
-                          strokeDashoffset: 283 - (283 * uploadProgress) / 100,
+                          strokeDashoffset:
+                            283 - (283 * uploadProgress) / 100,
                         }}
                       />
                     </svg>
@@ -541,20 +540,20 @@ const CreatePostCard = ({ userId }) => {
                   disabled={loading || !content.trim()}
                   onClick={handlePost}
                 >
-                  🚀 Publish Post
+                  Publish
                 </Button>
               </Card.Body>
             </Card>
           </Col>
 
-          {/* RIGHT SIDE – HD PREVIEW */}
+          {/* RIGHT SIDE */}
           <Col md={6}>
-            <Card className="preview-card shadow">
-              <Card.Header>👀 Live Preview</Card.Header>
+            <Card className="preview-card">
+              <Card.Header>Live preview</Card.Header>
               <Card.Body>
                 {!mediaUrl && (
                   <p className="text-muted text-center">
-                    Media preview will appear here 📸🎥
+                    Media preview will appear here
                   </p>
                 )}
 
@@ -562,20 +561,50 @@ const CreatePostCard = ({ userId }) => {
                   <img src={mediaUrl} className="preview-media" alt="" />
                 )}
                 {mediaType === "video" && (
-                  <video
-                    src={mediaUrl}
-                    controls
-                    className="preview-media"
-                  />
+                  <video src={mediaUrl} controls className="preview-media" />
                 )}
                 {mediaType === "gif" && (
-                  <img src={mediaUrl} className="preview-media" alt="" />
+                  <>
+                    <img src={mediaUrl} className="preview-media" alt="" />
+                    <Badge bg="info" className="mt-2">GIF</Badge>
+                  </>
                 )}
               </Card.Body>
             </Card>
           </Col>
         </Row>
       </div>
+
+      {/* GIF MODAL (logic unchanged) */}
+      <Modal show={showGifModal} onHide={() => setShowGifModal(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Select GIF</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Control
+            className="mb-3"
+            placeholder="Search GIFs"
+            value={gifSearch}
+            onChange={(e) => setGifSearch(e.target.value)}
+          />
+          <div className="gif-grid">
+            {gifs.map((gif) => (
+              <div
+                key={gif.id}
+                className="gif-item"
+                onClick={() => {
+                  setSelectedGif(gif);
+                  setMediaUrl(gif.url);
+                  setMediaType("gif");
+                  setShowGifModal(false);
+                }}
+              >
+                <img src={gif.preview || gif.url} alt="" />
+              </div>
+            ))}
+          </div>
+        </Modal.Body>
+      </Modal>
     </>
   );
 };

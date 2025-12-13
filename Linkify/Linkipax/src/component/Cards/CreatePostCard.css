@@ -136,3 +136,157 @@
   font-weight: bold;
   color: #0d6efd;
 }
+/* PAGE TEXT */
+.create-heading {
+  color: #e5e7eb;
+  letter-spacing: 0.4px;
+}
+
+.create-subheading {
+  font-size: 0.95rem;
+  opacity: 0.7;
+}
+
+/* LEFT CARD – GLASS AURORA */
+.create-post-card {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(0, 255, 170, 0.15),
+      rgba(124, 58, 237, 0.18),
+      rgba(56, 189, 248, 0.12)
+    ),
+    rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(18px);
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #e5e7eb;
+  transition: all 0.35s ease;
+}
+
+.create-post-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.creator-header {
+  background: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f9fafb;
+  font-weight: 500;
+}
+
+/* INPUTS */
+.create-post-card input,
+.create-post-card textarea,
+.create-post-card select {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #f9fafb;
+  border-radius: 10px;
+}
+
+.create-post-card input::placeholder,
+.create-post-card textarea::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.create-post-card input:focus,
+.create-post-card textarea:focus,
+.create-post-card select:focus {
+  border-color: rgba(56, 189, 248, 0.6);
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+}
+
+/* BUTTONS */
+.btn-outline-primary {
+  border-radius: 999px;
+  border-color: rgba(56, 189, 248, 0.6);
+  color: #38bdf8;
+}
+
+.btn-outline-info {
+  border-radius: 999px;
+  color: #a78bfa;
+  border-color: rgba(167, 139, 250, 0.6);
+}
+
+/* PUBLISH BUTTON */
+.post-button {
+  background: linear-gradient(135deg, #22c55e, #3b82f6, #a855f7);
+  border: none;
+  border-radius: 999px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* CIRCULAR UPLOAD */
+.upload-circle {
+  width: 110px;
+  height: 110px;
+  margin: 20px auto;
+  position: relative;
+}
+
+.upload-circle svg {
+  width: 110px;
+  height: 110px;
+  transform: rotate(-90deg);
+}
+
+.upload-circle circle {
+  fill: none;
+  stroke-width: 8;
+  stroke-linecap: round;
+}
+
+.upload-circle circle:first-child {
+  stroke: rgba(255, 255, 255, 0.2);
+}
+
+.upload-circle circle:last-child {
+  stroke: #38bdf8;
+  stroke-dasharray: 283;
+  transition: stroke-dashoffset 0.3s ease;
+}
+
+.upload-circle span {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #38bdf8;
+  font-weight: bold;
+}
+
+/* RIGHT PREVIEW */
+.preview-card {
+  background: #0b0f1a;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.preview-media {
+  width: 100%;
+  max-height: 420px;
+  object-fit: contain;
+  border-radius: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* GIF GRID */
+.gif-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.gif-item img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 10px;
+  cursor: pointer;
+}
