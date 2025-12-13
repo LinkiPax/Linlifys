@@ -83,3 +83,56 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+.preview-card {
+  border-radius: 14px;
+  background: #fff;
+}
+
+.preview-media {
+  width: 100%;
+  max-height: 420px;
+  object-fit: contain;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* Circular Upload Loader */
+.upload-circle {
+  width: 110px;
+  height: 110px;
+  margin: 20px auto;
+  position: relative;
+}
+
+.upload-circle svg {
+  width: 110px;
+  height: 110px;
+  transform: rotate(-90deg);
+}
+
+.upload-circle circle {
+  fill: none;
+  stroke-width: 8;
+  stroke-linecap: round;
+}
+
+.upload-circle circle:first-child {
+  stroke: #e5e7eb;
+}
+
+.upload-circle circle:last-child {
+  stroke: #0d6efd;
+  stroke-dasharray: 283;
+  transition: stroke-dashoffset 0.3s ease;
+}
+
+.upload-circle span {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #0d6efd;
+}
