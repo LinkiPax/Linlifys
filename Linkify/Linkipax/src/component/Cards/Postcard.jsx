@@ -96,6 +96,7 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
   isRepost && originalPostDetails?.videoUrl
     ? originalPostDetails.videoUrl
     : videoUrl;
+   console.log("FINAL VIDEO URL:", resolvedVideoUrl);
 
   // Text overflow detection
   useEffect(() => {
