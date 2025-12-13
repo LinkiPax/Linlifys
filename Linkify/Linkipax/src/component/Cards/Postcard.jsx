@@ -792,27 +792,19 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
             )}
             
             {resolvedVideoUrl && (
-  <div
-    style={{
-      width: "100%",
-      height: "360px",
-      background: "black",
-    }}
-  >
+  <div className="post-video-wrapper">
     <video
       src={resolvedVideoUrl}
+      className="post-video"
       controls
-      style={{
-        width: "100%",
-        height: "100%",
-        objectFit: "contain",
-      }}
-      onError={(e) => console.error("HTML5 VIDEO ERROR", e)}
+      autoPlay
+      muted          // 🔴 REQUIRED for autoplay
+      loop
+      playsInline
+      preload="metadata"
     />
   </div>
 )}
-
-
             {videoError && (
               <Alert variant="warning" className="mt-3">
                 <FaImage className="me-2" />

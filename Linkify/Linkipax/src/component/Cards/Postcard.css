@@ -1671,22 +1671,34 @@
   }
 }
 .post-video-wrapper {
-  position: relative;
   width: 100%;
-  height: 360px;          /* ✅ REQUIRED */
+  max-width: 100%;
+  aspect-ratio: 16 / 9;          /* ✅ Responsive HD */
   background: #000;
-  border-radius: 10px;
+  border-radius: 14px;
   overflow: hidden;
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.06);
+  margin-top: 12px;
 }
-.post-video-wrapper {
-  position: relative;
+.post-video {
   width: 100%;
-  aspect-ratio: 16 / 9;
+  height: 100%;
+  object-fit: contain;   /* No stretch, letterbox */
+  background: #000;
+  display: block;
 }
-.post-video-wrapper {
-  width: 100%;
-  height: 360px;
-  background: black;
-  border-radius: 10px;
-  overflow: hidden;
+@media (max-width: 768px) {
+  .post-video-wrapper {
+    aspect-ratio: 4 / 5;   /* Instagram-style portrait */
+  }
+}
+.post-video::-webkit-media-controls {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.post-video-wrapper:hover .post-video::-webkit-media-controls {
+  opacity: 1;
 }
