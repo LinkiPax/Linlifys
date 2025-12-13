@@ -783,14 +783,19 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
               </div>
             )}
             
-            {videoUrl && !videoError && (
+            {(videoUrl || (isRepost && originalPostDetails?.videoUrl)) && !videoError && (
   <div className="post-video-wrapper">
     <ReactPlayer
-      url={videoUrl}
+      url={
+        isRepost && originalPostDetails?.videoUrl
+          ? originalPostDetails.videoUrl
+          : videoUrl
+      }
       controls
       width="100%"
-      height="360px"
+      height="360px"     // ✅ FIX
       playsinline
+      onError={handleVideoError}
     />
   </div>
 )}
