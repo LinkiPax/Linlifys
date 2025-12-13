@@ -84,6 +84,8 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [showFullText, setShowFullText] = useState(false);
   const [isTextOverflow, setIsTextOverflow] = useState(false);
+  const [activeVideo, setActiveVideo] = useState(null);
+
   const textRef = useRef(null);
   const postCardRef = useRef(null);
   
@@ -794,7 +796,9 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
     <ReactPlayer
       key={`${postId}-${resolvedVideoUrl}`}   // ✅ PERFECT
       url={resolvedVideoUrl}
-      controls
+      playing={activeVideo === postId}
+  onPlay={() => setActiveVideo(postId)}
+  controls
       width="100%"
       height="360px"
       playsinline

@@ -1683,3 +1683,10 @@
   width: 100%;
   aspect-ratio: 16 / 9;
 }
+.post-video-wrapper {
+  width: 100%;
+  height: 360px;
+  background: black;
+  border-radius: 10px;
+  overflow: hidden;
+}
