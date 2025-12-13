@@ -88,6 +88,7 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
   const postCardRef = useRef(null);
   
   console.log("posts", post);
+  console.log("VIDEO URL:", videoUrl);
 
   // Check if this is a repost
   const isRepost = postType === "repost" || repostedFrom;
