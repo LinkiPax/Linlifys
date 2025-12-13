@@ -783,24 +783,18 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
               </div>
             )}
             
-            {(videoUrl || (isRepost && originalPostDetails?.videoUrl)) && !videoError && (
-              <div className="post-video-wrapper">
-                <ReactPlayer
-                  url={isRepost && originalPostDetails?.videoUrl ? originalPostDetails.videoUrl : videoUrl}
-                  controls
-                  width="100%"
-                  height="100%"
-                  onError={handleVideoError}
-                  config={{
-                    file: {
-                      attributes: {
-                        crossOrigin: "anonymous",
-                      },
-                    },
-                  }}
-                />
-              </div>
-            )}
+            {videoUrl && !videoError && (
+  <div className="post-video-wrapper">
+    <ReactPlayer
+      url={videoUrl}
+      controls
+      width="100%"
+      height="360px"
+      playsinline
+    />
+  </div>
+)}
+
             
             {videoError && (
               <Alert variant="warning" className="mt-3">
