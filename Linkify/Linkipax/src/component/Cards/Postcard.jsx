@@ -92,7 +92,11 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
 
   // Check if this is a repost
   const isRepost = postType === "repost" || repostedFrom;
-  
+  const resolvedVideoUrl =
+  isRepost && originalPostDetails?.videoUrl
+    ? originalPostDetails.videoUrl
+    : videoUrl;
+
   // Text overflow detection
   useEffect(() => {
     const checkTextOverflow = () => {
@@ -784,24 +788,20 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
               </div>
             )}
             
-            {(videoUrl || (isRepost && originalPostDetails?.videoUrl)) && !videoError && (
+            {resolvedVideoUrl && !videoError && (
   <div className="post-video-wrapper">
     <ReactPlayer
-      url={
-        isRepost && originalPostDetails?.videoUrl
-          ? originalPostDetails.videoUrl
-          : videoUrl
-      }
+      key={`${postId}-${resolvedVideoUrl}`}   // ✅ PERFECT
+      url={resolvedVideoUrl}
       controls
       width="100%"
-      height="360px"     // ✅ FIX
+      height="360px"
       playsinline
       onError={handleVideoError}
     />
   </div>
 )}
 
-            
             {videoError && (
               <Alert variant="warning" className="mt-3">
                 <FaImage className="me-2" />
