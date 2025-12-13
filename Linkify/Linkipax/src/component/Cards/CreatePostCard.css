@@ -1,147 +1,122 @@
-/* Create Post Card Styling */
+/* ===== PAGE BACKGROUND ===== */
+body {
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+}
+
+/* ===== MAIN CARD ===== */
 .create-post-card {
+  border-radius: 18px;
   border: none;
-  border-radius: 10px; /* LinkedIn uses slightly rounded corners */
-  background-color: #ffffff; /* LinkedIn's card background color */
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Subtle shadow like LinkedIn */
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px);
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.35),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+  animation: fadeInUp 0.6s ease;
+}
+
+/* ===== HEADER ===== */
+.create-post-card .card-header {
+  border-radius: 18px 18px 0 0;
+  background: linear-gradient(135deg, #007bff, #00c6ff);
+  padding: 16px 20px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+
+/* ===== INPUTS ===== */
+.post-title-input,
+.post-content-input,
+.form-control,
+.form-select {
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  padding: 12px 14px;
+  font-size: 15px;
+  transition: all 0.25s ease;
+}
+
+.post-title-input:focus,
+.post-content-input:focus,
+.form-control:focus,
+.form-select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+}
+
+/* ===== SWITCH ===== */
+.form-check-input {
+  cursor: pointer;
+}
+.form-check-label {
+  font-weight: 500;
+}
+
+/* ===== MEDIA PREVIEW ===== */
+.media-preview {
+  background: #000;
+  border-radius: 16px;
   overflow: hidden;
-  margin-bottom: 1rem; /* Consistent spacing */
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
-.create-post-card:hover {
-  transform: translateY(-2px); /* Slight lift on hover */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Stronger shadow on hover */
-}
-
-/* Post Input */
-.post-input {
-  border: none;
-  border-radius: 10px;
-  background-color: #f3f2ef; /* LinkedIn's input background color */
-  padding: 1rem;
-  font-size: 0.9rem;
-  resize: none; /* Disable resizing */
-}
-
-.post-input:focus {
-  box-shadow: none;
-  background-color: #eef3f8; /* Slightly lighter background on focus */
-}
-
-/* Media Preview */
 .media-preview img,
 .media-preview video {
-  max-height: 300px;
-  object-fit: cover;
-  border-radius: 8px; /* Rounded corners for media */
-  margin-top: 1rem; /* Spacing between text and media */
-}
-
-/* Buttons */
-.btn-outline-primary {
-  border-color: #0a66c2; /* LinkedIn's primary blue */
-  color: #0a66c2; /* LinkedIn's primary blue */
-  border-radius: 25px; /* Rounded corners like LinkedIn */
-  padding: 0.5rem 1.5rem; /* LinkedIn-like button padding */
-  font-size: 0.9rem; /* LinkedIn's font size for buttons */
-  font-weight: 600; /* Semi-bold for emphasis */
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.btn-outline-primary:hover {
-  background-color: #0a66c2; /* LinkedIn's primary blue */
-  color: #ffffff; /* White text on hover */
-}
-
-.post-button {
-  background-color: #0a66c2; /* LinkedIn's primary blue */
-  border: none;
-  border-radius: 25px; /* Rounded corners like LinkedIn */
-  padding: 0.5rem 1.5rem; /* LinkedIn-like button padding */
-  font-size: 0.9rem; /* LinkedIn's font size for buttons */
-  font-weight: 600; /* Semi-bold for emphasis */
-  transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.post-button:hover {
-  background-color: #004182; /* Darker shade for hover */
-  transform: scale(1.05); /* Slight scale on hover */
-}
-
-.post-button:active {
-  transform: scale(0.95); /* Slight scale on click */
-}
-
-/* Error Message */
-.alert-danger {
-  background-color: #f8d7da; /* Light red background */
-  border-color: #f5c6cb; /* Light red border */
-  color: #721c24; /* Dark red text */
-  border-radius: 8px; /* Rounded corners */
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .create-post-card {
-    margin-bottom: 0.75rem; /* Smaller margin on mobile */
-  }
-
-  .media-preview img,
-  .media-preview video {
-    max-height: 200px; /* Smaller height on mobile */
-  }
-
-  .btn-outline-primary,
-  .post-button {
-    padding: 0.5rem 1rem; /* Smaller padding on mobile */
-    font-size: 0.8rem; /* Smaller font size on mobile */
-  }
-}
-.create-post-card {
-  border: none;
+  width: 100%;
+  max-height: 420px;
+  object-fit: contain;
   border-radius: 12px;
-  overflow: hidden;
+  background: #000;
 }
 
-.create-post-card .card-header {
-  border-radius: 12px 12px 0 0 !important;
+/* ===== MEDIA BUTTONS ===== */
+.btn-outline-primary,
+.btn-outline-info {
+  border-radius: 30px;
+  padding: 8px 16px;
+  font-weight: 500;
+  transition: all 0.25s ease;
 }
 
-.post-title-input, .post-content-input {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 12px;
-  transition: all 0.3s;
+.btn-outline-primary:hover,
+.btn-outline-info:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 123, 255, 0.25);
 }
 
-.post-title-input:focus, .post-content-input:focus {
-  border-color: #0d6efd;
-  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+/* ===== PUBLISH BUTTON ===== */
+.btn-primary {
+  border-radius: 30px;
+  padding: 10px 26px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  box-shadow: 0 8px 24px rgba(0, 123, 255, 0.4);
+  transition: all 0.25s ease;
 }
 
-.media-preview {
-  background-color: #f8f9fa;
-  border-radius: 8px;
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px rgba(0, 123, 255, 0.55);
+}
+
+/* ===== GIF MODAL ===== */
+.modal-content {
+  border-radius: 18px;
+  border: none;
 }
 
 .gif-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  max-height: 400px;
-  overflow-y: auto;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
 }
 
 .gif-item {
   cursor: pointer;
-  transition: transform 0.2s;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
-}
-
-.gif-item:hover {
-  transform: scale(1.05);
+  transition: all 0.25s ease;
 }
 
 .gif-item img {
@@ -150,27 +125,31 @@
   object-fit: cover;
 }
 
-.post-button {
-  border-radius: 20px;
-  padding: 8px 20px;
-  font-weight: 600;
+.gif-item:hover {
+  transform: scale(1.05);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
-.btn-outline-primary, .btn-outline-info {
-  border-radius: 20px;
-  padding: 8px 16px;
+/* ===== ANIMATIONS ===== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
-  .gif-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .create-post-card {
+    margin: 0 10px;
   }
-  
-  .d-flex.gap-2 {
-    flex-wrap: wrap;
-  }
-  
-  .d-flex.gap-2 .btn {
-    margin-bottom: 8px;
+
+  .media-preview img,
+  .media-preview video {
+    max-height: 300px;
   }
 }
