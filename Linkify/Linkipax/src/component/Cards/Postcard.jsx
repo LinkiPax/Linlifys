@@ -1118,14 +1118,27 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
         {/* Footer */}
         <Modal.Footer className="modern-comment-footer position-relative">
           <img
-            src={
-              userDetails?.profilePicture ||
-              `https://ui-avatars.com/api/?name=${userDetails?.name || "User"}`
-            }
-            alt="You"
-            className="modern-comment-avatar"
-          />
-
+                              src={
+                                isRepost && repostUserDetails
+                                  ? repostUserDetails.profilePicture ||
+                                    `https://ui-avatars.com/api/?name=${
+                                      repostUserDetails.name || "User"
+                                    }&size=50&background=random`
+                                  : profilePicture ||
+                                    `https://ui-avatars.com/api/?name=${
+                                      name || "User"
+                                    }&size=50&background=random`
+                              }
+                              alt="Profile"
+                              className="post-profile-picture"
+                              onClick={() =>
+                                handleProfileClick(
+                                  isRepost
+                                    ? repostUserDetails?.createdBy?._id
+                                    : userId
+                                )
+                              }
+                            />
           <Form onSubmit={handleCommentSubmit} className="w-100">
             <InputGroup className="modern-comment-input">
               <Form.Control
