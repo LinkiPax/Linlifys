@@ -79,8 +79,12 @@ const statusSchema = new mongoose.Schema({
     }],
     createdAt: {
         type: Date,
-        default: Date.now
+        default: Date.now,
+        index: true
     }
 });
-
+statusSchema.index(
+  { createdAt: 1 },
+  { expireAfterSeconds: 86400 } // 24 hours
+);
 module.exports = mongoose.model("Status", statusSchema);
