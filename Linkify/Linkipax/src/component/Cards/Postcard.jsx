@@ -902,236 +902,171 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
 
       {/* Comment Modal */}
       <Modal
-        show={showCommentModal}
-        onHide={() => {
-          setShowCommentModal(false);
-          setShowEmojiPicker(false);
-          setShowGifPicker(false);
-          setGifUrl("");
-        }}
-        centered
-        size="lg"
-        className="post-comment-modal"
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <div className="d-flex align-items-center">
-              <FaComment className="me-2" />
-              Comments
-              {comments.length > 0 && (
-                <Badge bg="secondary" className="ms-2">
-                  {comments.length}
-                </Badge>
-              )}
-            </div>
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body style={{ maxHeight: "60vh", overflowY: "auto" }}>
-          <div className="post-comment-input-container">
-            <div className="d-flex">
-              <img
-                src={
-                  localStorage.getItem("profilePicture") ||
-                  `https://ui-avatars.com/api/?name=${localStorage.getItem("name") || "User"}&size=40`
-                }
-                alt="Your profile"
-                className="post-comment-user-picture me-2"
-              />
-              <div className="post-comment-input-wrapper flex-grow-1">
-                <Form onSubmit={handleCommentSubmit}>
-                  <InputGroup>
-                    <Form.Control
-                      as="textarea"
-                      rows={2}
-                      placeholder="Write a comment..."
-                      value={comment}
-                      onChange={(e) => setComment(e.target.value)}
-                      disabled={loading}
-                      className="post-comment-textarea"
-                    />
-                  </InputGroup>
-                  {gifUrl && (
-                    <div className="post-selected-gif-preview mt-2">
-                      <img src={gifUrl} alt="Selected GIF" className="post-comment-gif-preview" />
-                      <Button 
-                        variant="outline-danger" 
-                        size="sm" 
-                        onClick={() => setGifUrl("")}
-                        className="post-remove-gif-btn"
-                      >
-                        Remove GIF
-                      </Button>
-                    </div>
-                  )}
-                  <div className="post-comment-actions d-flex justify-content-between align-items-center mt-2">
-                    <div className="d-flex align-items-center">
-                      <Button
-                        variant="light"
-                        size="sm"
-                        onClick={() => {
-                          setShowEmojiPicker(!showEmojiPicker);
-                          setShowGifPicker(false);
-                        }}
-                        type="button"
-                      >
-                        <FaSmile />
-                      </Button>
-                      <Button 
-                        variant="light" 
-                        size="sm" 
-                        type="button" 
-                        className="ms-2"
-                        onClick={() => {
-                          setShowGifPicker(!showGifPicker);
-                          setShowEmojiPicker(false);
-                          if (!showGifPicker) fetchGifs();
-                        }}
-                      >
-                        <FaGift /> GIF
-                      </Button>
-                    </div>
-                    <Button
-                      variant="primary"
-                      type="submit"
-                      disabled={loading || (!comment.trim() && !gifUrl)}
-                      size="sm"
-                    >
-                      {loading ? "Posting..." : "Post"}
-                    </Button>
-                  </div>
-                </Form>
-                
-                {showEmojiPicker && (
-                  <div className="post-emoji-picker-container">
-                    <Picker onEmojiClick={onEmojiClick} />
-                  </div>
-                )}
-                
-                {showGifPicker && (
-                  <div className="post-gif-picker-container">
-                    <InputGroup size="sm" className="mb-2">
-                      <Form.Control
-                        placeholder="Search GIFs..."
-                        value={gifSearch}
-                        onChange={(e) => setGifSearch(e.target.value)}
-                      />
-                      <Button 
-                        variant="primary"
-                        onClick={() => fetchGifs(gifSearch)}
-                      >
-                        Search
-                      </Button>
-                    </InputGroup>
-                    <div className="post-gif-grid">
-                      {gifs.map((gif) => (
-                        <img
-                          key={gif.id}
-                          src={gif.preview || gif.url}
-                          alt={gif.title}
-                          className="post-gif-option"
-                          onClick={() => addGifToComment(gif)}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+  show={showCommentModal}
+  onHide={() => {
+    setShowCommentModal(false);
+    setShowEmojiPicker(false);
+    setShowGifPicker(false);
+    setGifUrl("");
+  }}
+  centered
+  size="lg"
+  dialogClassName="modern-comment-modal"
+>
+  {/* Header */}
+  <Modal.Header closeButton className="border-0 pb-0">
+    <Modal.Title className="fw-semibold">
+      Comments
+      {comments.length > 0 && (
+        <Badge bg="secondary" className="ms-2">
+          {comments.length}
+        </Badge>
+      )}
+    </Modal.Title>
+  </Modal.Header>
 
-          <div className="post-comments-list mt-3">
-            {comments.length === 0 && (
-              <div className="text-center py-4 text-muted">
-                <FaComment size={24} className="mb-2" />
-                <p>No comments yet. Be the first to comment!</p>
-              </div>
-            )}
-            {comments.map((comment) => (
-              <div key={comment._id} className="post-comment-item mb-3">
-                <div className="d-flex">
-                  <img
-                    src={
-                      comment.createdBy?.profilePicture ||
-                      `https://ui-avatars.com/api/?name=${
-                        comment.createdBy?.name || "User"
-                      }&size=40`
+  {/* Body */}
+  <Modal.Body className="p-0">
+    {/* Comments List */}
+    <div className="modern-comments-list">
+      {comments.length === 0 ? (
+        <div className="text-center text-muted py-5">
+          <FaComment size={26} className="mb-2" />
+          <p>No comments yet</p>
+        </div>
+      ) : (
+        comments.map((comment) => (
+          <div key={comment._id} className="modern-comment-item">
+            <img
+              src={
+                comment.createdBy?.profilePicture ||
+                `https://ui-avatars.com/api/?name=${comment.createdBy?.name || "User"}`
+              }
+              alt="User"
+              className="modern-comment-avatar"
+            />
+
+            <div className="modern-comment-content">
+              <div className="d-flex justify-content-between">
+                <div>
+                  <strong
+                    className="comment-user-name"
+                    onClick={() =>
+                      handleProfileClick(comment.createdBy?._id)
                     }
-                    alt="Commenter"
-                    className="post-commenter-picture me-2"
-                  />
-                  <div className="post-comment-content flex-grow-1">
-                    <div className="post-comment-header d-flex justify-content-between align-items-start mb-1">
-                      <div>
-                        <strong 
-                          className="post-commenter-name post-user-link"
-                          onClick={() => handleProfileClick(comment.createdBy?._id)}
-                        >
-                          {comment.createdBy?.name || "Unknown User"}
-                        </strong>
-                        <small className="text-muted ms-2">
-                          {formatDate(comment.createdAt)}
-                        </small>
-                      </div>
-                      {comment.createdBy?._id === currentUser && (
-                        <Dropdown>
-                          <Dropdown.Toggle variant="light" size="sm" id="dropdown-comment-options" className="post-comment-options-button">
-                            <FaEllipsisH />
-                          </Dropdown.Toggle>
-                          <Dropdown.Menu>
-                            <Dropdown.Item 
-                              onClick={() => {
-                                const newContent = prompt(
-                                  "Edit your comment:",
-                                  comment.textContent || comment.content
-                                );
-                                if (newContent && newContent !== comment.content) {
-                                  handleCommentUpdate(comment._id, newContent);
-                                }
-                              }}
-                            >
-                              Edit
-                            </Dropdown.Item>
-                            <Dropdown.Item 
-                              onClick={() => {
-                                if (
-                                  window.confirm(
-                                    "Are you sure you want to delete this comment?"
-                                  )
-                                ) {
-                                  handleCommentDelete(comment._id);
-                                }
-                              }}
-                            >
-                              Delete
-                            </Dropdown.Item>
-                          </Dropdown.Menu>
-                        </Dropdown>
-                      )}
-                    </div>
-                    {comment.hasGif && (
-                      <div className="post-comment-gif-container mb-2">
-                        <img src={comment.gifUrl} alt="Comment GIF" className="post-comment-gif" />
-                      </div>
-                    )}
-                    {comment.textContent && (
-                      <p className="post-comment-text mb-0">
-                        {comment.textContent.split(' ').map((word, i) => {
-                          // Check if word is an emoji (using a simple heuristic)
-                          const emojiRegex = /(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)/gu;
-                          if (emojiRegex.test(word)) {
-                            return <span key={i} className="post-comment-emoji">{word} </span>;
-                          }
-                          return word + ' ';
-                        })}
-                      </p>
-                    )}
-                  </div>
+                  >
+                    {comment.createdBy?.name || "Unknown User"}
+                  </strong>
+                  <small className="text-muted ms-2">
+                    {formatDate(comment.createdAt)}
+                  </small>
                 </div>
+
+                {comment.createdBy?._id === currentUser && (
+                  <Dropdown align="end">
+                    <Dropdown.Toggle
+                      variant="light"
+                      size="sm"
+                      className="border-0"
+                    >
+                      <FaEllipsisH />
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                      <Dropdown.Item
+                        onClick={() => {
+                          const newContent = prompt(
+                            "Edit comment:",
+                            comment.textContent
+                          );
+                          if (newContent)
+                            handleCommentUpdate(comment._id, newContent);
+                        }}
+                      >
+                        Edit
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        className="text-danger"
+                        onClick={() =>
+                          handleCommentDelete(comment._id)
+                        }
+                      >
+                        Delete
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                )}
               </div>
-            ))}
+
+              {comment.gifUrl && (
+                <img
+                  src={comment.gifUrl}
+                  alt="GIF"
+                  className="modern-comment-gif"
+                />
+              )}
+
+              <p className="mb-0 mt-1">
+                {comment.textContent}
+              </p>
+            </div>
           </div>
-        </Modal.Body>
-      </Modal>
+        ))
+      )}
+    </div>
+  </Modal.Body>
+
+  {/* Sticky Footer Input */}
+  <Modal.Footer className="modern-comment-footer">
+    <img
+      src={
+        localStorage.getItem("profilePicture") ||
+        `https://ui-avatars.com/api/?name=${localStorage.getItem("name") || "User"}`
+      }
+      alt="You"
+      className="modern-comment-avatar"
+    />
+
+    <Form onSubmit={handleCommentSubmit} className="w-100">
+      <InputGroup className="modern-comment-input">
+        <Form.Control
+          placeholder="Write a comment..."
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          disabled={loading}
+        />
+
+        <Button
+          variant="light"
+          onClick={() => {
+            setShowEmojiPicker(!showEmojiPicker);
+            setShowGifPicker(false);
+          }}
+        >
+          <FaSmile />
+        </Button>
+
+        <Button
+          variant="light"
+          onClick={() => {
+            setShowGifPicker(!showGifPicker);
+            setShowEmojiPicker(false);
+            fetchGifs();
+          }}
+        >
+          <FaGift />
+        </Button>
+
+        <Button
+          type="submit"
+          variant="primary"
+          disabled={loading || (!comment.trim() && !gifUrl)}
+        >
+          <FaPaperPlane />
+        </Button>
+      </InputGroup>
+    </Form>
+  </Modal.Footer>
+</Modal>
 
       {/* Repost Modal */}
       <Modal
