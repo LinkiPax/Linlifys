@@ -14,7 +14,7 @@ import {
   Overlay,
   Tooltip,
   Alert,
-  Container
+  Container,
 } from "react-bootstrap";
 import {
   FaComment,
@@ -36,7 +36,7 @@ import {
   FaGlobe,
   FaSync,
   FaChevronDown,
-  FaChevronUp
+  FaChevronUp,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import ReactPlayer from "react-player";
@@ -45,7 +45,19 @@ import "./Postcard.css";
 
 const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
   const navigate = useNavigate();
-  const { content, imageUrl, videoUrl, createdBy, likes = [], _id: postId, createdAt, repostedFrom, repostedPost, repostComment, postType } = post;
+  const {
+    content,
+    imageUrl,
+    videoUrl,
+    createdBy,
+    likes = [],
+    _id: postId,
+    createdAt,
+    repostedFrom,
+    repostedPost,
+    repostComment,
+    postType,
+  } = post;
   const { _id: userId, name, profilePicture, designation } = createdBy || {};
   const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(false);
@@ -88,23 +100,25 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
 
   const textRef = useRef(null);
   const postCardRef = useRef(null);
-  
+
   console.log("posts", post);
   console.log("VIDEO URL:", videoUrl);
 
   // Check if this is a repost
   const isRepost = postType === "repost" || repostedFrom;
   const resolvedVideoUrl =
-  isRepost && originalPostDetails?.videoUrl
-    ? originalPostDetails.videoUrl
-    : videoUrl;
-   console.log("FINAL VIDEO URL:", resolvedVideoUrl);
+    isRepost && originalPostDetails?.videoUrl
+      ? originalPostDetails.videoUrl
+      : videoUrl;
+  console.log("FINAL VIDEO URL:", resolvedVideoUrl);
 
   // Text overflow detection
   useEffect(() => {
     const checkTextOverflow = () => {
       if (textRef.current) {
-        const lineHeight = parseInt(getComputedStyle(textRef.current).lineHeight);
+        const lineHeight = parseInt(
+          getComputedStyle(textRef.current).lineHeight
+        );
         const maxHeight = lineHeight * 4; // 4 lines max
         const isOverflowing = textRef.current.scrollHeight > maxHeight;
         setIsTextOverflow(isOverflowing);
@@ -112,10 +126,10 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
     };
 
     checkTextOverflow();
-    window.addEventListener('resize', checkTextOverflow);
-    
+    window.addEventListener("resize", checkTextOverflow);
+
     return () => {
-      window.removeEventListener('resize', checkTextOverflow);
+      window.removeEventListener("resize", checkTextOverflow);
     };
   }, [content, showFullText]);
 
@@ -135,7 +149,9 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
     const fetchUserDetails = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/profile/merged-user-details/${userId}`
+          `${
+            import.meta.env.VITE_API_URL
+          }/profile/merged-user-details/${userId}`
         );
         console.log("fetchuserDetail", response.data);
         setUserDetails(response.data);
@@ -155,7 +171,9 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
       if (postType == "repost") {
         try {
           const response = await axios.get(
-            `${import.meta.env.VITE_API_URL}/profile/merged-user-details/${createdBy._id}`
+            `${import.meta.env.VITE_API_URL}/profile/merged-user-details/${
+              createdBy._id
+            }`
           );
           console.log("fetchrepostuserdetail", response.data);
           setRepostUserDetails(response.data);
@@ -174,9 +192,11 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
       if (postType == "repost") {
         try {
           const response = await axios.get(
-            `${import.meta.env.VITE_API_URL}/profile/merged-user-details/${repostedFrom.createdBy}`
+            `${import.meta.env.VITE_API_URL}/profile/merged-user-details/${
+              repostedFrom.createdBy
+            }`
           );
-          console.log("fetchOriginalPostUserDetails", response.data)
+          console.log("fetchOriginalPostUserDetails", response.data);
           setOriginalPostUserDetails(response.data);
         } catch (error) {
           console.error("Error fetching original post user details:", error);
@@ -192,11 +212,11 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
-    
+
     if (diffInHours < 1) return "Just now";
     if (diffInHours < 24) return `${diffInHours}h ago`;
     if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`;
-    
+
     return date.toLocaleDateString();
   };
 
@@ -228,7 +248,7 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
           {
             content: comment,
             createdBy: currentUser,
-            gifUrl: gifUrl
+            gifUrl: gifUrl,
           }
         );
         setComments((prev) => [...prev, response.data]);
@@ -248,7 +268,9 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
   const handleCommentUpdate = async (commentId, newContent) => {
     try {
       await axios.put(
-        `${import.meta.env.VITE_API_URL}/api/posts/${postId}/comment/${commentId}`,
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/posts/${postId}/comment/${commentId}`,
         { content: newContent }
       );
       fetchComments();
@@ -261,7 +283,9 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
   const handleCommentDelete = async (commentId) => {
     try {
       await axios.delete(
-        `${import.meta.env.VITE_API_URL}/api/posts/${postId}/comment/${commentId}`
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/posts/${postId}/comment/${commentId}`
       );
       setComments((prev) =>
         prev.filter((comment) => comment._id !== commentId)
@@ -314,21 +338,21 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
         alert("Please log in to repost");
         return;
       }
-      
+
       setSaving(true);
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/posts/repost/${postId}`,
-        { 
+        {
           userId: currentUser,
-          comment: withComment ? repostCommentText : null
+          comment: withComment ? repostCommentText : null,
         }
       );
-      
+
       setReposted(true);
       setRepostCount(response.data.reposts);
       setShowRepostModal(false);
       setRepostCommentText("");
-      
+
       alert("Post reposted successfully!");
     } catch (error) {
       console.error("Error reposting:", error);
@@ -349,10 +373,10 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
   const fetchGifs = async (query = "") => {
     try {
       const apiUrl = import.meta.env.VITE_API_URL;
-      const endpoint = query 
+      const endpoint = query
         ? `${apiUrl}/api/posts/gifs/search?query=${query}`
         : `${apiUrl}/api/posts/gifs/trending`;
-      
+
       const response = await axios.get(endpoint);
       setGifs(response.data);
     } catch (error) {
@@ -436,16 +460,16 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
       alert("Please log in to vote");
       return;
     }
-    
+
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/posts/poll/${postId}/vote`,
-        { 
+        {
           userId: currentUser,
-          optionId: optionId
+          optionId: optionId,
         }
       );
-      
+
       setPoll(response.data.poll);
       setVoted(true);
       setSelectedPollOption(optionId);
@@ -457,9 +481,7 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
 
   const handlePostDelete = async () => {
     try {
-      await axios.delete(
-        `${import.meta.env.VITE_API_URL}/api/posts/${postId}`
-      );
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/posts/${postId}`);
       if (onDelete) onDelete(postId);
       setShowDeleteConfirm(false);
       alert("Post deleted successfully");
@@ -475,7 +497,7 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
         `${import.meta.env.VITE_API_URL}/api/posts/${postId}`,
         { content: editContent }
       );
-      
+
       if (onUpdate) onUpdate(postId, response.data);
       setEditing(false);
       alert("Post updated successfully");
@@ -500,18 +522,18 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
   const toggleShowFullText = () => {
     setShowFullText(!showFullText);
   };
- 
+
   const isOwner = currentUser === userId;
 
   return (
     <>
       <div ref={postCardRef} className="post-card-wrapper">
         {/* Refresh loader */}
-        <div className={`post-refresh-loader ${refreshing ? 'active' : ''}`}>
+        <div className={`post-refresh-loader ${refreshing ? "active" : ""}`}>
           <FaSync className="spinning" />
           <span>Refreshing posts...</span>
         </div>
-        
+
         <Card className="post-card-modern">
           {/* Repost Header - Shows reposter info */}
           {isRepost && (
@@ -527,49 +549,78 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
                           <div className="post-profile-picture-wrapper">
                             <img
                               src={
-                                isRepost && repostUserDetails 
-                                  ? repostUserDetails.profilePicture || `https://ui-avatars.com/api/?name=${repostUserDetails.name || "User"}&size=50&background=random`
-                                  : profilePicture || `https://ui-avatars.com/api/?name=${name || "User"}&size=50&background=random`
+                                isRepost && repostUserDetails
+                                  ? repostUserDetails.profilePicture ||
+                                    `https://ui-avatars.com/api/?name=${
+                                      repostUserDetails.name || "User"
+                                    }&size=50&background=random`
+                                  : profilePicture ||
+                                    `https://ui-avatars.com/api/?name=${
+                                      name || "User"
+                                    }&size=50&background=random`
                               }
                               alt="Profile"
                               className="post-profile-picture"
-                              onClick={() => handleProfileClick(isRepost ? repostUserDetails?.createdBy?._id : userId)}
+                              onClick={() =>
+                                handleProfileClick(
+                                  isRepost
+                                    ? repostUserDetails?.createdBy?._id
+                                    : userId
+                                )
+                              }
                             />
                             <div className="post-online-indicator"></div>
                           </div>
                         </Col>
                         <Col className="ps-0">
                           <div className="d-flex align-items-center">
-                            <h6 
-                              className="mb-0 post-user-name post-user-link" 
-                              onClick={() => handleProfileClick(isRepost ? repostUserDetails?.createdBy?._id : userId)}
-                            >
-                              {isRepost && repostUserDetails 
-                                ? repostUserDetails.name || "Unknown User" 
-                                : name || "Unknown User"
+                            <h6
+                              className="mb-0 post-user-name post-user-link"
+                              onClick={() =>
+                                handleProfileClick(
+                                  isRepost
+                                    ? repostUserDetails?.createdBy?._id
+                                    : userId
+                                )
                               }
+                            >
+                              {isRepost && repostUserDetails
+                                ? repostUserDetails.name || "Unknown User"
+                                : name || "Unknown User"}
                             </h6>
-                            {((isRepost && repostUserDetails?.verified) || (!isRepost && userDetails?.verified)) && (
-                              <Badge bg="primary" className="post-verified-badge ms-1">
+                            {((isRepost && repostUserDetails?.verified) ||
+                              (!isRepost && userDetails?.verified)) && (
+                              <Badge
+                                bg="primary"
+                                className="post-verified-badge ms-1"
+                              >
                                 ✓
                               </Badge>
                             )}
                           </div>
                           <div className="post-user-details">
                             <span className="text-muted post-user-designation">
-                              {isRepost && repostUserDetails 
-                                ? repostUserDetails.jobTitle || repostUserDetails.designation || "No designation available"
-                                : userDetails?.jobTitle || designation || "No designation available"
-                              }
+                              {isRepost && repostUserDetails
+                                ? repostUserDetails.jobTitle ||
+                                  repostUserDetails.designation ||
+                                  "No designation available"
+                                : userDetails?.jobTitle ||
+                                  designation ||
+                                  "No designation available"}
                             </span>
-                            {console.log("repostUserDetails:", repostUserDetails?.userId)}
+                            {console.log(
+                              "repostUserDetails:",
+                              repostUserDetails?.userId
+                            )}
                             <span className="text-muted post-time-ago ms-2">
-                              • {formatDate(
-                                  isRepost && 
-                                  repostUserDetails?.userId === post?.createdBy?._id 
-                                    ? post.createdAt 
-                                    : createdAt
-                                )}
+                              •{" "}
+                              {formatDate(
+                                isRepost &&
+                                  repostUserDetails?.userId ===
+                                    post?.createdBy?._id
+                                  ? post.createdAt
+                                  : createdAt
+                              )}
                             </span>
                             <span className="text-muted mx-1">reposted</span>
                             <FaGlobe size={12} className="text-muted" />
@@ -577,14 +628,20 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
                         </Col>
                         <Col xs="auto">
                           <Dropdown>
-                            <Dropdown.Toggle variant="light" id="dropdown-post-options" className="post-options-button">
+                            <Dropdown.Toggle
+                              variant="light"
+                              id="dropdown-post-options"
+                              className="post-options-button"
+                            >
                               <FaEllipsisH />
                             </Dropdown.Toggle>
                             <Dropdown.Menu>
                               <Dropdown.Item onClick={toggleBookmark}>
-                                {bookmarked ? "Remove from Bookmarks" : "Save to Bookmarks"}
+                                {bookmarked
+                                  ? "Remove from Bookmarks"
+                                  : "Save to Bookmarks"}
                               </Dropdown.Item>
-                              <Dropdown.Item 
+                              <Dropdown.Item
                                 ref={linkRef}
                                 onClick={copyLinkToClipboard}
                               >
@@ -592,10 +649,12 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
                               </Dropdown.Item>
                               {isOwner && (
                                 <>
-                                  <Dropdown.Item onClick={() => setEditing(true)}>
+                                  <Dropdown.Item
+                                    onClick={() => setEditing(true)}
+                                  >
                                     Edit Post
                                   </Dropdown.Item>
-                                  <Dropdown.Item 
+                                  <Dropdown.Item
                                     onClick={() => setShowDeleteConfirm(true)}
                                     className="text-danger"
                                   >
@@ -609,8 +668,12 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
                               </Dropdown.Item>
                             </Dropdown.Menu>
                           </Dropdown>
-                          
-                          <Overlay target={linkRef.current} show={copied} placement="top">
+
+                          <Overlay
+                            target={linkRef.current}
+                            show={copied}
+                            placement="top"
+                          >
                             {(props) => (
                               <Tooltip id="copied-tooltip" {...props}>
                                 Link copied to clipboard!
@@ -621,7 +684,7 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
                       </Row>
                     </Card.Body>
                   </div>
-                  
+
                   {/* Repost Comment */}
                   {repostComment && (
                     <div className="post-repost-comment mt-2 p-2 bg-white rounded border">
@@ -632,36 +695,50 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
               </div>
             </div>
           )}
-          
+
           <Card.Body className="post-header-section">
             <Row className="align-items-center">
               <Col xs="auto">
                 <div className="post-profile-picture-wrapper">
                   <img
                     src={
-                      isRepost && originalPostUserDetails 
-                        ? originalPostUserDetails.profilePicture || `https://ui-avatars.com/api/?name=${originalPostUserDetails.name || "User"}&size=50&background=random`
-                        : profilePicture || `https://ui-avatars.com/api/?name=${name || "User"}&size=50&background=random`
+                      isRepost && originalPostUserDetails
+                        ? originalPostUserDetails.profilePicture ||
+                          `https://ui-avatars.com/api/?name=${
+                            originalPostUserDetails.name || "User"
+                          }&size=50&background=random`
+                        : profilePicture ||
+                          `https://ui-avatars.com/api/?name=${
+                            name || "User"
+                          }&size=50&background=random`
                     }
                     alt="Profile"
                     className="post-profile-picture"
-                    onClick={() => handleProfileClick(isRepost ? originalPostDetails?.createdBy?._id : userId)}
+                    onClick={() =>
+                      handleProfileClick(
+                        isRepost ? originalPostDetails?.createdBy?._id : userId
+                      )
+                    }
                   />
                   <div className="post-online-indicator"></div>
                 </div>
               </Col>
               <Col className="ps-0">
                 <div className="d-flex align-items-center">
-                  <h6 
-                    className="mb-0 post-user-name post-user-link" 
-                    onClick={() => handleProfileClick(isRepost ? originalPostDetails?.createdBy?._id : userId)}
-                  >
-                    {isRepost && originalPostUserDetails 
-                      ? originalPostUserDetails.name || "Unknown User" 
-                      : name || "Unknown User"
+                  <h6
+                    className="mb-0 post-user-name post-user-link"
+                    onClick={() =>
+                      handleProfileClick(
+                        isRepost ? originalPostDetails?.createdBy?._id : userId
+                      )
                     }
+                  >
+                    {isRepost && originalPostUserDetails
+                      ? originalPostUserDetails.name || "Unknown User"
+                      : name || "Unknown User"}
                   </h6>
-                  {((isRepost && originalPostUserDetails?.verified) || (!isRepost && userDetails?.verified)) && (
+                  {((isRepost && originalPostUserDetails?.verified) ||
+                    (!isRepost && userDetails?.verified)) && (
                     <Badge bg="primary" className="post-verified-badge ms-1">
                       ✓
                     </Badge>
@@ -669,29 +746,40 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
                 </div>
                 <div className="post-user-details">
                   <span className="text-muted post-user-designation">
-                    {isRepost && originalPostUserDetails 
-                      ? originalPostUserDetails.jobTitle || originalPostUserDetails.designation || "No designation available"
-                      : userDetails?.jobTitle || designation || "No designation available"
-                    }
+                    {isRepost && originalPostUserDetails
+                      ? originalPostUserDetails.jobTitle ||
+                        originalPostUserDetails.designation ||
+                        "No designation available"
+                      : userDetails?.jobTitle ||
+                        designation ||
+                        "No designation available"}
                   </span>
                   <span className="text-muted post-time-ago ms-2">
-                    • {formatDate(isRepost && originalPostDetails ? originalPostDetails.createdAt : createdAt)}
+                    •{" "}
+                    {formatDate(
+                      isRepost && originalPostDetails
+                        ? originalPostDetails.createdAt
+                        : createdAt
+                    )}
                   </span>
                 </div>
               </Col>
               <Col xs="auto">
                 <Dropdown>
-                  <Dropdown.Toggle variant="light" id="dropdown-post-options" className="post-options-button">
+                  <Dropdown.Toggle
+                    variant="light"
+                    id="dropdown-post-options"
+                    className="post-options-button"
+                  >
                     <FaEllipsisH />
                   </Dropdown.Toggle>
                   <Dropdown.Menu>
                     <Dropdown.Item onClick={toggleBookmark}>
-                      {bookmarked ? "Remove from Bookmarks" : "Save to Bookmarks"}
+                      {bookmarked
+                        ? "Remove from Bookmarks"
+                        : "Save to Bookmarks"}
                     </Dropdown.Item>
-                    <Dropdown.Item 
-                      ref={linkRef}
-                      onClick={copyLinkToClipboard}
-                    >
+                    <Dropdown.Item ref={linkRef} onClick={copyLinkToClipboard}>
                       <FaLink className="me-2" /> Copy Link
                     </Dropdown.Item>
                     {isOwner && (
@@ -699,7 +787,7 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
                         <Dropdown.Item onClick={() => setEditing(true)}>
                           Edit Post
                         </Dropdown.Item>
-                        <Dropdown.Item 
+                        <Dropdown.Item
                           onClick={() => setShowDeleteConfirm(true)}
                           className="text-danger"
                         >
@@ -713,7 +801,7 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
                     </Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>
-                
+
                 <Overlay target={linkRef.current} show={copied} placement="top">
                   {(props) => (
                     <Tooltip id="copied-tooltip" {...props}>
@@ -736,34 +824,36 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
                   className="mb-2"
                 />
                 <div className="d-flex justify-content-end">
-                  <Button 
-                    variant="outline-secondary" 
-                    size="sm" 
+                  <Button
+                    variant="outline-secondary"
+                    size="sm"
                     onClick={() => setEditing(false)}
                     className="me-2"
                   >
                     Cancel
                   </Button>
-                  <Button 
-                    variant="primary" 
-                    size="sm" 
-                    onClick={handlePostEdit}
-                  >
+                  <Button variant="primary" size="sm" onClick={handlePostEdit}>
                     Save
                   </Button>
                 </div>
               </div>
             ) : (
               <div className="post-text-container">
-                <div 
+                <div
                   ref={textRef}
-                  className={`post-text-content ${showFullText ? 'expanded' : 'collapsed'} ${isTextOverflow ? 'overflow' : ''}`}
+                  className={`post-text-content ${
+                    showFullText ? "expanded" : "collapsed"
+                  } ${isTextOverflow ? "overflow" : ""}`}
                 >
-                  {parseContent(isRepost && originalPostDetails ? originalPostDetails.content : content)}
+                  {parseContent(
+                    isRepost && originalPostDetails
+                      ? originalPostDetails.content
+                      : content
+                  )}
                 </div>
                 {isTextOverflow && (
-                  <Button 
-                    variant="link" 
+                  <Button
+                    variant="link"
                     className="post-read-more-btn p-0 mt-1"
                     onClick={toggleShowFullText}
                   >
@@ -780,39 +870,45 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
                 )}
               </div>
             )}
-            
-            {(imageUrl || (isRepost && originalPostDetails?.imageUrl)) && !(videoUrl || (isRepost && originalPostDetails?.videoUrl)) && (
-              <div className="post-image-wrapper">
-                <img 
-                  src={isRepost && originalPostDetails?.imageUrl ? originalPostDetails.imageUrl : imageUrl} 
-                  alt="Post Content" 
-                  className="post-content-image" 
-                />
+
+            {(imageUrl || (isRepost && originalPostDetails?.imageUrl)) &&
+              !(videoUrl || (isRepost && originalPostDetails?.videoUrl)) && (
+                <div className="post-image-wrapper">
+                  <img
+                    src={
+                      isRepost && originalPostDetails?.imageUrl
+                        ? originalPostDetails.imageUrl
+                        : imageUrl
+                    }
+                    alt="Post Content"
+                    className="post-content-image"
+                  />
+                </div>
+              )}
+
+            {resolvedVideoUrl && (
+              <div className="post-video-wrapper">
+                <div className="post-video-inner">
+                  <video
+                    src={resolvedVideoUrl}
+                    className="post-video"
+                    controls
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    onError={(e) => console.error("VIDEO ERROR", e)}
+                  />
+                </div>
               </div>
             )}
-            
-            {resolvedVideoUrl && (
-  <div className="post-video-wrapper">
-    <div className="post-video-inner">
-      <video
-        src={resolvedVideoUrl}
-        className="post-video"
-        controls
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        onError={(e) => console.error("VIDEO ERROR", e)}
-      />
-    </div>
-  </div>
-)}
 
             {videoError && (
               <Alert variant="warning" className="mt-3">
                 <FaImage className="me-2" />
-                Video failed to load. The file may be corrupted or in an unsupported format.
+                Video failed to load. The file may be corrupted or in an
+                unsupported format.
               </Alert>
             )}
           </Card.Body>
@@ -838,11 +934,13 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
                 </span>
               )}
             </div>
-            
+
             <div className="post-actions-section">
               <Button
                 variant="light"
-                className={`post-action-btn post-like-btn ${liked ? "liked" : ""}`}
+                className={`post-action-btn post-like-btn ${
+                  liked ? "liked" : ""
+                }`}
                 onClick={toggleLike}
                 disabled={saving}
               >
@@ -865,17 +963,19 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
                 <span className="post-action-text ms-1">Comment</span>
               </Button>
 
-              <Button 
-                variant="light" 
-                className={`post-action-btn post-repost-btn ${reposted ? "reposted" : ""}`}
+              <Button
+                variant="light"
+                className={`post-action-btn post-repost-btn ${
+                  reposted ? "reposted" : ""
+                }`}
                 onClick={() => setShowRepostModal(true)}
               >
                 <FaRetweet className="post-action-icon" />
                 <span className="post-action-text">Repost</span>
               </Button>
-              
-              <Button 
-                variant="light" 
+
+              <Button
+                variant="light"
                 className="post-action-btn post-share-btn"
                 ref={linkRef}
                 onClick={copyLinkToClipboard}
@@ -883,9 +983,9 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
                 <FaShare className="post-action-icon" />
                 <span className="post-action-text">Share</span>
               </Button>
-              
-              <Button 
-                variant="light" 
+
+              <Button
+                variant="light"
                 className="post-action-btn post-bookmark-btn ms-auto"
                 onClick={toggleBookmark}
               >
@@ -901,172 +1001,214 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
       </div>
 
       {/* Comment Modal */}
+      {/* ================= COMMENT MODAL ================= */}
       <Modal
-  show={showCommentModal}
-  onHide={() => {
-    setShowCommentModal(false);
-    setShowEmojiPicker(false);
-    setShowGifPicker(false);
-    setGifUrl("");
-  }}
-  centered
-  size="lg"
-  dialogClassName="modern-comment-modal"
->
-  {/* Header */}
-  <Modal.Header closeButton className="border-0 pb-0">
-    <Modal.Title className="fw-semibold">
-      Comments
-      {comments.length > 0 && (
-        <Badge bg="secondary" className="ms-2">
-          {comments.length}
-        </Badge>
-      )}
-    </Modal.Title>
-  </Modal.Header>
+        show={showCommentModal}
+        onHide={() => {
+          setShowCommentModal(false);
+          setShowEmojiPicker(false);
+          setShowGifPicker(false);
+          setGifUrl("");
+        }}
+        centered
+        size="lg"
+        dialogClassName="modern-comment-modal"
+      >
+        {/* Header */}
+        <Modal.Header closeButton className="border-0 pb-0">
+          <Modal.Title className="fw-semibold">
+            Comments
+            {comments.length > 0 && (
+              <Badge bg="secondary" className="ms-2">
+                {comments.length}
+              </Badge>
+            )}
+          </Modal.Title>
+        </Modal.Header>
 
-  {/* Body */}
-  <Modal.Body className="p-0">
-    {/* Comments List */}
-    <div className="modern-comments-list">
-      {comments.length === 0 ? (
-        <div className="text-center text-muted py-5">
-          <FaComment size={26} className="mb-2" />
-          <p>No comments yet</p>
-        </div>
-      ) : (
-        comments.map((comment) => (
-          <div key={comment._id} className="modern-comment-item">
-            <img
-              src={
-                comment.createdBy?.profilePicture ||
-                `https://ui-avatars.com/api/?name=${comment.createdBy?.name || "User"}`
-              }
-              alt="User"
-              className="modern-comment-avatar"
-            />
-
-            <div className="modern-comment-content">
-              <div className="d-flex justify-content-between">
-                <div>
-                  <strong
-                    className="comment-user-name"
-                    onClick={() =>
-                      handleProfileClick(comment.createdBy?._id)
-                    }
-                  >
-                    {comment.createdBy?.name || "Unknown User"}
-                  </strong>
-                  <small className="text-muted ms-2">
-                    {formatDate(comment.createdAt)}
-                  </small>
-                </div>
-
-                {comment.createdBy?._id === currentUser && (
-                  <Dropdown align="end">
-                    <Dropdown.Toggle
-                      variant="light"
-                      size="sm"
-                      className="border-0"
-                    >
-                      <FaEllipsisH />
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu>
-                      <Dropdown.Item
-                        onClick={() => {
-                          const newContent = prompt(
-                            "Edit comment:",
-                            comment.textContent
-                          );
-                          if (newContent)
-                            handleCommentUpdate(comment._id, newContent);
-                        }}
-                      >
-                        Edit
-                      </Dropdown.Item>
-                      <Dropdown.Item
-                        className="text-danger"
-                        onClick={() =>
-                          handleCommentDelete(comment._id)
-                        }
-                      >
-                        Delete
-                      </Dropdown.Item>
-                    </Dropdown.Menu>
-                  </Dropdown>
-                )}
+        {/* Body */}
+        <Modal.Body className="p-0">
+          <div className="modern-comments-list">
+            {comments.length === 0 ? (
+              <div className="text-center text-muted py-5">
+                <FaComment size={26} className="mb-2" />
+                <p>No comments yet</p>
               </div>
+            ) : (
+              comments.map((comment) => (
+                <div key={comment._id} className="modern-comment-item">
+                  <img
+                    src={
+                      comment.createdBy?.profilePicture ||
+                      `https://ui-avatars.com/api/?name=${
+                        comment.createdBy?.name || "User"
+                      }`
+                    }
+                    alt="User"
+                    className="modern-comment-avatar"
+                  />
 
-              {comment.gifUrl && (
-                <img
-                  src={comment.gifUrl}
-                  alt="GIF"
-                  className="modern-comment-gif"
-                />
-              )}
+                  <div className="modern-comment-content">
+                    <div className="d-flex justify-content-between align-items-start">
+                      <div>
+                        <strong
+                          className="comment-user-name"
+                          onClick={() =>
+                            handleProfileClick(comment.createdBy?._id)
+                          }
+                        >
+                          {comment.createdBy?.name || "Unknown User"}
+                        </strong>
+                        <small className="text-muted ms-2">
+                          {formatDate(comment.createdAt)}
+                        </small>
+                      </div>
 
-              <p className="mb-0 mt-1">
-                {comment.textContent}
-              </p>
-            </div>
+                      {comment.createdBy?._id === currentUser && (
+                        <Dropdown align="end">
+                          <Dropdown.Toggle
+                            variant="light"
+                            size="sm"
+                            className="border-0"
+                          >
+                            <FaEllipsisH />
+                          </Dropdown.Toggle>
+                          <Dropdown.Menu>
+                            <Dropdown.Item
+                              onClick={() => {
+                                const newContent = prompt(
+                                  "Edit comment:",
+                                  comment.content
+                                );
+                                if (newContent)
+                                  handleCommentUpdate(comment._id, newContent);
+                              }}
+                            >
+                              Edit
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                              className="text-danger"
+                              onClick={() => handleCommentDelete(comment._id)}
+                            >
+                              Delete
+                            </Dropdown.Item>
+                          </Dropdown.Menu>
+                        </Dropdown>
+                      )}
+                    </div>
+
+                    {comment.gifUrl && (
+                      <img
+                        src={comment.gifUrl}
+                        alt="GIF"
+                        className="modern-comment-gif"
+                      />
+                    )}
+
+                    {comment.content && (
+                      <p className="mb-0 mt-1">{comment.content}</p>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
-        ))
-      )}
-    </div>
-  </Modal.Body>
+        </Modal.Body>
 
-  {/* Sticky Footer Input */}
-  <Modal.Footer className="modern-comment-footer">
-    <img
-      src={
-        localStorage.getItem("profilePicture") ||
-        `https://ui-avatars.com/api/?name=${localStorage.getItem("name") || "User"}`
-      }
-      alt="You"
-      className="modern-comment-avatar"
-    />
+        {/* Footer */}
+        <Modal.Footer className="modern-comment-footer position-relative">
+          <img
+            src={
+              userDetails?.profilePicture ||
+              `https://ui-avatars.com/api/?name=${userDetails?.name || "User"}`
+            }
+            alt="You"
+            className="modern-comment-avatar"
+          />
 
-    <Form onSubmit={handleCommentSubmit} className="w-100">
-      <InputGroup className="modern-comment-input">
-        <Form.Control
-          placeholder="Write a comment..."
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          disabled={loading}
-        />
+          <Form onSubmit={handleCommentSubmit} className="w-100">
+            <InputGroup className="modern-comment-input">
+              <Form.Control
+                placeholder="Write a comment..."
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                disabled={loading}
+              />
 
-        <Button
-          variant="light"
-          onClick={() => {
-            setShowEmojiPicker(!showEmojiPicker);
-            setShowGifPicker(false);
-          }}
-        >
-          <FaSmile />
-        </Button>
+              <Button
+                variant="light"
+                type="button"
+                onClick={() => {
+                  setShowEmojiPicker(!showEmojiPicker);
+                  setShowGifPicker(false);
+                }}
+              >
+                <FaSmile />
+              </Button>
 
-        <Button
-          variant="light"
-          onClick={() => {
-            setShowGifPicker(!showGifPicker);
-            setShowEmojiPicker(false);
-            fetchGifs();
-          }}
-        >
-          <FaGift />
-        </Button>
+              <Button
+                variant="light"
+                type="button"
+                onClick={() => {
+                  setShowGifPicker(!showGifPicker);
+                  setShowEmojiPicker(false);
+                  fetchGifs();
+                }}
+              >
+                <FaGift />
+              </Button>
 
-        <Button
-          type="submit"
-          variant="primary"
-          disabled={loading || (!comment.trim() && !gifUrl)}
-        >
-          <FaPaperPlane />
-        </Button>
-      </InputGroup>
-    </Form>
-  </Modal.Footer>
-</Modal>
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={loading || (!comment.trim() && !gifUrl)}
+              >
+                <FaPaperPlane />
+              </Button>
+            </InputGroup>
+          </Form>
+
+          {/* Emoji Picker */}
+          {showEmojiPicker && (
+            <div className="comment-floating-picker">
+              <Picker
+                onEmojiClick={(emojiData) =>
+                  setComment((prev) => prev + emojiData.emoji)
+                }
+              />
+            </div>
+          )}
+
+          {/* GIF Picker */}
+          {showGifPicker && (
+            <div className="comment-gif-picker">
+              <InputGroup size="sm" className="mb-2">
+                <Form.Control
+                  placeholder="Search GIFs..."
+                  value={gifSearch}
+                  onChange={(e) => setGifSearch(e.target.value)}
+                />
+                <Button onClick={() => fetchGifs(gifSearch)}>Search</Button>
+              </InputGroup>
+
+              <div className="comment-gif-grid">
+                {gifs.map((gif) => (
+                  <img
+                    key={gif.id}
+                    src={gif.preview || gif.url}
+                    alt="gif"
+                    onClick={() => {
+                      setGifUrl(gif.url);
+                      setShowGifPicker(false);
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </Modal.Footer>
+      </Modal>
+      {/* ================= END COMMENT MODAL ================= */}
 
       {/* Repost Modal */}
       <Modal
@@ -1090,21 +1232,21 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
           </Form.Group>
         </Modal.Body>
         <Modal.Footer>
-          <Button 
-            variant="outline-secondary" 
+          <Button
+            variant="outline-secondary"
             onClick={() => setShowRepostModal(false)}
           >
             Cancel
           </Button>
-          <Button 
-            variant="outline-primary" 
+          <Button
+            variant="outline-primary"
             onClick={() => handleRepost(false)}
             disabled={saving}
           >
             {saving ? <Spinner size="sm" /> : "Repost"}
           </Button>
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             onClick={() => handleRepost(true)}
             disabled={saving}
           >
@@ -1123,19 +1265,17 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
           <Modal.Title>Confirm Delete</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Are you sure you want to delete this post? This action cannot be undone.
+          Are you sure you want to delete this post? This action cannot be
+          undone.
         </Modal.Body>
         <Modal.Footer>
-          <Button 
-            variant="outline-secondary" 
+          <Button
+            variant="outline-secondary"
             onClick={() => setShowDeleteConfirm(false)}
           >
             Cancel
           </Button>
-          <Button 
-            variant="danger" 
-            onClick={handlePostDelete}
-          >
+          <Button variant="danger" onClick={handlePostDelete}>
             Delete
           </Button>
         </Modal.Footer>
@@ -1153,7 +1293,6 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
 };
 
 export default Postcard;
-
 
 // import React, { useState, useEffect, useRef } from "react";
 // import axios from "axios";
@@ -1312,11 +1451,11 @@ export default Postcard;
 //     const date = new Date(dateString);
 //     const now = new Date();
 //     const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
-    
+
 //     if (diffInHours < 1) return "Just now";
 //     if (diffInHours < 24) return `${diffInHours}h ago`;
 //     if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`;
-    
+
 //     return date.toLocaleDateString();
 //   };
 
@@ -1434,21 +1573,21 @@ export default Postcard;
 //         alert("Please log in to repost");
 //         return;
 //       }
-      
+
 //       setSaving(true);
 //       const response = await axios.post(
 //         `${import.meta.env.VITE_API_URL}/api/posts/repost/${postId}`,
-//         { 
+//         {
 //           userId: currentUser,
 //           comment: withComment ? repostCommentText : null
 //         }
 //       );
-      
+
 //       setReposted(true);
 //       setRepostCount(response.data.reposts);
 //       setShowRepostModal(false);
 //       setRepostCommentText("");
-      
+
 //       alert("Post reposted successfully!");
 //     } catch (error) {
 //       console.error("Error reposting:", error);
@@ -1469,10 +1608,10 @@ export default Postcard;
 //   const fetchGifs = async (query = "") => {
 //     try {
 //       const apiUrl = import.meta.env.VITE_API_URL;
-//       const endpoint = query 
+//       const endpoint = query
 //         ? `${apiUrl}/api/posts/gifs/search?query=${query}`
 //         : `${apiUrl}/api/posts/gifs/trending`;
-      
+
 //       const response = await axios.get(endpoint);
 //       setGifs(response.data);
 //     } catch (error) {
@@ -1556,16 +1695,16 @@ export default Postcard;
 //       alert("Please log in to vote");
 //       return;
 //     }
-    
+
 //     try {
 //       const response = await axios.post(
 //         `${import.meta.env.VITE_API_URL}/api/posts/poll/${postId}/vote`,
-//         { 
+//         {
 //           userId: currentUser,
 //           optionId: optionId
 //         }
 //       );
-      
+
 //       setPoll(response.data.poll);
 //       setVoted(true);
 //       setSelectedPollOption(optionId);
@@ -1595,7 +1734,7 @@ export default Postcard;
 //         `${import.meta.env.VITE_API_URL}/api/posts/${postId}`,
 //         { content: editContent }
 //       );
-      
+
 //       if (onUpdate) onUpdate(postId, response.data);
 //       setEditing(false);
 //       alert("Post updated successfully");
@@ -1616,7 +1755,7 @@ export default Postcard;
 //       setRefreshing(false);
 //     }, 1000);
 //   };
- 
+
 //   const isOwner = currentUser === userId;
 
 //   return (
@@ -1627,7 +1766,7 @@ export default Postcard;
 //           <FaSync className="spinning" />
 //           <span>Refreshing posts...</span>
 //         </div>
-        
+
 //         <Card className="post-card modern-card">
 //           {/* Repost Header - Shows reposter info */}
 // {isRepost && (
@@ -1643,7 +1782,7 @@ export default Postcard;
 //                 <div className="profile-picture-container-post">
 //                   <img
 //                     src={
-//                       isRepost && repostUserDetails 
+//                       isRepost && repostUserDetails
 //                         ? repostUserDetails.profilePicture || `https://ui-avatars.com/api/?name=${repostUserDetails.name || "User"}&size=50&background=random`
 //                         : profilePicture || `https://ui-avatars.com/api/?name=${name || "User"}&size=50&background=random`
 //                     }
@@ -1656,12 +1795,12 @@ export default Postcard;
 //               </Col>
 //               <Col className="ps-0">
 //                 <div className="d-flex align-items-center">
-//                   <h6 
-//                     className="mb-0 user-name user-link" 
+//                   <h6
+//                     className="mb-0 user-name user-link"
 //                     onClick={() => handleProfileClick(isRepost ? repostUserDetails?.createdBy?._id : userId)}
 //                   >
-//                     {isRepost && repostUserDetails 
-//                       ? repostUserDetails.name || "Unknown User" 
+//                     {isRepost && repostUserDetails
+//                       ? repostUserDetails.name || "Unknown User"
 //                       : name || "Unknown User"
 //                     }
 //                   </h6>
@@ -1673,7 +1812,7 @@ export default Postcard;
 //                 </div>
 //                 <div className="user-details">
 //                   <span className="text-muted designation">
-//                     {isRepost && repostUserDetails 
+//                     {isRepost && repostUserDetails
 //                       ? repostUserDetails.jobTitle || repostUserDetails.designation || "No designation available"
 //                       : userDetails?.jobTitle || designation || "No designation available"
 //                     }
@@ -1682,9 +1821,9 @@ export default Postcard;
 
 // <span className="text-muted time-ago ms-2">
 //   • {formatDate(
-//       isRepost && 
-//       repostUserDetails?.userId === post?.createdBy?._id 
-//         ? post.createdAt 
+//       isRepost &&
+//       repostUserDetails?.userId === post?.createdBy?._id
+//         ? post.createdAt
 //         : createdAt
 //     )}
 // </span>
@@ -1701,7 +1840,7 @@ export default Postcard;
 //                     <Dropdown.Item onClick={toggleBookmark}>
 //                       {bookmarked ? "Remove from Bookmarks" : "Save to Bookmarks"}
 //                     </Dropdown.Item>
-//                     <Dropdown.Item 
+//                     <Dropdown.Item
 //                       ref={linkRef}
 //                       onClick={copyLinkToClipboard}
 //                     >
@@ -1712,7 +1851,7 @@ export default Postcard;
 //                         <Dropdown.Item onClick={() => setEditing(true)}>
 //                           Edit Post
 //                         </Dropdown.Item>
-//                         <Dropdown.Item 
+//                         <Dropdown.Item
 //                           onClick={() => setShowDeleteConfirm(true)}
 //                           className="text-danger"
 //                         >
@@ -1726,7 +1865,7 @@ export default Postcard;
 //                     </Dropdown.Item>
 //                   </Dropdown.Menu>
 //                 </Dropdown>
-                
+
 //                 <Overlay target={linkRef.current} show={copied} placement="top">
 //                   {(props) => (
 //                     <Tooltip id="copied-tooltip" {...props}>
@@ -1738,7 +1877,7 @@ export default Postcard;
 //             </Row>
 //           </Card.Body>
 //         </div>
-        
+
 //         {/* Repost Comment */}
 //         {repostComment && (
 //           <div className="repost-comment mt-2 p-2 bg-white rounded border">
@@ -1749,14 +1888,14 @@ export default Postcard;
 //            </div>
 //            </div>
 //            )}
-          
+
 //           <Card.Body className="post-header">
 //             <Row className="align-items-center">
 //               <Col xs="auto">
 //                 <div className="profile-picture-container-post">
 //                   <img
 //                     src={
-//                       isRepost && originalPostUserDetails 
+//                       isRepost && originalPostUserDetails
 //                         ? originalPostUserDetails.profilePicture || `https://ui-avatars.com/api/?name=${originalPostUserDetails.name || "User"}&size=50&background=random`
 //                         : profilePicture || `https://ui-avatars.com/api/?name=${name || "User"}&size=50&background=random`
 //                     }
@@ -1769,12 +1908,12 @@ export default Postcard;
 //               </Col>
 //               <Col className="ps-0">
 //                 <div className="d-flex align-items-center">
-//                   <h6 
-//                     className="mb-0 user-name user-link" 
+//                   <h6
+//                     className="mb-0 user-name user-link"
 //                     onClick={() => handleProfileClick(isRepost ? originalPostDetails?.createdBy?._id : userId)}
 //                   >
-//                     {isRepost && originalPostUserDetails 
-//                       ? originalPostUserDetails.name || "Unknown User" 
+//                     {isRepost && originalPostUserDetails
+//                       ? originalPostUserDetails.name || "Unknown User"
 //                       : name || "Unknown User"
 //                     }
 //                   </h6>
@@ -1786,7 +1925,7 @@ export default Postcard;
 //                 </div>
 //                 <div className="user-details">
 //                   <span className="text-muted designation">
-//                     {isRepost && originalPostUserDetails 
+//                     {isRepost && originalPostUserDetails
 //                       ? originalPostUserDetails.jobTitle || originalPostUserDetails.designation || "No designation available"
 //                       : userDetails?.jobTitle || designation || "No designation available"
 //                     }
@@ -1805,7 +1944,7 @@ export default Postcard;
 //                     <Dropdown.Item onClick={toggleBookmark}>
 //                       {bookmarked ? "Remove from Bookmarks" : "Save to Bookmarks"}
 //                     </Dropdown.Item>
-//                     <Dropdown.Item 
+//                     <Dropdown.Item
 //                       ref={linkRef}
 //                       onClick={copyLinkToClipboard}
 //                     >
@@ -1816,7 +1955,7 @@ export default Postcard;
 //                         <Dropdown.Item onClick={() => setEditing(true)}>
 //                           Edit Post
 //                         </Dropdown.Item>
-//                         <Dropdown.Item 
+//                         <Dropdown.Item
 //                           onClick={() => setShowDeleteConfirm(true)}
 //                           className="text-danger"
 //                         >
@@ -1830,7 +1969,7 @@ export default Postcard;
 //                     </Dropdown.Item>
 //                   </Dropdown.Menu>
 //                 </Dropdown>
-                
+
 //                 <Overlay target={linkRef.current} show={copied} placement="top">
 //                   {(props) => (
 //                     <Tooltip id="copied-tooltip" {...props}>
@@ -1853,17 +1992,17 @@ export default Postcard;
 //                   className="mb-2"
 //                 />
 //                 <div className="d-flex justify-content-end">
-//                   <Button 
-//                     variant="outline-secondary" 
-//                     size="sm" 
+//                   <Button
+//                     variant="outline-secondary"
+//                     size="sm"
 //                     onClick={() => setEditing(false)}
 //                     className="me-2"
 //                   >
 //                     Cancel
 //                   </Button>
-//                   <Button 
-//                     variant="primary" 
-//                     size="sm" 
+//                   <Button
+//                     variant="primary"
+//                     size="sm"
 //                     onClick={handlePostEdit}
 //                   >
 //                     Save
@@ -1875,17 +2014,17 @@ export default Postcard;
 //                 {parseContent(isRepost && originalPostDetails ? originalPostDetails.content : content)}
 //               </p>
 //             )}
-            
+
 //             {(imageUrl || (isRepost && originalPostDetails?.imageUrl)) && !(videoUrl || (isRepost && originalPostDetails?.videoUrl)) && (
 //               <div className="post-image-container">
-//                 <img 
-//                   src={isRepost && originalPostDetails?.imageUrl ? originalPostDetails.imageUrl : imageUrl} 
-//                   alt="Post Content" 
-//                   className="post-image" 
+//                 <img
+//                   src={isRepost && originalPostDetails?.imageUrl ? originalPostDetails.imageUrl : imageUrl}
+//                   alt="Post Content"
+//                   className="post-image"
 //                 />
 //               </div>
 //             )}
-            
+
 //             {(videoUrl || (isRepost && originalPostDetails?.videoUrl)) && !videoError && (
 //               <div className="post-video-container">
 //                 <ReactPlayer
@@ -1904,27 +2043,27 @@ export default Postcard;
 //                 />
 //               </div>
 //             )}
-            
+
 //             {videoError && (
 //               <Alert variant="warning" className="mt-3">
 //                 <FaImage className="me-2" />
 //                 Video failed to load. The file may be corrupted or in an unsupported format.
 //               </Alert>
 //             )}
-            
+
 //             {poll && (
 //               <div className="post-poll mt-3">
 //                 <h6>{poll.question}</h6>
 //                 {poll.options.map((option) => {
-//                   const percentage = voted 
-//                     ? option.votes.length > 0 
-//                       ? Math.round((option.votes.length / poll.totalVotes) * 100) 
-//                       : 0 
+//                   const percentage = voted
+//                     ? option.votes.length > 0
+//                       ? Math.round((option.votes.length / poll.totalVotes) * 100)
+//                       : 0
 //                     : null;
-                  
+
 //                   return (
-//                     <div 
-//                       key={option._id} 
+//                     <div
+//                       key={option._id}
 //                       className={`poll-option ${voted ? 'voted' : ''} ${selectedPollOption === option._id ? 'selected' : ''}`}
 //                       onClick={() => !voted && handlePollVote(option._id)}
 //                     >
@@ -1934,8 +2073,8 @@ export default Postcard;
 //                       </div>
 //                       {voted && (
 //                         <div className="poll-progress">
-//                           <div 
-//                             className="poll-progress-bar" 
+//                           <div
+//                             className="poll-progress-bar"
 //                             style={{ width: `${percentage}%` }}
 //                           ></div>
 //                         </div>
@@ -1945,8 +2084,8 @@ export default Postcard;
 //                 })}
 //                 <div className="poll-footer">
 //                   <small className="text-muted">
-//                     {poll.totalVotes} vote{poll.totalVotes !== 1 ? 's' : ''} • 
-//                     {voted ? ' You voted' : ' Not voted yet'} • 
+//                     {poll.totalVotes} vote{poll.totalVotes !== 1 ? 's' : ''} •
+//                     {voted ? ' You voted' : ' Not voted yet'} •
 //                     Ends {formatDate(poll.endTime)}
 //                   </small>
 //                 </div>
@@ -1975,7 +2114,7 @@ export default Postcard;
 //                 </span>
 //               )}
 //             </div>
-            
+
 //             <div className="post-actions">
 //               <Button
 //                 variant="light"
@@ -2002,17 +2141,17 @@ export default Postcard;
 //                 <span className="button-text ms-1">Comment</span>
 //               </Button>
 
-//               <Button 
-//                 variant="light" 
+//               <Button
+//                 variant="light"
 //                 className={`action-btn repost-btn ${reposted ? "reposted" : ""}`}
 //                 onClick={() => setShowRepostModal(true)}
 //               >
 //                 <FaRetweet className="icon" />
 //                 <span className="button-text">Repost</span>
 //               </Button>
-              
-//               <Button 
-//                 variant="light" 
+
+//               <Button
+//                 variant="light"
 //                 className="action-btn share-btn"
 //                 ref={linkRef}
 //                 onClick={copyLinkToClipboard}
@@ -2020,9 +2159,9 @@ export default Postcard;
 //                 <FaShare className="icon" />
 //                 <span className="button-text">Share</span>
 //               </Button>
-              
-//               <Button 
-//                 variant="light" 
+
+//               <Button
+//                 variant="light"
 //                 className="action-btn bookmark-btn ms-auto"
 //                 onClick={toggleBookmark}
 //               >
@@ -2090,9 +2229,9 @@ export default Postcard;
 //                   {gifUrl && (
 //                     <div className="selected-gif-preview mt-2">
 //                       <img src={gifUrl} alt="Selected GIF" className="comment-gif-preview" />
-//                       <Button 
-//                         variant="outline-danger" 
-//                         size="sm" 
+//                       <Button
+//                         variant="outline-danger"
+//                         size="sm"
 //                         onClick={() => setGifUrl("")}
 //                         className="remove-gif-btn"
 //                       >
@@ -2113,10 +2252,10 @@ export default Postcard;
 //                       >
 //                         <FaSmile />
 //                       </Button>
-//                       <Button 
-//                         variant="light" 
-//                         size="sm" 
-//                         type="button" 
+//                       <Button
+//                         variant="light"
+//                         size="sm"
+//                         type="button"
 //                         className="ms-2"
 //                         onClick={() => {
 //                           setShowGifPicker(!showGifPicker);
@@ -2137,13 +2276,13 @@ export default Postcard;
 //                     </Button>
 //                   </div>
 //                 </Form>
-                
+
 //                 {showEmojiPicker && (
 //                   <div className="emoji-picker-container">
 //                     <Picker onEmojiClick={onEmojiClick} />
 //                   </div>
 //                 )}
-                
+
 //                 {showGifPicker && (
 //                   <div className="gif-picker-container">
 //                     <InputGroup size="sm" className="mb-2">
@@ -2152,7 +2291,7 @@ export default Postcard;
 //                         value={gifSearch}
 //                         onChange={(e) => setGifSearch(e.target.value)}
 //                       />
-//                       <Button 
+//                       <Button
 //                         variant="primary"
 //                         onClick={() => fetchGifs(gifSearch)}
 //                       >
@@ -2199,7 +2338,7 @@ export default Postcard;
 //                   <div className="comment-content flex-grow-1">
 //                     <div className="comment-header d-flex justify-content-between align-items-start mb-1">
 //                       <div>
-//                         <strong 
+//                         <strong
 //                           className="commenter-name user-link"
 //                           onClick={() => handleProfileClick(comment.createdBy?._id)}
 //                         >
@@ -2215,7 +2354,7 @@ export default Postcard;
 //                             <FaEllipsisH />
 //                           </Dropdown.Toggle>
 //                           <Dropdown.Menu>
-//                             <Dropdown.Item 
+//                             <Dropdown.Item
 //                               onClick={() => {
 //                                 const newContent = prompt(
 //                                   "Edit your comment:",
@@ -2228,7 +2367,7 @@ export default Postcard;
 //                             >
 //                               Edit
 //                             </Dropdown.Item>
-//                             <Dropdown.Item 
+//                             <Dropdown.Item
 //                               onClick={() => {
 //                                 if (
 //                                   window.confirm(
@@ -2292,21 +2431,21 @@ export default Postcard;
 //           </Form.Group>
 //         </Modal.Body>
 //         <Modal.Footer>
-//           <Button 
-//             variant="outline-secondary" 
+//           <Button
+//             variant="outline-secondary"
 //             onClick={() => setShowRepostModal(false)}
 //           >
 //             Cancel
 //           </Button>
-//           <Button 
-//             variant="outline-primary" 
+//           <Button
+//             variant="outline-primary"
 //             onClick={() => handleRepost(false)}
 //             disabled={saving}
 //           >
 //             {saving ? <Spinner size="sm" /> : "Repost"}
 //           </Button>
-//           <Button 
-//             variant="primary" 
+//           <Button
+//             variant="primary"
 //             onClick={() => handleRepost(true)}
 //             disabled={saving}
 //           >
@@ -2328,14 +2467,14 @@ export default Postcard;
 //           Are you sure you want to delete this post? This action cannot be undone.
 //         </Modal.Body>
 //         <Modal.Footer>
-//           <Button 
-//             variant="outline-secondary" 
+//           <Button
+//             variant="outline-secondary"
 //             onClick={() => setShowDeleteConfirm(false)}
 //           >
 //             Cancel
 //           </Button>
-//           <Button 
-//             variant="danger" 
+//           <Button
+//             variant="danger"
 //             onClick={handlePostDelete}
 //           >
 //             Delete
@@ -2355,4 +2494,3 @@ export default Postcard;
 // };
 
 // export default Postcard;
-

@@ -1759,3 +1759,35 @@
 .modern-comment-input input {
   border-radius: 999px;
 }
+.comment-floating-picker {
+  position: absolute;
+  bottom: 80px;
+  right: 20px;
+  z-index: 1056;
+}
+
+.comment-gif-picker {
+  position: absolute;
+  bottom: 80px;
+  right: 20px;
+  width: 320px;
+  background: white;
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  z-index: 1056;
+}
+
+.comment-gif-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.comment-gif-grid img {
+  width: 100%;
+  border-radius: 8px;
+  cursor: pointer;
+}
