@@ -1047,7 +1047,6 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
                     alt="User"
                     className="modern-comment-avatar"
                   />
-
                   <div className="modern-comment-content">
                     <div className="d-flex justify-content-between align-items-start">
                       <div>
@@ -1117,28 +1116,6 @@ const Postcard = ({ post, onDelete, onUpdate, onRefresh }) => {
 
         {/* Footer */}
         <Modal.Footer className="modern-comment-footer position-relative">
-          <img
-                              src={
-                                isRepost && repostUserDetails
-                                  ? repostUserDetails.profilePicture ||
-                                    `https://ui-avatars.com/api/?name=${
-                                      repostUserDetails.name || "User"
-                                    }&size=50&background=random`
-                                  : profilePicture ||
-                                    `https://ui-avatars.com/api/?name=${
-                                      name || "User"
-                                    }&size=50&background=random`
-                              }
-                              alt="Profile"
-                              className="post-profile-picture"
-                              onClick={() =>
-                                handleProfileClick(
-                                  isRepost
-                                    ? repostUserDetails?.createdBy?._id
-                                    : userId
-                                )
-                              }
-                            />
           <Form onSubmit={handleCommentSubmit} className="w-100">
             <InputGroup className="modern-comment-input">
               <Form.Control
@@ -2505,5 +2482,26 @@ export default Postcard;
 //     </>
 //   );
 // };
-
+{/* <img
+                              src={
+                                isRepost && repostUserDetails
+                                  ? repostUserDetails.profilePicture ||
+                                    `https://ui-avatars.com/api/?name=${
+                                      repostUserDetails.name || "User"
+                                    }&size=50&background=random`
+                                  : profilePicture ||
+                                    `https://ui-avatars.com/api/?name=${
+                                      name || "User"
+                                    }&size=50&background=random`
+                              }
+                              alt="Profile"
+                              className="post-profile-picture"
+                              onClick={() =>
+                                handleProfileClick(
+                                  isRepost
+                                    ? repostUserDetails?.createdBy?._id
+                                    : userId
+                                )
+                              }
+                            /> */}
 // export default Postcard;
