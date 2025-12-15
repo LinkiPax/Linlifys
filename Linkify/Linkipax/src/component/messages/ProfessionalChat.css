@@ -1072,3 +1072,164 @@ body {
   backdrop-filter: blur(12px);
   background: rgba(255, 255, 255, 0.85);
 }
+/* ===============================
+   TEXT MESSAGE (HD BUBBLES)
+================================ */
+
+.message-content {
+  max-width: 520px;
+  padding: 12px 16px;
+  border-radius: 18px;
+  font-size: 15px;
+  line-height: 1.5;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+}
+
+/* Sent message (green / purple tone) */
+.message.sent .message-content {
+  background: #dcf8c6;
+  border-bottom-right-radius: 6px;
+}
+
+/* Received message */
+.message.received .message-content {
+  background: #ffffff;
+  border-bottom-left-radius: 6px;
+}
+.message-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 11px;
+}
+
+.message-meta .timestamp {
+  color: #666;
+}
+
+.status-icon {
+  font-size: 13px;
+  color: #4fc3f7;
+}
+/* ===============================
+   IMAGE MESSAGES (HD)
+================================ */
+
+.message-content .image-message-container {
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.image-message-container {
+  max-width: 360px;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.image-message-container img {
+  width: 100%;
+  display: block;
+  border-radius: 16px;
+  object-fit: cover;
+  background: #000;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
+/* ===============================
+   VIDEO MESSAGES (HD)
+================================ */
+
+.message-content .video-message-container {
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.video-message-container {
+  max-width: 380px;
+}
+
+.video-wrapper {
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 8px 26px rgba(0,0,0,0.3);
+}
+
+.video-wrapper video {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 16px;
+}
+/* ===============================
+   EMOJI PICKER (HD & WIDE)
+================================ */
+
+.emoji-picker {
+  position: absolute;
+  bottom: 80px;
+  right: 16px;
+  width: 420px;               /* 👈 BIGGER */
+  height: 360px;
+  z-index: 2000;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 14px 36px rgba(0,0,0,0.3);
+}
+/* ===============================
+   MESSAGE INPUT BAR (HD)
+================================ */
+
+.message-input-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  backdrop-filter: blur(12px);
+  background: rgba(255,255,255,0.9);
+  border-top: 1px solid #e5e5e5;
+}
+
+.message-input-container textarea {
+  border-radius: 28px !important;
+  padding: 14px 20px !important;
+  font-size: 15px;
+  background: #f4f6f9;
+  border: none !important;
+}
+
+.message-input-container textarea:focus {
+  background: #fff;
+  box-shadow: 0 0 0 2px rgba(24,144,255,0.25);
+}
+.input-action-btn {
+  width: 46px;
+  height: 46px;
+  font-size: 22px !important;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.input-action-btn:hover {
+  background: rgba(24,144,255,0.12);
+  transform: scale(1.08);
+}
+
+.send-btn {
+  width: 48px;
+  height: 48px;
+  font-size: 20px;
+  border-radius: 50%;
+  box-shadow: 0 6px 18px rgba(24,144,255,0.35);
+}
+.voice-btn.recording {
+  background: #ff4d4f !important;
+  color: #fff !important;
+  animation: pulse 1.2s infinite;
+}
