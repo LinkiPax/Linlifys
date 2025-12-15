@@ -1835,24 +1835,6 @@ const ProfessionalChat = () => {
             </Dropdown>
           </Space>
         </div>
-
-        <div className="sidebar-tabs">
-          <div 
-            className={`tab ${activeTab === "chats" ? "active" : ""}`}
-            onClick={() => setActiveTab("chats")}
-          >
-            <WechatOutlined />
-            <span>Chats</span>
-          </div>
-          <div 
-            className={`tab ${activeTab === "contacts" ? "active" : ""}`}
-            onClick={() => setActiveTab("contacts")}
-          >
-            <UserOutlined />
-            <span>Contacts</span>
-          </div>
-        </div>
-
         <div className="sidebar-search">
           <Input
             placeholder="Search contacts"
