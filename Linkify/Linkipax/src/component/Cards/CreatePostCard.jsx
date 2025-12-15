@@ -425,159 +425,163 @@ const CreatePostCard = ({ userId }) => {
   };
 
   return (
-    <>
-      <Navbar />
+  <>
+    <Navbar />
 
-      <div className="container mt-4">
-        <h2 className="text-center fw-bold mb-1">🚀 Create a New Post</h2>
-        <p className="text-center text-muted mb-4">
-          Share your thoughts, ideas, or moments with the community ✨
-        </p>
+    <div className="container mt-4">
+      <h2 className="text-center fw-semibold mb-1">Create new post</h2>
+      <p className="text-center text-muted mb-4">
+        Share moments, ideas, or updates
+      </p>
 
-        <Row className="g-4">
-          {/* LEFT SIDE – POST CREATOR */}
-          <Col md={6}>
-            <Card className="create-post-card shadow">
-              <Card.Header className="bg-primary text-white">
-                ✍️ Start Writing
-              </Card.Header>
+      <Row className="g-4">
+        {/* LEFT — CREATE */}
+        <Col md={6}>
+          <Card className="create-post-card">
+            <Card.Body>
+              {error && <Alert variant="danger">{error}</Alert>}
 
-              <Card.Body>
-                {error && <Alert variant="danger">{error}</Alert>}
-
-                <Form.Group className="mb-3">
-                  <Form.Label>📌 Title (optional)</Form.Label>
-                  <Form.Control
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Give your post a catchy headline..."
-                  />
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                  <Form.Label>
-                    💬 What's on your mind? <span className="text-danger">*</span>
-                  </Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={4}
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    placeholder="Write something amazing..."
-                  />
-                </Form.Group>
-
-                <Row className="mb-3">
-                  <Col>
-                    <Form.Control
-                      placeholder="🏷️ Tags (react, tech, news)"
-                      value={tags}
-                      onChange={(e) => setTags(e.target.value)}
-                    />
-                  </Col>
-                  <Col>
-                    <Form.Select
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value)}
-                    >
-                      <option value="general">🌍 General</option>
-                      <option value="technology">💻 Technology</option>
-                      <option value="education">📚 Education</option>
-                      <option value="news">📰 News</option>
-                      <option value="sports">⚽ Sports</option>
-                    </Form.Select>
-                  </Col>
-                </Row>
-
-                <Form.Check
-                  type="switch"
-                  label="🌐 Make post public"
-                  checked={isPublic}
-                  onChange={(e) => setIsPublic(e.target.checked)}
-                  className="mb-3"
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-semibold">
+                  Title (optional)
+                </Form.Label>
+                <Form.Control
+                  className="post-title-input"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Add a short title"
                 />
+              </Form.Group>
 
-                {/* Upload buttons */}
-                <div className="d-flex gap-2 mb-3">
-                  <input
-                    type="file"
-                    id="media-upload"
-                    hidden
-                    accept="image/*,video/*"
-                    onChange={(e) => handleMediaUpload(e.target.files[0])}
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-semibold">
+                  Caption <span className="text-danger">*</span>
+                </Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={4}
+                  className="post-content-input"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="Write something..."
+                />
+              </Form.Group>
+
+              <Row className="mb-3 g-2">
+                <Col>
+                  <Form.Control
+                    placeholder="Tags (react, tech)"
+                    value={tags}
+                    onChange={(e) => setTags(e.target.value)}
                   />
-                  <label htmlFor="media-upload" className="btn btn-outline-primary">
-                    <FiImage /> Upload Media
-                  </label>
-
-                  <Button
-                    variant="outline-info"
-                    onClick={() => setShowGifModal(true)}
+                </Col>
+                <Col>
+                  <Form.Select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
                   >
-                    <FiGift /> Add GIF
-                  </Button>
-                </div>
+                    <option value="general">General</option>
+                    <option value="technology">Technology</option>
+                    <option value="education">Education</option>
+                    <option value="news">News</option>
+                    <option value="sports">Sports</option>
+                  </Form.Select>
+                </Col>
+              </Row>
 
-                {/* Circular Loader */}
-                {loading && (
-                  <div className="upload-circle">
-                    <svg>
-                      <circle cx="50" cy="50" r="45" />
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="45"
-                        style={{
-                          strokeDashoffset: 283 - (283 * uploadProgress) / 100,
-                        }}
-                      />
-                    </svg>
-                    <span>{uploadProgress}%</span>
-                  </div>
-                )}
+              <Form.Check
+                type="switch"
+                label="Public post"
+                checked={isPublic}
+                onChange={(e) => setIsPublic(e.target.checked)}
+                className="mb-3"
+              />
 
-                <Button
-                  className="post-button w-100 mt-3"
-                  disabled={loading || !content.trim()}
-                  onClick={handlePost}
+              {/* Upload actions */}
+              <div className="d-flex gap-2 mb-3">
+                <input
+                  type="file"
+                  id="media-upload"
+                  hidden
+                  accept="image/*,video/*"
+                  onChange={(e) => handleMediaUpload(e.target.files[0])}
+                />
+                <label htmlFor="media-upload" className="post-button">
+                  <FiImage /> Upload
+                </label>
+
+                <button
+                  type="button"
+                  className="post-button"
+                  style={{ background: "#f0f0f0", color: "#262626" }}
+                  onClick={() => setShowGifModal(true)}
                 >
-                  🚀 Publish Post
-                </Button>
-              </Card.Body>
-            </Card>
-          </Col>
+                  <FiGift /> GIF
+                </button>
+              </div>
 
-          {/* RIGHT SIDE – HD PREVIEW */}
-          <Col md={6}>
-            <Card className="preview-card shadow">
-              <Card.Header>👀 Live Preview</Card.Header>
-              <Card.Body>
-                {!mediaUrl && (
-                  <p className="text-muted text-center">
-                    Media preview will appear here 📸🎥
-                  </p>
-                )}
+              {/* Upload loader */}
+              {loading && (
+                <div className="upload-circle">
+                  <svg>
+                    <circle cx="48" cy="48" r="42" />
+                    <circle
+                      cx="48"
+                      cy="48"
+                      r="42"
+                      style={{
+                        strokeDashoffset:
+                          283 - (283 * uploadProgress) / 100,
+                      }}
+                    />
+                  </svg>
+                  <span>{uploadProgress}%</span>
+                </div>
+              )}
 
-                {mediaType === "image" && (
-                  <img src={mediaUrl} className="preview-media" alt="" />
-                )}
-                {mediaType === "video" && (
-                  <video
-                    src={mediaUrl}
-                    controls
-                    className="preview-media"
-                  />
-                )}
-                {mediaType === "gif" && (
-                  <img src={mediaUrl} className="preview-media" alt="" />
-                )}
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      </div>
-    </>
-  );
+              <button
+                className="post-button w-100 mt-3"
+                disabled={loading || !content.trim()}
+                onClick={handlePost}
+              >
+                Share
+              </button>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        {/* RIGHT — PREVIEW */}
+        <Col md={6}>
+          <Card className="preview-card">
+            <Card.Body>
+              {!mediaUrl && (
+                <p className="text-muted text-center">
+                  Media preview will appear here
+                </p>
+              )}
+
+              {mediaType === "image" && (
+                <img src={mediaUrl} className="preview-media" alt="" />
+              )}
+
+              {mediaType === "video" && (
+                <video
+                  src={mediaUrl}
+                  controls
+                  className="preview-media"
+                />
+              )}
+
+              {mediaType === "gif" && (
+                <img src={mediaUrl} className="preview-media" alt="" />
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </div>
+  </>
+);
 };
 
 export default CreatePostCard;
