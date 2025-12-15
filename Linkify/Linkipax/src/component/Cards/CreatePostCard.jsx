@@ -476,7 +476,7 @@ const CreatePostCard = ({ userId }) => {
                   />
                 </Col>
                 <Col>
-                  <Form.Select
+                  <Form.Select className="uniform-input"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
                   >

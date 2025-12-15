@@ -150,3 +150,6 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+.uniform-input{
+  margin: 0px;
+}
