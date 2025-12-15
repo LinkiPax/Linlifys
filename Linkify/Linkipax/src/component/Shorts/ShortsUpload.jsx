@@ -375,7 +375,7 @@ import { IoMdAdd, IoMdClose } from "react-icons/io";
 import { BsEmojiSmile, BsArrowLeft, BsThreeDotsVertical } from "react-icons/bs";
 import { MdSlowMotionVideo, MdOutlineAudiotrack } from "react-icons/md";
 import { TbLocation } from "react-icons/tb";
-
+import NavbarComponent from "../navbar/Navbar";
 const ShortUpload = () => {
   const [video, setVideo] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -579,6 +579,7 @@ const ShortUpload = () => {
         isMobileView ? "mobile" : "desktop"
       }`}
     >
+      <NavbarComponent/>
       {/* Mobile Header */}
       {isMobileView && preview && (
         <div className="mobile-header">
