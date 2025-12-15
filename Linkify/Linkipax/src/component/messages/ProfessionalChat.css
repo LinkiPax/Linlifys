@@ -200,9 +200,7 @@ body {
   padding: 16px;
   display: flex;
   flex-direction: column;
-  background-image: url('/public/Gemini_Generated_Image_y6upcdy6upcdy6up.png');
-  background-size: contain; /* Shows entire image without cropping */
-  
+  background-color: white;
   background-position: center;
   background-color: #f5f5f5; /* Fallback color */
 }
