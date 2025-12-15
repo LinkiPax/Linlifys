@@ -594,8 +594,10 @@
   }
   
   .video-preview-container {
+    height: fit-content;
     flex: 1;
     max-width: 400px;
+    margin-top: 82px;
   }
   
   .form-section {
