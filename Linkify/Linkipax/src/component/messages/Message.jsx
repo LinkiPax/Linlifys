@@ -147,9 +147,9 @@ const ProfessionalChat = () => {
     socketRef.current = socket;
 
     // Create audio elements for sounds
-    messageSoundRef.current = new Audio('/sounds/message.mp3');
-    sendSoundRef.current = new Audio('/sounds/send.mp3');
-    callSoundRef.current = new Audio('/sounds/call.mp3');
+    messageSoundRef.current = new Audio("/sounds/message.mp3");
+    sendSoundRef.current = new Audio("/sounds/send.mp3");
+    callSoundRef.current = new Audio("/sounds/call.mp3");
 
     const audio = document.createElement("audio");
     remoteAudioRef.current = audio;
@@ -169,7 +169,7 @@ const ProfessionalChat = () => {
   // Socket listeners
   useEffect(() => {
     if (!socketRef.current) return;
-    
+
     const handleIncomingCall = (callData) => {
       callSoundRef.current.play();
       // Initialize PeerJS if not already initialized
@@ -344,7 +344,9 @@ const ProfessionalChat = () => {
                 name:
                   contactResponse.data.name || contactResponse.data.username,
                 avatar: contactResponse.data.profilePicture,
-                status: onlineUsers.includes(contactResponse.data._id) ? "online" : "offline",
+                status: onlineUsers.includes(contactResponse.data._id)
+                  ? "online"
+                  : "offline",
                 unread: unreadResponse.data.count,
                 lastSeen: contactResponse.data.lastSeen,
               };
@@ -501,7 +503,7 @@ const ProfessionalChat = () => {
     setReplyTo(null);
     setShowEmojiPicker(false);
     setIsTyping(false);
-    
+
     // Play send sound
     sendSoundRef.current.play();
 
@@ -1172,15 +1174,11 @@ const ProfessionalChat = () => {
                 )}
 
                 {msg.image.caption && (
-                  <div className="image-caption">
-                    {msg.image.caption}
-                  </div>
+                  <div className="image-caption">{msg.image.caption}</div>
                 )}
               </>
             ) : (
-              <div className="image-error">
-                Image failed to load
-              </div>
+              <div className="image-error">Image failed to load</div>
             )}
           </div>
         );
@@ -1222,9 +1220,7 @@ const ProfessionalChat = () => {
             </div>
 
             {msg.video?.caption && (
-              <div className="video-caption">
-                {msg.video.caption}
-              </div>
+              <div className="video-caption">{msg.video.caption}</div>
             )}
 
             <div className="video-actions">
@@ -1388,9 +1384,7 @@ const ProfessionalChat = () => {
             )}
 
             {msg.location.live && expiresInMinutes <= 0 && (
-              <Tag color="red">
-                Location sharing ended
-              </Tag>
+              <Tag color="red">Location sharing ended</Tag>
             )}
 
             {msg.location.address && (
@@ -1476,7 +1470,10 @@ const ProfessionalChat = () => {
 
         return (
           <div className="document-message-container">
-            <div className="document-preview" style={{ backgroundColor: `${color}10` }}>
+            <div
+              className="document-preview"
+              style={{ backgroundColor: `${color}10` }}
+            >
               {React.cloneElement(icon, {
                 style: { color: color },
               })}
@@ -1489,9 +1486,7 @@ const ProfessionalChat = () => {
                 </div>
 
                 <div className="document-meta">
-                  <span className="file-type">
-                    {fileType}
-                  </span>
+                  <span className="file-type">{fileType}</span>
                   <span>{formatFileSize(msg.document.size || 0)}</span>
                 </div>
               </div>
@@ -1877,11 +1872,12 @@ const ProfessionalChat = () => {
                       </span>
                     )}
                   </div>
-                  <Text
-                    type="secondary"
-                    className="contact-status"
-                  >
-                    {contact.status === "online" ? "Online" : `Last seen ${formatTimeAgo(new Date(contact.lastSeen || new Date()))}`}
+                  <Text type="secondary" className="contact-status">
+                    {contact.status === "online"
+                      ? "Online"
+                      : `Last seen ${formatTimeAgo(
+                          new Date(contact.lastSeen || new Date())
+                        )}`}
                   </Text>
                 </div>
               </div>
@@ -1907,7 +1903,11 @@ const ProfessionalChat = () => {
                 <div>
                   <Text strong>{activeContact.name}</Text>
                   <Text type="secondary" className="contact-status">
-                    {activeContact.status === "online" ? "Online" : `Last seen ${formatTimeAgo(new Date(activeContact.lastSeen || new Date()))}`}
+                    {activeContact.status === "online"
+                      ? "Online"
+                      : `Last seen ${formatTimeAgo(
+                          new Date(activeContact.lastSeen || new Date())
+                        )}`}
                   </Text>
                 </div>
               </div>
@@ -2002,35 +2002,44 @@ const ProfessionalChat = () => {
                         }
                         trigger={["contextMenu"]}
                       >
-                       <div className={`message-content ${msg.sender === currentUser.id ? "sent" : "received"}`}>
-  {msg.replyTo && (
-    <div className="message-reply">
-      <Text type="secondary" className="reply-label">
-        Replying to{" "}
-        {msg.replyTo.sender === currentUser.id ? "yourself" : activeContact.name}
-      </Text>
-      <div className="reply-content">
-        {msg.replyTo.content || "Audio message"}
-      </div>
-    </div>
-  )}
+                        <div
+                          className={`message-content ${
+                            msg.sender === currentUser.id ? "sent" : "received"
+                          }`}
+                        >
+                          {msg.replyTo && (
+                            <div className="message-reply">
+                              <Text type="secondary" className="reply-label">
+                                Replying to{" "}
+                                {msg.replyTo.sender === currentUser.id
+                                  ? "yourself"
+                                  : activeContact.name}
+                              </Text>
+                              <div className="reply-content">
+                                {msg.replyTo.content || "Audio message"}
+                              </div>
+                            </div>
+                          )}
 
-  <div className="main-message">{renderMessageContent(msg)}</div>
-  {renderMessageReactions(msg)}
+                          <div className="main-message">
+                            {renderMessageContent(msg)}
+                          </div>
+                          {renderMessageReactions(msg)}
 
-  <div className="message-meta">
-    <Text type="secondary" className="timestamp">
-      {new Date(msg.createdAt).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      })}
-    </Text>
-    {msg.sender === currentUser.id && (
-      <span className="status-icon">{renderMessageStatus(msg.isRead)}</span>
-    )}
-  </div>
-</div>
-
+                          <div className="message-meta">
+                            <Text type="secondary" className="timestamp">
+                              {new Date(msg.createdAt).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </Text>
+                            {msg.sender === currentUser.id && (
+                              <span className="status-icon">
+                                {renderMessageStatus(msg.isRead)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </Dropdown>
                     </div>
                   ))}
