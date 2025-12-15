@@ -588,7 +588,7 @@
 
 /* Responsive adjustments */
 @media (min-width: 768px) {
-  .content-wrapperss {
+  .content-wrapper {
     flex-direction: row;
     gap: 24px;
   }
