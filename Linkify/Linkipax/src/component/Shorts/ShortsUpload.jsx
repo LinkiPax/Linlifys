@@ -598,7 +598,7 @@ const ShortUpload = () => {
       )}
 
       {/* Main Content Container with Scroll */}
-      <div className="content-wrapper">
+      <div className="content-wrapperss">
         {/* Upload Area */}
         {!preview && (
           <div
