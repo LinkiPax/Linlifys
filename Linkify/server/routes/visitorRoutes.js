@@ -1,38 +1,54 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const VisitorCount = require('../model/VisitorCount');
-const Stats = require('../model/VisitorCount');
-app.post("/visit", async (req, res) => {
-  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-  const { deviceId } = req.body;
 
-  let visitor = await Visitor.findOne({ ip, deviceId });
-  let isNew = false;
+const Visitor = require("../models/Visitor");
+const Stats = require("../models/Stats");
 
-  if (!visitor) {
-    visitor = await Visitor.create({
-      ip,
-      deviceId,
-      firstVisit: new Date(),
-      lastVisit: new Date()
+router.post("/visit", async (req, res) => {
+  try {
+    const ip =
+      req.headers["x-forwarded-for"]?.split(",")[0] ||
+      req.socket.remoteAddress;
+
+    const { deviceId } = req.body;
+
+    if (!deviceId) {
+      return res.status(400).json({ error: "Device ID required" });
+    }
+
+    let visitor = await Visitor.findOne({ ip, deviceId });
+    let isNew = false;
+
+    if (!visitor) {
+      await Visitor.create({
+        ip,
+        deviceId,
+        firstVisit: new Date(),
+        lastVisit: new Date(),
+      });
+
+      await Stats.findOneAndUpdate(
+        {},
+        { $inc: { totalVisitors: 1 } },
+        { upsert: true, new: true }
+      );
+
+      isNew = true;
+    } else {
+      visitor.lastVisit = new Date();
+      await visitor.save();
+    }
+
+    const stats = await Stats.findOne({});
+
+    res.json({
+      isNew,
+      totalVisitors: stats?.totalVisitors || 0,
     });
-
-    await Stats.findOneAndUpdate(
-      {},
-      { $inc: { totalVisitors: 1 } },
-      { upsert: true }
-    );
-
-    isNew = true;
-  } else {
-    visitor.lastVisit = new Date();
-    await visitor.save();
+  } catch (err) {
+    console.error("Visit error:", err);
+    res.status(500).json({ error: "Server error" });
   }
-
-  const stats = await Stats.findOne({});
-  res.json({
-    isNew,
-    totalVisitors: stats.totalVisitors
-  });
 });
+
 module.exports = router;

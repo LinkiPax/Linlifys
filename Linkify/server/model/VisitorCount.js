@@ -1,4 +1,5 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
+
 const VisitorSchema = new mongoose.Schema({
   ip: String,
   deviceId: String,
@@ -6,9 +7,4 @@ const VisitorSchema = new mongoose.Schema({
   lastVisit: Date,
 });
 
-const StatsSchema = new mongoose.Schema({
-  totalVisitors: Number
-});
-
-module.exports = mongoose.model('VisitorCount', VisitorSchema);
-module.exports = mongoose.model('Stats', StatsSchema);
+module.exports = mongoose.model("Visitor", VisitorSchema);
