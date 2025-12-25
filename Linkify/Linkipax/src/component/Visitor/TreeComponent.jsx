@@ -1,4 +1,4 @@
-// TreeComponent.jsx - Updated with better lighting
+// TreeComponent.jsx - Updated
 import React, { useEffect, useState, Suspense } from "react";
 import getDeviceId from "./getDeviceId";
 import getTreeStage from "./getTreeStage";
@@ -61,31 +61,33 @@ const TreeComponent = () => {
 
       <div className="tree-visual">
         <Canvas 
-          camera={{ position: [3, 2, 3], fov: 50 }}
+          camera={{ position: [5, 3, 5], fov: 60 }}
           shadows
+          style={{ background: '#87CEEB' }}
         >
-          {/* Better lighting setup */}
-          <ambientLight intensity={0.6} />
+          {/* Lighting setup */}
+          <ambientLight intensity={0.7} />
           <directionalLight 
-            position={[5, 5, 5]} 
-            intensity={1} 
+            position={[10, 10, 5]} 
+            intensity={1.2} 
             castShadow
-            shadow-mapSize-width={2048}
-            shadow-mapSize-height={2048}
+            shadow-mapSize-width={1024}
+            shadow-mapSize-height={1024}
             shadow-camera-far={50}
-            shadow-camera-left={-10}
-            shadow-camera-right={10}
-            shadow-camera-top={10}
-            shadow-camera-bottom={-10}
+            shadow-camera-left={-20}
+            shadow-camera-right={20}
+            shadow-camera-top={20}
+            shadow-camera-bottom={-20}
           />
-          <pointLight position={[-5, 5, -5]} intensity={0.5} color="#FFE082" />
-          
-          {/* Fog for depth */}
-          <fog attach="fog" args={['#87CEEB', 5, 15]} />
+          <directionalLight 
+            position={[-5, 5, -5]} 
+            intensity={0.5} 
+            color="#FFE082"
+          />
           
           <Suspense fallback={
             <Html center>
-              <div className="tree-loading-3d">Loading tree...</div>
+              <div className="tree-loading-3d">🌿 Growing tree...</div>
             </Html>
           }>
             <Tree3D visitorCount={totalVisitors} />
@@ -94,28 +96,45 @@ const TreeComponent = () => {
           <OrbitControls 
             enableZoom={true}
             enablePan={true}
-            minDistance={2}
-            maxDistance={15}
+            minDistance={3}
+            maxDistance={20}
             autoRotate={true}
-            autoRotateSpeed={0.5}
+            autoRotateSpeed={0.3}
             enableDamping
             dampingFactor={0.05}
+            maxPolarAngle={Math.PI / 2}
           />
           
-          <Environment preset="park" />
+          <Environment preset="sunset" />
+          
+          {/* Grid helper for debugging */}
+          {/* <gridHelper args={[10, 10]} /> */}
+          {/* <axesHelper args={[5]} /> */}
         </Canvas>
       </div>
 
       <div className="tree-stats">
-        <p>🌲 Visitors: <strong>{totalVisitors}</strong></p>
-        <p>🌿 Stage: <strong>{treeStage.replace("-", " ")}</strong></p>
-        <p>🌳 Tree Size: <strong>
-          {totalVisitors < 5 ? "Tiny Bush" :
-           totalVisitors < 15 ? "Small Tree" :
-           totalVisitors < 25 ? "Medium Tree" :
-           totalVisitors < 35 ? "Large Tree" :
-           "Giant Tree"}
-        </strong></p>
+        <div className="stat-item">
+          <span className="stat-icon">🌲</span>
+          <span className="stat-label">Visitors:</span>
+          <span className="stat-value">{totalVisitors}</span>
+        </div>
+        <div className="stat-item">
+          <span className="stat-icon">🌿</span>
+          <span className="stat-label">Stage:</span>
+          <span className="stat-value">{treeStage.replace("-", " ")}</span>
+        </div>
+        <div className="stat-item">
+          <span className="stat-icon">🌳</span>
+          <span className="stat-label">Tree Size:</span>
+          <span className="stat-value">
+            {totalVisitors < 5 ? "Tiny Bush" :
+             totalVisitors < 15 ? "Small Tree" :
+             totalVisitors < 25 ? "Medium Tree" :
+             totalVisitors < 35 ? "Large Tree" :
+             "Giant Tree"}
+          </span>
+        </div>
       </div>
     </div>
   );

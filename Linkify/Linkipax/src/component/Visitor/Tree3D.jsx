@@ -1,46 +1,53 @@
-// Tree3D.jsx - Fixed based on your Blender structure
+// Tree3D.jsx - Updated with correct tree names
 import { useLoader } from "@react-three/fiber";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { useEffect, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
-// Tree configurations in order of size
+// Tree configurations with EXACT names from your Blender file
 const TREE_CONFIGS = [
   { 
     name: "Tree EZTree1.Bush006",
     displayName: "Tiny Bush",
-    scale: 0.4
+    scale: 0.8,
+    color: "#90EE90"
   },
   { 
     name: "Tree EZTree0.Medium010",
     displayName: "Small Tree",
-    scale: 0.5
+    scale: 1.0,
+    color: "#32CD32"
   },
   { 
     name: "Tree EZTree0.Medium011", 
     displayName: "Medium Tree",
-    scale: 0.6
+    scale: 1.2,
+    color: "#228B22"
   },
   { 
     name: "Tree EZTree0.Large",
     displayName: "Large Tree", 
-    scale: 0.7
+    scale: 1.5,
+    color: "#006400"
   },
   { 
     name: "Tree EZTree1.Medium002",
     displayName: "Larger Tree",
-    scale: 0.8
+    scale: 1.8,
+    color: "#004d00"
   },
   { 
     name: "Tree EZTree1.Large001",
     displayName: "Very Large Tree",
-    scale: 0.9
+    scale: 2.0,
+    color: "#003300"
   },
   { 
     name: "Tree EZTree1.Large009",
     displayName: "Giant Tree",
-    scale: 1.0
+    scale: 2.5,
+    color: "#002200"
   }
 ];
 
@@ -59,129 +66,135 @@ export default function Tree3D({ visitorCount = 0 }) {
   const gltf = useLoader(GLTFLoader, "/realistic_trees_collection.glb");
   const [treeGroup, setTreeGroup] = useState(null);
   const modelRef = useRef();
+  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
-    console.log("=== GLTF LOADED ===");
-    console.log("Scene structure:");
-    
-    // Log the full hierarchy to debug
-    gltf.scene.traverse((child) => {
-      if (child.name.includes("Tree")) {
-        console.log(`Found: ${child.name} (${child.type})`);
-      }
-    });
+    console.log("=== LOADING TREE ===");
+    setIsLoading(true);
     
     const treeIndex = getTreeIndex(visitorCount);
     const treeConfig = TREE_CONFIGS[treeIndex];
     
-    console.log(`Selecting tree: ${treeConfig.name} for ${visitorCount} visitors`);
+    console.log(`Visitor count: ${visitorCount}`);
+    console.log(`Selected tree: ${treeConfig.name} (Index: ${treeIndex})`);
     
-    // Find the tree group (parent object)
-    let treeParent = null;
+    // First, let's log all tree objects to debug
+    console.log("Available tree objects in GLTF:");
+    const allTrees = [];
     gltf.scene.traverse((child) => {
-      if (child.name === treeConfig.name && !child.isMesh) {
-        treeParent = child;
-        console.log(`Found tree parent: ${child.name}`);
+      if (child.name.includes("Tree")) {
+        allTrees.push({
+          name: child.name,
+          type: child.type,
+          isMesh: child.isMesh,
+          parent: child.parent?.name || 'none',
+          children: child.children?.length || 0
+        });
+      }
+    });
+    console.table(allTrees);
+    
+    // Find the exact tree group
+    let targetTree = null;
+    gltf.scene.traverse((child) => {
+      if (child.name === treeConfig.name) {
+        targetTree = child;
+        console.log(`Found exact tree group: ${child.name}`);
       }
     });
     
-    if (!treeParent) {
-      console.warn(`Could not find tree group: ${treeConfig.name}`);
-      console.log("Available tree groups:");
+    // If not found, try to find with slight variations
+    if (!targetTree) {
+      console.log("Exact name not found, searching for similar...");
       gltf.scene.traverse((child) => {
-        if (child.name.includes("Tree") && !child.isMesh) {
-          console.log(`  - ${child.name}`);
-        }
-      });
-      
-      // Try alternative naming
-      const altName = treeConfig.name.replace(/\./g, '_');
-      gltf.scene.traverse((child) => {
-        if (child.name === altName && !child.isMesh) {
-          treeParent = child;
-          console.log(`Found tree with alternative name: ${child.name}`);
+        if (child.name.includes(treeConfig.name.replace(/\./g, '')) || 
+            child.name.includes(treeConfig.name.replace(/ /g, '_'))) {
+          targetTree = child;
+          console.log(`Found similar tree: ${child.name}`);
         }
       });
     }
     
-    // Create a new group for our tree
-    const newTreeGroup = new THREE.Group();
-    newTreeGroup.name = `ActiveTree_${treeConfig.name.replace(/\./g, '_')}`;
-    
-    if (treeParent) {
-      console.log(`Cloning tree: ${treeParent.name}`);
+    if (targetTree) {
+      console.log(`Processing tree: ${targetTree.name}`);
+      console.log(`Tree type: ${targetTree.type}, Children: ${targetTree.children.length}`);
       
-      // Clone the entire tree hierarchy
-      const clonedTree = treeParent.clone();
+      // Clone the entire tree group
+      const clonedTree = targetTree.clone();
+      clonedTree.name = `ActiveTree_${treeConfig.name}`;
       
-      // Make sure all meshes are visible and have proper materials
+      // Process all meshes in the tree
+      let meshCount = 0;
       clonedTree.traverse((child) => {
         if (child.isMesh) {
-          console.log(`  Processing mesh: ${child.name}`);
+          meshCount++;
+          console.log(`  Mesh ${meshCount}: ${child.name}`);
           
-          // Clone material to avoid conflicts
-          if (child.material) {
+          // Ensure we have a material
+          if (!child.material) {
+            console.warn(`  No material found for ${child.name}, creating default`);
+            child.material = new THREE.MeshStandardMaterial({ color: "#4CAF50" });
+          } else {
+            // Clone the material to avoid conflicts
             child.material = child.material.clone();
-            
-            // Apply appropriate colors based on mesh type
-            if (child.name.includes("leaves") || 
-                child.material.name?.toLowerCase().includes("leaf")) {
-              // Leaves material
-              child.material.color = new THREE.Color("#4CAF50");
-              child.material.transparent = true;
-              child.material.opacity = 0.9;
-              child.material.side = THREE.DoubleSide;
-              child.material.roughness = 0.8;
-              
-              // Add subtle emissive for leaves
-              child.material.emissive = new THREE.Color("#4CAF50");
-              child.material.emissiveIntensity = 0.05;
-            } else {
-              // Branches/trunk material
-              child.material.color = new THREE.Color("#8B4513");
-              child.material.roughness = 0.9;
-              child.material.metalness = 0.1;
-            }
           }
           
+          // Apply appropriate colors
+          if (child.name.includes("leaves") || 
+              child.name.includes("leaf") ||
+              child.material.name?.toLowerCase().includes("leaf")) {
+            // Leaves - use tree color
+            child.material.color = new THREE.Color(treeConfig.color);
+            child.material.transparent = true;
+            child.material.opacity = 0.9;
+            child.material.side = THREE.DoubleSide;
+            child.material.roughness = 0.7;
+          } else {
+            // Branches/trunk
+            child.material.color = new THREE.Color("#8B4513");
+            child.material.roughness = 0.9;
+            child.material.metalness = 0.2;
+          }
+          
+          // Enable shadows
           child.castShadow = true;
           child.receiveShadow = true;
+          child.visible = true;
         }
       });
       
-      // Add the cloned tree to our group
+      console.log(`Total meshes in tree: ${meshCount}`);
+      
+      // Set up the tree group
+      const newTreeGroup = new THREE.Group();
+      newTreeGroup.name = `TreeContainer_${treeConfig.name}`;
       newTreeGroup.add(clonedTree);
       
-      // Hide all other trees in the original scene (optional)
-      gltf.scene.traverse((child) => {
-        if (child.name.includes("Tree") && child !== treeParent) {
-          child.visible = false;
-        }
-      });
+      // Apply scale
+      newTreeGroup.scale.setScalar(treeConfig.scale);
+      
+      // Position at center
+      newTreeGroup.position.set(0, 0, 0);
+      
+      // Add some initial rotation
+      newTreeGroup.rotation.y = Math.PI / 4;
+      
+      setTreeGroup(newTreeGroup);
       
     } else {
-      console.log("Creating fallback tree geometry");
-      // Create a simple procedural tree as fallback
+      console.error(`Tree ${treeConfig.name} not found! Creating fallback...`);
+      // Create fallback tree
+      const newTreeGroup = new THREE.Group();
       createFallbackTree(newTreeGroup, treeIndex);
+      setTreeGroup(newTreeGroup);
     }
     
-    // Apply scale
-    newTreeGroup.scale.setScalar(treeConfig.scale);
-    
-    // Center the tree
-    newTreeGroup.position.set(0, 0, 0);
-    
-    // Rotate for better view
-    newTreeGroup.rotation.y = Math.PI / 4;
-    
-    setTreeGroup(newTreeGroup);
-    
-    console.log(`Tree created successfully`);
+    setIsLoading(false);
     
     // Cleanup
     return () => {
-      if (newTreeGroup) {
-        newTreeGroup.traverse((child) => {
+      if (treeGroup) {
+        treeGroup.traverse((child) => {
           if (child.isMesh && child.material) {
             child.material.dispose();
           }
@@ -191,74 +204,79 @@ export default function Tree3D({ visitorCount = 0 }) {
     
   }, [gltf, visitorCount]);
   
-  // Helper function to create fallback tree
+  // Fallback tree creation
   const createFallbackTree = (group, treeIndex) => {
-    const sizes = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0];
-    const size = sizes[treeIndex];
+    const config = TREE_CONFIGS[treeIndex];
+    const size = config.scale;
+    
+    console.log(`Creating fallback tree with scale ${size}`);
     
     // Trunk
-    const trunkGeometry = new THREE.CylinderGeometry(0.1 * size, 0.15 * size, 1 * size, 8);
+    const trunkGeometry = new THREE.CylinderGeometry(0.1, 0.15, 1, 8);
     const trunkMaterial = new THREE.MeshStandardMaterial({ 
       color: "#8B4513",
       roughness: 0.9
     });
     const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+    trunk.scale.setScalar(size);
     trunk.castShadow = true;
     group.add(trunk);
     
-    // Leaves - different shapes based on tree size
+    // Leaves - sphere for bush, cone for trees
     let leavesGeometry;
     if (treeIndex === 0) {
-      // Bush - sphere
-      leavesGeometry = new THREE.SphereGeometry(0.5 * size, 16, 16);
-    } else if (treeIndex < 3) {
-      // Small/Medium trees - cone
-      leavesGeometry = new THREE.ConeGeometry(0.7 * size, 1.5 * size, 8);
+      leavesGeometry = new THREE.SphereGeometry(0.5, 16, 16);
     } else {
-      // Large trees - multiple cones
-      leavesGeometry = new THREE.ConeGeometry(0.9 * size, 2 * size, 12);
+      leavesGeometry = new THREE.ConeGeometry(0.6, 1.2, 8);
     }
     
     const leavesMaterial = new THREE.MeshStandardMaterial({ 
-      color: "#4CAF50",
+      color: config.color,
       transparent: true,
       opacity: 0.9,
       side: THREE.DoubleSide
     });
+    
     const leaves = new THREE.Mesh(leavesGeometry, leavesMaterial);
-    leaves.position.y = 0.7 * size;
+    leaves.position.y = 0.8;
+    leaves.scale.setScalar(size);
     leaves.castShadow = true;
     group.add(leaves);
   };
   
   useFrame((state) => {
-    if (modelRef.current) {
+    if (modelRef.current && !isLoading) {
       const time = state.clock.elapsedTime;
       
       // Gentle rotation
       modelRef.current.rotation.y += 0.001;
       
       // Subtle floating animation
-      modelRef.current.position.y = Math.sin(time * 0.5) * 0.01;
+      modelRef.current.position.y = Math.sin(time * 0.5) * 0.02;
       
       // Make leaves sway
       modelRef.current.traverse((child) => {
-        if (child.isMesh && child.name && 
-            (child.name.includes("leaves") || child.name.includes("leaf"))) {
+        if (child.isMesh && child.name && child.name.includes("leaves")) {
           child.rotation.z = Math.sin(time * 2 + child.position.x) * 0.01;
         }
       });
     }
   });
   
-  // Loading state
-  if (!treeGroup) {
+  // Show loading indicator
+  if (isLoading || !treeGroup) {
     return (
       <group>
-        <mesh position={[0, 0.5, 0]}>
-          <circleGeometry args={[0.5, 32]} />
-          <meshBasicMaterial color="#4CAF50" transparent opacity={0.3} />
+        <mesh position={[0, 1, 0]}>
+          <sphereGeometry args={[0.3, 16, 16]} />
+          <meshBasicMaterial 
+            color="#4CAF50" 
+            transparent 
+            opacity={0.5}
+            wireframe
+          />
         </mesh>
+        <pointLight position={[0, 2, 0]} intensity={0.5} color="#4CAF50" />
       </group>
     );
   }
@@ -273,7 +291,7 @@ export default function Tree3D({ visitorCount = 0 }) {
         position={[0, -0.5, 0]} 
         receiveShadow
       >
-        <circleGeometry args={[2, 32]} />
+        <circleGeometry args={[3, 32]} />
         <meshStandardMaterial 
           color="#8BC34A" 
           roughness={0.8}
