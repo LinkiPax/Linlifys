@@ -31,3 +31,5 @@ export default function TreeModel({ stage }) {
 
   return <primitive object={scene} />;
 }
+
+useGLTF.preload("/treeweb.glb");

@@ -2,7 +2,7 @@ import { useGLTF } from "@react-three/drei";
 import { useEffect } from "react";
 
 export default function TreeDebug() {
-  const gltf = useGLTF("/treeweb.glb"); // adjust path if needed
+  const gltf = useGLTF("/treeweb.glb");
 
   useEffect(() => {
     console.log("GLTF loaded:", gltf);
@@ -12,3 +12,5 @@ export default function TreeDebug() {
 
   return <primitive object={gltf.scene} />;
 }
+
+useGLTF.preload("/treeweb.glb");
