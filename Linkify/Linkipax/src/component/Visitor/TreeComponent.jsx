@@ -1,9 +1,9 @@
-// TreeComponent.jsx - Fixed version
+// TreeComponent.jsx - Updated with better lighting
 import React, { useEffect, useState, Suspense } from "react";
 import getDeviceId from "./getDeviceId";
 import getTreeStage from "./getTreeStage";
 import { Canvas } from "@react-three/fiber";
-import { Environment, OrbitControls } from "@react-three/drei";
+import { Environment, OrbitControls, Html } from "@react-three/drei";
 import Tree3D from "./Tree3D";
 import "./Treecomponent.css";
 
@@ -60,22 +60,49 @@ const TreeComponent = () => {
       )}
 
       <div className="tree-visual">
-        <Canvas camera={{ position: [0, 2, 5], fov: 50 }}>
-          <ambientLight intensity={0.8} />
-          <directionalLight position={[5, 5, 5]} intensity={1} castShadow />
-          <Suspense fallback={null}>
-            {/* Only pass visitorCount since Tree3D will calculate stage internally */}
+        <Canvas 
+          camera={{ position: [3, 2, 3], fov: 50 }}
+          shadows
+        >
+          {/* Better lighting setup */}
+          <ambientLight intensity={0.6} />
+          <directionalLight 
+            position={[5, 5, 5]} 
+            intensity={1} 
+            castShadow
+            shadow-mapSize-width={2048}
+            shadow-mapSize-height={2048}
+            shadow-camera-far={50}
+            shadow-camera-left={-10}
+            shadow-camera-right={10}
+            shadow-camera-top={10}
+            shadow-camera-bottom={-10}
+          />
+          <pointLight position={[-5, 5, -5]} intensity={0.5} color="#FFE082" />
+          
+          {/* Fog for depth */}
+          <fog attach="fog" args={['#87CEEB', 5, 15]} />
+          
+          <Suspense fallback={
+            <Html center>
+              <div className="tree-loading-3d">Loading tree...</div>
+            </Html>
+          }>
             <Tree3D visitorCount={totalVisitors} />
           </Suspense>
+          
           <OrbitControls 
             enableZoom={true}
             enablePan={true}
-            minDistance={3}
-            maxDistance={10}
+            minDistance={2}
+            maxDistance={15}
             autoRotate={true}
             autoRotateSpeed={0.5}
+            enableDamping
+            dampingFactor={0.05}
           />
-          <Environment preset="forest" />
+          
+          <Environment preset="park" />
         </Canvas>
       </div>
 

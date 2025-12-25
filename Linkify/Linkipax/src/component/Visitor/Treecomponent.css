@@ -46,3 +46,17 @@
   font-size: 18px;
   padding: 30px;
 }
+/* Add to Treecomponent.css */
+.tree-loading-3d {
+  color: white;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  backdrop-filter: blur(5px);
+}
+
+.tree-visual canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
