@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import getDeviceId from "./getDeviceId";
 import getTreeStage from "./getTreeStage";
 import "./Treecomponent.css";
+import getTreeStages from "../../utils/getTreeStage";
 const TreeComponent = () => {
   const [welcome, setWelcome] = useState(false);
   const [treeStage, setTreeStage] = useState("");
