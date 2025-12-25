@@ -15,7 +15,8 @@ const TreeComponent = () => {
 
     async function visit() {
       try {
-        const deviceId = await getDeviceId();
+      const deviceId = await getDeviceId();
+      if (!deviceId) return;
 
         const res = await fetch("/visitor/visit", {
           method: "POST",
