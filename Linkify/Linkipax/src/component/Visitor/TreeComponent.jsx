@@ -19,7 +19,7 @@ const TreeComponent = () => {
         const deviceId = await getDeviceId();
         if (!deviceId) return;
 
-        const res = await fetch("/visitor/visit", {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/visitor/visit`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ deviceId }),
