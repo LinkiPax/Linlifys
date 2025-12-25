@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import getDeviceId from "./getDeviceId";
 import getTreeStage from "./getTreeStage";
+import Tree3D from "./Tree3D";
 import "./Treecomponent.css";
-import getTreeStages from "../../utils/getTreeStage";
+
 const TreeComponent = () => {
   const [welcome, setWelcome] = useState(false);
-  const [treeStage, setTreeStage] = useState("");
+  const [treeStage, setTreeStage] = useState("seed");
   const [totalVisitors, setTotalVisitors] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -15,8 +16,8 @@ const TreeComponent = () => {
 
     async function visit() {
       try {
-      const deviceId = await getDeviceId();
-      if (!deviceId) return;
+        const deviceId = await getDeviceId();
+        if (!deviceId) return;
 
         const res = await fetch("/visitor/visit", {
           method: "POST",
@@ -27,7 +28,6 @@ const TreeComponent = () => {
         if (!res.ok) throw new Error("API failed");
 
         const data = await res.json();
-
         if (!mounted) return;
 
         setWelcome(!data.isNew);
@@ -42,19 +42,11 @@ const TreeComponent = () => {
     }
 
     visit();
-
-    return () => {
-      mounted = false;
-    };
+    return () => (mounted = false);
   }, []);
 
-  if (loading) {
-    return <div className="tree-loading">🌱 Growing your tree...</div>;
-  }
-
-  if (error) {
-    return <div className="tree-error">⚠️ Unable to grow tree</div>;
-  }
+  if (loading) return <div className="tree-loading">🌱 Growing your tree...</div>;
+  if (error) return <div className="tree-error">⚠️ Unable to grow tree</div>;
 
   return (
     <div className="tree-container">
@@ -65,11 +57,7 @@ const TreeComponent = () => {
       )}
 
       <div className="tree-visual">
-        <img
-          src={`/trees/${treeStage}.png`}
-          alt="Tree Growth"
-          className="tree-image"
-        />
+        <Tree3D stage={treeStage} />
       </div>
 
       <div className="tree-stats">
