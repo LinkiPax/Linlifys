@@ -1,7 +1,9 @@
+// Tree3D.jsx - Fixed version
 import { useLoader } from "@react-three/fiber";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { useEffect, useRef } from "react";
+import { useFrame } from "@react-three/fiber"; // ← ADD THIS IMPORT
 import * as THREE from "three";
 
 const STAGE_SCALE = {
