@@ -1,4 +1,4 @@
-// TreeComponent.jsx - Updated to use visitor count
+// TreeComponent.jsx - Fixed version
 import React, { useEffect, useState, Suspense } from "react";
 import getDeviceId from "./getDeviceId";
 import getTreeStage from "./getTreeStage";
@@ -64,10 +64,8 @@ const TreeComponent = () => {
           <ambientLight intensity={0.8} />
           <directionalLight position={[5, 5, 5]} intensity={1} castShadow />
           <Suspense fallback={null}>
-            <Tree3D 
-              stage={treeStage} 
-              visitorCount={totalVisitors} 
-            />
+            {/* Only pass visitorCount since Tree3D will calculate stage internally */}
+            <Tree3D visitorCount={totalVisitors} />
           </Suspense>
           <OrbitControls 
             enableZoom={true}
