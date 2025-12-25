@@ -14,7 +14,7 @@ const STAGE_SCALE = {
 };
 
 export default function TreeModel({ stage }) {
-  const gltf = useLoader(GLTFLoader, "/treeweb.glb", (loader) => {
+  const gltf = useLoader(GLTFLoader, "/realistic_trees_collection.glb", (loader) => {
     const dracoLoader = new DRACOLoader();
     dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.6/");
     loader.setDRACOLoader(dracoLoader);

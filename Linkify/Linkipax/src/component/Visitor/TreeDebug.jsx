@@ -2,7 +2,7 @@ import { useGLTF } from "@react-three/drei";
 import { useEffect } from "react";
 
 export default function TreeDebug() {
-  const gltf = useGLTF("/treeweb.glb");
+  const gltf = useGLTF("/realistic_trees_collection.glb");
 
   useEffect(() => {
     console.log("=== GLTF Hierarchy Debug ===");
