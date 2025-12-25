@@ -5,7 +5,7 @@ import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import "./Login.css";
-
+import TreeComponent from "../Visitor/TreeComponent.jsx";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -228,17 +228,7 @@ const Login = () => {
               <h2>Welcome Back</h2>
               <p>Connect with professionals around the world</p>
             </div>
-            
-            {/* Google Benefits Section */}
-            <div className="google-benefits-side">
-              <h4>Why sign in with Google?</h4>
-              <ul>
-                <li>One-click secure access</li>
-                <li>No password to remember</li>
-                <li>Enhanced security protection</li>
-                <li>Faster login experience</li>
-              </ul>
-            </div>
+            <TreeComponent />
           </div>
         </div>
 

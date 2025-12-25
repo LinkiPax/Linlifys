@@ -180,7 +180,7 @@ const path = require('path');
 const { ApolloServer } = require('apollo-server-express');
 const { typeDefs, resolvers } = require('./GraphQL/messageschema');
 const { initializeSocket, getIO } = require('./socket/socketnadle');
-
+const visitorRoutes = require('./routes/visitorRoutes');
 // ----------------------
 // 1️⃣ Initialize Express App & HTTP Server
 // ----------------------
@@ -307,7 +307,7 @@ app.use('/api/short', require('./routes/shortRoutes'));
 app.use('/connections', require('./routes/connectionroute'));
 app.use('/api/groups', require('./routes/grouproute'));
 app.use('/jobs', require('./routes/Jobsroutes'));
-
+app.use('/visitor', visitorRoutes);
 // ----------------------
 // 🔎 Debug / Health Check
 // ----------------------
