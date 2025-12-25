@@ -1,12 +1,11 @@
 import { Canvas } from "@react-three/fiber";
-import TreeModel from "./TreeModel";
+import TreeDebug from "./TreeDebug";
 
-export default function Tree3D({ stage }) {
+export default function TestPage() {
   return (
     <Canvas camera={{ position: [0, 2, 5] }}>
-      <ambientLight intensity={0.8} />
-      <directionalLight position={[5, 5, 5]} />
-      <TreeModel stage={stage} />
+      <ambientLight intensity={1} />
+      <TreeDebug />
     </Canvas>
   );
 }
