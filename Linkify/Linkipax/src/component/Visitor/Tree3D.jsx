@@ -1,19 +1,11 @@
-// Tree3D.jsx - Updated to select different trees based on visitor count
+// Tree3D.jsx - Fixed version that displays complete trees
 import { useLoader } from "@react-three/fiber";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { useEffect, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
-// Map visitor count to specific tree models from your collection
-const TREE_SELECTION = {
-  seed: "Tree_EZTree1Bush006", // Small bush for seed stage
-  sapling: "Tree_EZTree0Medium010", // Medium tree 1
-  "young-tree": "Tree_EZTree0Medium011", // Medium tree 2
-  "full-tree": "Tree_EZTree0Large", // Large tree for full growth
-};
-
-// Alternative: More detailed mapping with exact visitor thresholds
+// Map visitor count to tree models
 const getTreeModelByVisitorCount = (count) => {
   if (count < 5) return "Tree_EZTree1Bush006";
   if (count < 10) return "Tree_EZTree0Medium010";
@@ -21,7 +13,7 @@ const getTreeModelByVisitorCount = (count) => {
   if (count < 25) return "Tree_EZTree0Large";
   if (count < 35) return "Tree_EZTree1Medium002";
   if (count < 45) return "Tree_EZTree1Large001";
-  return "Tree_EZTree1Large009"; // Largest tree for highest counts
+  return "Tree_EZTree1Large009";
 };
 
 const STAGE_SCALE = {
@@ -36,81 +28,83 @@ export default function Tree3D({ stage, visitorCount = 0 }) {
   const [selectedTree, setSelectedTree] = useState(null);
   const modelRef = useRef();
   const targetScale = useRef(STAGE_SCALE[stage] || 1);
+  const animationProgress = useRef(0);
 
   useEffect(() => {
     console.log("=== GLTF LOADED ===");
-    console.log("Full GLTF object:", gltf);
     
     // Get the specific tree model based on visitor count
     const treeModelName = getTreeModelByVisitorCount(visitorCount);
     console.log(`Selecting tree model: ${treeModelName} for ${visitorCount} visitors`);
     
-    // Find the tree in the scene
+    // Create a new group to hold our selected tree
+    const treeGroup = new THREE.Group();
+    treeGroup.name = `SelectedTree_${treeModelName}`;
+    
+    // Find and collect all parts of the selected tree
+    const treeParts = [];
+    
     gltf.scene.traverse((child) => {
-      if (child.name === treeModelName || child.parent?.name === treeModelName) {
-        console.log(`Found tree component: ${child.name}`);
-      }
-    });
-    
-    // Clone the entire scene and extract the specific tree
-    const sceneClone = gltf.scene.clone();
-    let foundTree = null;
-    
-    // Method 1: Look for the tree by name (direct match)
-    sceneClone.traverse((child) => {
+      // Look for objects that belong to our selected tree
       if (child.name.includes(treeModelName)) {
-        foundTree = child;
-        // Highlight the selected tree for debugging
-        if (child.isMesh) {
-          child.material = child.material.clone();
-          child.material.color = new THREE.Color("#4CAF50"); // Green color
-        }
-      } else if (child.isMesh) {
-        // Hide other trees
-        child.visible = false;
+        console.log(`Found tree part: ${child.name} (${child.type})`);
+        treeParts.push(child);
       }
     });
     
-    // Method 2: If direct match fails, look for parent object
-    if (!foundTree) {
-      sceneClone.children.forEach((child) => {
-        if (child.name === treeModelName) {
-          foundTree = child;
-          // Show all children of this tree
-          child.traverse((mesh) => {
-            if (mesh.isMesh) {
-              mesh.visible = true;
-              mesh.material = mesh.material.clone();
-              mesh.material.color = new THREE.Color("#4CAF50");
-            }
-          });
-        } else {
-          // Hide other trees
-          child.visible = false;
-        }
-      });
-    }
+    console.log(`Found ${treeParts.length} parts for tree ${treeModelName}`);
     
-    if (foundTree) {
-      setSelectedTree(foundTree);
-      console.log(`Successfully selected tree: ${foundTree.name}`);
+    // Clone and add all parts to our group
+    treeParts.forEach((part) => {
+      const clone = part.clone();
+      
+      // If it's a mesh, set up the material
+      if (clone.isMesh) {
+        clone.material = clone.material.clone();
+        
+        // Apply stage-based color tint
+        const colorMap = {
+          seed: "#90EE90", // Light green
+          sapling: "#32CD32", // Lime green
+          "young-tree": "#228B22", // Forest green
+          "full-tree": "#006400" // Dark green
+        };
+        
+        clone.material.color = new THREE.Color(colorMap[stage] || "#4CAF50");
+        clone.material.transparent = true;
+        clone.material.opacity = 0;
+        
+        // Add subtle emissive glow
+        clone.material.emissive = new THREE.Color(colorMap[stage] || "#4CAF50");
+        clone.material.emissiveIntensity = 0.1;
+      }
+      
+      treeGroup.add(clone);
+    });
+    
+    if (treeParts.length > 0) {
+      setSelectedTree(treeGroup);
+      console.log(`Successfully created tree group with ${treeParts.length} parts`);
+      
+      // Reset animation progress for new tree
+      animationProgress.current = 0;
     } else {
-      // Fallback: Show the first tree
-      const firstTree = sceneClone.children[0];
-      if (firstTree) {
-        firstTree.visible = true;
-        setSelectedTree(firstTree);
-        console.log("Using fallback: first tree");
+      console.warn(`No parts found for tree: ${treeModelName}`);
+      // Fallback: show the first tree in the collection
+      if (gltf.scene.children.length > 0) {
+        const fallbackTree = gltf.scene.children[0].clone();
+        setSelectedTree(fallbackTree);
+        console.log("Using fallback tree");
       }
     }
     
     targetScale.current = STAGE_SCALE[stage] || 1;
     
-    // Cleanup
     return () => {
-      if (selectedTree) {
-        selectedTree.traverse((child) => {
-          if (child.material && child.material.dispose) {
+      // Clean up materials
+      if (treeGroup) {
+        treeGroup.traverse((child) => {
+          if (child.isMesh && child.material) {
             child.material.dispose();
           }
         });
@@ -118,72 +112,87 @@ export default function Tree3D({ stage, visitorCount = 0 }) {
     };
   }, [gltf, stage, visitorCount]);
 
-  useFrame(() => {
+  useFrame((state, delta) => {
     if (modelRef.current) {
+      // Smooth scale animation
       modelRef.current.scale.lerp(
         new THREE.Vector3(
           targetScale.current,
           targetScale.current,
           targetScale.current
         ),
-        0.05
+        0.1
       );
       
-      // Add gentle rotation for visual interest
-      modelRef.current.rotation.y += 0.002;
+      // Gentle rotation animation
+      modelRef.current.rotation.y += 0.001;
+      
+      // Fade in animation for new trees
+      if (animationProgress.current < 1) {
+        animationProgress.current += delta * 2; // 2 seconds to fully appear
+        animationProgress.current = Math.min(animationProgress.current, 1);
+        
+        modelRef.current.traverse((child) => {
+          if (child.isMesh && child.material) {
+            // Fade in
+            child.material.opacity = THREE.MathUtils.lerp(
+              0, 
+              1, 
+              animationProgress.current
+            );
+            
+            // Scale up during fade in
+            const scale = 0.5 + (animationProgress.current * 0.5);
+            child.scale.setScalar(scale);
+          }
+        });
+      }
+      
+      // Subtle floating animation
+      const time = state.clock.elapsedTime;
+      modelRef.current.position.y = Math.sin(time * 0.5) * 0.05;
     }
   });
 
-  // If no tree selected yet, show nothing
-  if (!selectedTree) return null;
+  // If no tree selected yet, show a placeholder
+  if (!selectedTree) {
+    return (
+      <mesh>
+        <boxGeometry args={[0.5, 0.5, 0.5]} />
+        <meshBasicMaterial color="#4CAF50" transparent opacity={0.5} />
+      </mesh>
+    );
+  }
 
   return <primitive ref={modelRef} object={selectedTree} />;
 }
 
-// Optimized version that pre-calculates tree selection
-export function Tree3DOptimized({ visitorCount }) {
+// Alternative simpler version that shows all trees but scales them
+export function SimpleTree3D({ visitorCount }) {
   const gltf = useLoader(GLTFLoader, "/realistic_trees_collection.glb");
   const modelRef = useRef();
   
-  // Pre-calculate which tree to show based on visitor count
-  const treeIndex = Math.min(Math.floor(visitorCount / 10), 6);
-  const treeNames = [
-    "Tree_EZTree1Bush006",
-    "Tree_EZTree0Medium010", 
-    "Tree_EZTree0Medium011",
-    "Tree_EZTree0Large",
-    "Tree_EZTree1Medium002",
-    "Tree_EZTree1Large001",
-    "Tree_EZTree1Large009"
-  ];
-  
-  const selectedTreeName = treeNames[treeIndex];
-  const scale = 0.4 + (treeIndex * 0.1); // Scale increases with tree size
-
   useEffect(() => {
-    // Hide all trees except the selected one
+    // Show all trees but scale them based on visitor count
+    const scale = 0.3 + (visitorCount * 0.01);
+    
     gltf.scene.traverse((child) => {
       if (child.isMesh) {
-        child.visible = child.parent?.name === selectedTreeName || 
-                       child.name.includes(selectedTreeName);
+        child.scale.setScalar(scale);
         
-        if (child.visible) {
-          // Apply a growth animation
-          child.scale.set(0.1, 0.1, 0.1);
-          new TWEEN.Tween(child.scale)
-            .to({ x: scale, y: scale, z: scale }, 1000)
-            .easing(TWEEN.Easing.Elastic.Out)
-            .start();
-        }
+        // Color based on visitor count
+        const hue = (visitorCount * 10) % 360;
+        child.material = child.material.clone();
+        child.material.color = new THREE.Color(`hsl(${hue}, 70%, 50%)`);
       }
     });
-  }, [gltf, selectedTreeName, scale]);
-
+  }, [gltf, visitorCount]);
+  
   useFrame(() => {
     if (modelRef.current) {
       modelRef.current.rotation.y += 0.001;
     }
   });
-
+  
   return <primitive ref={modelRef} object={gltf.scene} />;
 }
