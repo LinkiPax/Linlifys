@@ -6,6 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import "./Login.css";
 import TreeComponent from "../Visitor/TreeComponent.jsx";
+import TestPage from "../Visitor/Tree3D.jsx";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -228,7 +229,8 @@ const Login = () => {
               <h2>Welcome Back</h2>
               <p>Connect with professionals around the world</p>
             </div>
-            <TreeComponent />
+            {/* <TreeComponent /> */}
+            <TestPage />
           </div>
         </div>
 
