@@ -11,7 +11,7 @@ const STAGE_SCALE = {
 };
 
 export default function TreeModel({ stage }) {
-  const { scene } = useGLTF("/models/tree-web-v1-v1-.glb");
+  const { scene } = useGLTF("/models/treeweb.glb");
   const targetScale = useRef(0.4);
 
   useEffect(() => {
