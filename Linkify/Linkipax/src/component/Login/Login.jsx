@@ -5,7 +5,7 @@ import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import "./Login.css";
-import TreeComponent from "../Visitor/TreeComponent.jsx";
+
 // import TestPage from "../Visitor/TestPage.jsx";
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -229,8 +229,6 @@ const Login = () => {
               <h2>Welcome Back</h2>
               <p>Connect with professionals around the world</p>
             </div>
-            <TreeComponent />
-            {/* <TestPage /> */}
           </div>
         </div>
 

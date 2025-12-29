@@ -29,7 +29,7 @@ import Jobs from "./component/Jobs/Jobs";
 import Startup from "./component/Jobs/Startup";
 import Hackathons from "./component/Jobs/Hackathons";
 import CreatePostCard from "./component/Cards/CreatePostCard";
-
+import TreeScene from "./component/Visitor/TreeScene";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider store={store}>
@@ -60,6 +60,7 @@ createRoot(document.getElementById("root")).render(
             <Route path="/hackathons" element={<Hackathons />} />
             <Route path="/startup" element={<Startup />} />
             <Route path="/create/post" element={<CreatePostCard userId={localStorage.getItem("userId")} />} />
+            <Route path="/tree" element={<TreeScene />} />
             </Routes>
         </Router>
       </NotificationProvider>
