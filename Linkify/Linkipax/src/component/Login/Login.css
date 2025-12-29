@@ -561,15 +561,18 @@ a:focus {
 }
 .tree-wrapper {
   position: absolute;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
 
-  width: 280px;
-  height: 500px;            /* ✅ REQUIRED */
-  
+  width: 676px;
+  height: 500px;
+
+  left: 8%;              /* 👈 left space (adjust 6–12%) */
+  top: calc(30% + 180px); /* 👈 below the heading text */
+
   pointer-events: none;
   overflow: hidden;
-  border-radius: 16px;
+  border-radius: 20px;
+
+  z-index: 3;
 }
+
 
