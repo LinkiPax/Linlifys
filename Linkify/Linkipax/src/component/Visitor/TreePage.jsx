@@ -105,11 +105,6 @@ export default function TreePage() {
     <div style={page}>
       {/* 🌳 3D Canvas */}
       <TreeScene debug={{ index, offsets }} style={canvasWrapper} />
-
-      {/* 👇 Visitor Counter */}
-      <div style={counter}>
-        🌍 <strong>{visitorCount}</strong> Unique Visitors
-      </div>
     </div>
   );
 }
