@@ -17,23 +17,19 @@ export default function TreeGrowth({ debug }) {
   useEffect(() => {
     if (!scene) return;
 
-    const root = scene;
+    scene.children.forEach(o => (o.visible = false));
 
-    root.children.forEach(o => (o.visible = false));
-
-    const tree = root.getObjectByName(NAMES[debug.index]);
+    const tree = scene.getObjectByName(NAMES[debug.index]);
     if (!tree) return;
-
-    tree.visible = true;
 
     const cfg = debug.offsets[debug.index];
 
+    tree.visible = true;
     tree.position.set(cfg.x, cfg.y, cfg.z);
     tree.scale.setScalar(cfg.scale);
-
     tree.updateMatrixWorld(true);
 
-    console.log("TREE UPDATED", cfg);
+    console.log("TREE UPDATE", cfg);
   }, [scene, debug.index, debug.offsets]);
 
   return <primitive object={scene} />;

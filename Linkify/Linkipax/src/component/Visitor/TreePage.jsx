@@ -1,21 +1,17 @@
 import { useState } from "react";
 import TreeScene from "./TreeScene";
 
-const INITIAL_OFFSETS = [
-  { x: 0, y: 0, z: 0, scale: 0.01 },
-  { x: 0, y: 0, z: 0, scale: 0.01 },
-  { x: 0, y: 0, z: 0, scale: 0.01 },
-  { x: 0, y: 0, z: 0, scale: 0.01 },
-  { x: 0, y: 0, z: 0, scale: 0.01 },
-  { x: 0, y: 0, z: 0, scale: 0.01 },
-  { x: 0, y: 0, z: 0, scale: 0.01 }
-];
+const INITIAL_OFFSETS = Array(7).fill({
+  x: 0,
+  y: 0,
+  z: 0,
+  scale: 0.01
+});
 
-// BIG STEPS (NO CONFUSION)
 const STEP = {
-  x: 1,
-  y: 1,
-  z: 1,
+  x: 0.5,
+  y: 0.5,
+  z: 0.5,
   scale: 0.005
 };
 
@@ -24,7 +20,7 @@ export default function TreePage() {
   const [offsets, setOffsets] = useState(INITIAL_OFFSETS);
 
   const update = (key, delta) => {
-    console.log("BUTTON CLICK:", key, delta); // 🔥 PROOF
+    console.log("CLICK:", key);
 
     setOffsets(prev => {
       const copy = [...prev];
@@ -37,8 +33,11 @@ export default function TreePage() {
   };
 
   return (
-    <>
-      {/* 🔥 UI MUST ALLOW CLICKS */}
+    <div style={page}>
+      {/* 🎥 CANVAS */}
+      <TreeScene debug={{ index, offsets }} />
+
+      {/* 🌳 UI OVERLAY */}
       <div style={ui}>
         <h3>🌳 Tree Debug</h3>
 
@@ -57,11 +56,15 @@ export default function TreePage() {
           </div>
         ))}
       </div>
-
-      <TreeScene debug={{ index, offsets }} />
-    </>
+    </div>
   );
 }
+
+const page = {
+  width: "100vw",
+  height: "100vh",
+  position: "relative"
+};
 
 const ui = {
   position: "absolute",
@@ -72,6 +75,5 @@ const ui = {
   padding: 12,
   borderRadius: 8,
   fontFamily: "monospace",
-  zIndex: 9999,
-  pointerEvents: "auto" // 🔥 REQUIRED
+  zIndex: 10
 };
