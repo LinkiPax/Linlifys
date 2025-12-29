@@ -5,7 +5,7 @@ import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import "./Login.css";
-
+import TreePage from "./component/Visitor/TreePage";
 // import TestPage from "../Visitor/TestPage.jsx";
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -231,7 +231,9 @@ const Login = () => {
             </div>
           </div>
         </div>
-
+         <div style={{ width: "100vw", height: "100vh" }}>
+                       <TreePage />
+                     </div>
         {/* Right side with login form */}
         <div className="form-container">
           <div className="login-content">
