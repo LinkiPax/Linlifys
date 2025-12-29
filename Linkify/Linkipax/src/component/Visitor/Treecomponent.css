@@ -1,175 +1,86 @@
+/* ===== Container ===== */
 .tree-container {
+  max-width: 800px;
+  margin: auto;
+  padding: 20px;
   text-align: center;
-  padding: 24px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-.tree-image {
-  width: 220px;
-  animation: grow 1.2s ease-out;
-}
-
-@keyframes grow {
-  from {
-    transform: scale(0.7);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
+/* ===== Welcome Badge ===== */
 .welcome-badge {
-  background: #e8fff1;
-  color: #2e7d32;
-  padding: 10px 16px;
-  border-radius: 20px;
   display: inline-block;
-  margin-bottom: 12px;
-  animation: slideDown 0.6s ease;
+  margin-bottom: 16px;
+  padding: 10px 22px;
+  border-radius: 24px;
+  color: #fff;
+  font-weight: 500;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  box-shadow: 0 4px 12px rgba(102,126,234,.4);
+  animation: fadeIn .4s ease;
 }
 
-@keyframes slideDown {
-  from {
-    transform: translateY(-10px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.tree-loading,
-.tree-error {
-  text-align: center;
-  font-size: 18px;
-  padding: 30px;
-}
-/* Add to Treecomponent.css */
-.tree-loading-3d {
-  color: white;
-  background: rgba(0, 0, 0, 0.5);
-  padding: 10px 20px;
-  border-radius: 10px;
-  font-size: 14px;
-  backdrop-filter: blur(5px);
+/* ===== Tree Visual ===== */
+.tree-visual {
+  width: 100%;
+  height: 480px;
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
 }
 
 .tree-visual canvas {
   width: 100% !important;
   height: 100% !important;
 }
-/* Treecomponent.css - Updated */
-.tree-container {
-  width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
 
-.tree-loading, .tree-error {
-  padding: 40px;
-  font-size: 1.2em;
-  text-align: center;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  border-radius: 15px;
+/* ===== Loading / Error ===== */
+.tree-loading,
+.tree-error {
+  padding: 32px;
   margin: 20px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  font-size: 1.1em;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+  box-shadow: 0 4px 6px rgba(0,0,0,.1);
 }
 
-.welcome-badge {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 12px 24px;
-  border-radius: 25px;
-  margin: 0 auto 20px;
-  display: inline-block;
-  animation: fadeIn 0.5s ease;
-  font-weight: 500;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-}
-
-.tree-visual {
-  width: 100%;
-  height: 500px;
-  border-radius: 15px;
-  overflow: hidden;
-  position: relative;
-}
-
-
+/* ===== Stats ===== */
 .tree-stats {
-  background: white;
-  padding: 25px;
-  border-radius: 15px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  margin-top: 20px;
+  padding: 20px;
   display: flex;
-  justify-content: space-around;
+  gap: 14px;
   flex-wrap: wrap;
-  gap: 15px;
+  justify-content: space-around;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 5px 18px rgba(0,0,0,.1);
 }
 
 .stat-item {
+  min-width: 180px;
+  padding: 10px 16px;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 20px;
+  border-radius: 10px;
   background: #f8f9fa;
-  border-radius: 10px;
-  min-width: 200px;
 }
 
-.stat-icon {
-  font-size: 1.5em;
-}
+.stat-icon { font-size: 1.4em; }
+.stat-label { color: #666; font-weight: 500; }
+.stat-value { margin-left: auto; font-weight: 600; color: #2e7d32; }
 
-.stat-label {
-  color: #666;
-  font-weight: 500;
-}
-
-.stat-value {
-  font-weight: bold;
-  color: #2E7D32;
-  font-size: 1.1em;
-  margin-left: auto;
-}
-
-.tree-loading-3d {
-  color: white;
-  background: rgba(0, 0, 0, 0.7);
-  padding: 15px 30px;
-  border-radius: 10px;
-  font-size: 16px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.2);
-}
-
+/* ===== Animations ===== */
 @keyframes fadeIn {
-  from { 
-    opacity: 0; 
-    transform: translateY(-10px) scale(0.95); 
-  }
-  to { 
-    opacity: 1; 
-    transform: translateY(0) scale(1); 
-  }
+  from { opacity: 0; transform: translateY(-8px) scale(.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+/* ===== Mobile ===== */
 @media (max-width: 768px) {
-  .tree-visual {
-    height: 400px;
-  }
-  
-  .tree-stats {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .stat-item {
-    width: 100%;
-    max-width: 300px;
-  }
+  .tree-visual { height: 380px; }
+  .tree-stats { flex-direction: column; align-items: center; }
+  .stat-item { width: 100%; max-width: 320px; }
 }
