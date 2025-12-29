@@ -1,13 +1,12 @@
 import { useGLTF } from "@react-three/drei";
 import { useEffect, useState } from "react";
+import * as THREE from "three";
 import axios from "axios";
 
 export default function TreeGrowth() {
   const { scene } = useGLTF("/realistic_trees_collection.glb");
-
   const [stage, setStage] = useState(0);
 
-  // 🔹 Tree root names in correct order
   const treeNames = [
     "Tree EZTree1.Bush006",
     "Tree EZTree1.Medium002",
@@ -18,31 +17,31 @@ export default function TreeGrowth() {
     "Tree EZTree1.Large009"
   ];
 
-  // Fetch visitor count
+  // ✅ CENTER THE SCENE
   useEffect(() => {
-    async function fetchVisitors() {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/visitor/visit`);
+    const box = new THREE.Box3().setFromObject(scene);
+    const center = box.getCenter(new THREE.Vector3());
+    scene.position.sub(center); // 🔥 magic line
+const size = box.getSize(new THREE.Vector3());
+console.log(size);
+
+  }, [scene]);
+
+  // Visitor logic
+  useEffect(() => {
+    axios.get(`${import.meta.env.VITE_API_URL}/visitor/visit`).then(res => {
       const count = res.data.count;
-
-      // example mapping
-      const newStage = Math.min(
-        Math.floor(count / 100),
-        treeNames.length - 1
-      );
-
-      setStage(newStage);
-    }
-
-    fetchVisitors();
+      setStage(Math.min(Math.floor(count / 100), treeNames.length - 1));
+    });
   }, []);
 
-  // Toggle visibility
+  // Toggle tree visibility
   useEffect(() => {
-    treeNames.forEach((name, index) => {
+    treeNames.forEach((name, i) => {
       const tree = scene.getObjectByName(name);
-      if (tree) tree.visible = index === stage;
+      if (tree) tree.visible = i === stage;
     });
   }, [stage, scene]);
 
-  return <primitive object={scene} scale={1.2} />;
+  return <primitive object={scene} scale={0.05} />
 }
