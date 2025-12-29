@@ -231,9 +231,9 @@ const Login = () => {
             </div>
           </div>
         </div>
-         <div style={{ width: "100vw", height: "100vh" }}>
-                       <TreePage />
-                     </div>
+         <div className="tree-wrapper">
+         <TreePage />
+         </div>
         {/* Right side with login form */}
         <div className="form-container">
           <div className="login-content">
