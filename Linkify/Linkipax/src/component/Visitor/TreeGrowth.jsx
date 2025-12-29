@@ -1,6 +1,5 @@
 import { useGLTF } from "@react-three/drei";
 import { useEffect } from "react";
-import * as THREE from "three";
 
 const NAMES = [
   "Tree_EZTree1Bush006",
@@ -18,41 +17,24 @@ export default function TreeGrowth({ debug }) {
   useEffect(() => {
     if (!scene) return;
 
-    const root = scene.getObjectByName("RootNode");
-    if (!root) return;
+    const root = scene;
 
-    // Hide all trees
-    NAMES.forEach(name => {
-      const obj = root.getObjectByName(name);
-      if (obj) obj.visible = false;
-    });
+    root.children.forEach(o => (o.visible = false));
 
-    const name = NAMES[debug.index];
-    const cfg = debug.offsets[debug.index];
-    const tree = root.getObjectByName(name);
+    const tree = root.getObjectByName(NAMES[debug.index]);
     if (!tree) return;
 
     tree.visible = true;
 
-    const box = new THREE.Box3().setFromObject(tree);
-    const center = box.getCenter(new THREE.Vector3());
-    const size = box.getSize(new THREE.Vector3());
+    const cfg = debug.offsets[debug.index];
 
+    tree.position.set(cfg.x, cfg.y, cfg.z);
     tree.scale.setScalar(cfg.scale);
 
-    tree.position.set(
-      -center.x * cfg.scale + cfg.x,
-      -center.y * cfg.scale + (size.y * cfg.scale) / 2 + cfg.y,
-      -center.z * cfg.scale + cfg.z
-    );
-
-    // 🔥 VERY IMPORTANT
     tree.updateMatrixWorld(true);
 
-    console.log("🌳 TREE DEBUG:", name, cfg);
+    console.log("TREE UPDATED", cfg);
   }, [scene, debug.index, debug.offsets]);
 
   return <primitive object={scene} />;
 }
-
-useGLTF.preload("/realistic_trees_collection.glb");

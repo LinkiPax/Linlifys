@@ -1,21 +1,24 @@
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Environment, Grid } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 import TreeGrowth from "./TreeGrowth";
 
 export default function TreeScene({ debug }) {
   return (
     <Canvas
-      camera={{ position: [0, 4, 10], fov: 30, near: 0.1, far: 100 }}
+      style={{
+        width: "100vw",
+        height: "100vh",
+        pointerEvents: "none" // 🔥 THIS FIXES BUTTONS
+      }}
+      camera={{ position: [0, 5, 15], fov: 35 }}
     >
-      <ambientLight intensity={0.7} />
-      <directionalLight position={[5, 10, 5]} intensity={1.2} />
-
-      <Grid args={[20, 20]} />
+      <ambientLight intensity={1} />
+      <directionalLight position={[10, 10, 10]} />
 
       <TreeGrowth debug={debug} />
 
-      <OrbitControls target={[0, 1.2, 0]} />
-      <Environment preset="forest" />
+      {/* Controls disabled for debug */}
+      <OrbitControls enableZoom={false} enableRotate={false} />
     </Canvas>
   );
 }

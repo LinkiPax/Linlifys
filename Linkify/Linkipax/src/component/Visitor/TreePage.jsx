@@ -2,21 +2,21 @@ import { useState } from "react";
 import TreeScene from "./TreeScene";
 
 const INITIAL_OFFSETS = [
-  { x: -10.5, y: -0.4, z: -0.9, scale: 0.002 },
-  { x: -34.1, y: -0.1, z: -1.6, scale: 0.002 },
-  { x: -24.5, y: -0.1, z: -0.9, scale: 0.002 },
-  { x: -12.2, y: 0, z: 0.4, scale: 0.002 },
-  { x: 2, y: 0, z: 0.4, scale: 0.002 },
-  { x: 16.6, y: 0, z: -0.1, scale: 0.002 },
-  { x: 37.9, y: 0, z: -0.1, scale: 0.002 }
+  { x: 0, y: 0, z: 0, scale: 0.01 },
+  { x: 0, y: 0, z: 0, scale: 0.01 },
+  { x: 0, y: 0, z: 0, scale: 0.01 },
+  { x: 0, y: 0, z: 0, scale: 0.01 },
+  { x: 0, y: 0, z: 0, scale: 0.01 },
+  { x: 0, y: 0, z: 0, scale: 0.01 },
+  { x: 0, y: 0, z: 0, scale: 0.01 }
 ];
 
-// 👇 Proper step sizes (CRITICAL)
+// BIG STEPS (NO CONFUSION)
 const STEP = {
-  x: 0.01,
-  y: 0.01,
-  z: 0.01,
-  scale: 0.0002
+  x: 1,
+  y: 1,
+  z: 1,
+  scale: 0.005
 };
 
 export default function TreePage() {
@@ -24,11 +24,13 @@ export default function TreePage() {
   const [offsets, setOffsets] = useState(INITIAL_OFFSETS);
 
   const update = (key, delta) => {
+    console.log("BUTTON CLICK:", key, delta); // 🔥 PROOF
+
     setOffsets(prev => {
       const copy = [...prev];
       copy[index] = {
         ...copy[index],
-        [key]: +(copy[index][key] + delta).toFixed(6)
+        [key]: +(copy[index][key] + delta).toFixed(4)
       };
       return copy;
     });
@@ -36,7 +38,7 @@ export default function TreePage() {
 
   return (
     <>
-      {/* 🌳 DEBUG UI */}
+      {/* 🔥 UI MUST ALLOW CLICKS */}
       <div style={ui}>
         <h3>🌳 Tree Debug</h3>
 
@@ -45,7 +47,7 @@ export default function TreePage() {
         <button onClick={() => setIndex(i => Math.min(6, i + 1))}>⏭</button>
 
         {["x", "y", "z", "scale"].map(k => (
-          <div key={k} style={{ marginTop: 6 }}>
+          <div key={k}>
             {k.toUpperCase()} :
             <button onClick={() => update(k, -STEP[k])}>-</button>
             <span style={{ margin: "0 6px" }}>
@@ -56,7 +58,6 @@ export default function TreePage() {
         ))}
       </div>
 
-      {/* 🎥 3D SCENE */}
       <TreeScene debug={{ index, offsets }} />
     </>
   );
@@ -66,10 +67,11 @@ const ui = {
   position: "absolute",
   top: 10,
   left: 10,
-  background: "rgba(0,0,0,0.75)",
+  background: "rgba(0,0,0,0.85)",
   color: "#fff",
   padding: 12,
   borderRadius: 8,
   fontFamily: "monospace",
-  zIndex: 1000
+  zIndex: 9999,
+  pointerEvents: "auto" // 🔥 REQUIRED
 };
