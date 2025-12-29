@@ -29,7 +29,6 @@ import Jobs from "./component/Jobs/Jobs";
 import Startup from "./component/Jobs/Startup";
 import Hackathons from "./component/Jobs/Hackathons";
 import CreatePostCard from "./component/Cards/CreatePostCard";
-import TreePage from "./component/Visitor/TreePage";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider store={store}>
@@ -60,14 +59,6 @@ createRoot(document.getElementById("root")).render(
             <Route path="/hackathons" element={<Hackathons />} />
             <Route path="/startup" element={<Startup />} />
             <Route path="/create/post" element={<CreatePostCard userId={localStorage.getItem("userId")} />} />
-            <Route
-          path="/tree"
-          element={
-            <div style={{ width: "100vw", height: "100vh" }}>
-              <TreePage />
-            </div>
-          }
-        />
             </Routes>
         </Router>
       </NotificationProvider>
