@@ -4,12 +4,16 @@ import TreeGrowth from "./TreeGrowth";
 import { useState } from "react";
 
 export default function TreeScene() {
+  const [stage, setStage] = useState(0);
+
   const [debugTransform, setDebugTransform] = useState({
-    x: 0,
-    y: 0,
+    x: 0.1,
+    y: -0.4,
     z: 0,
-    scale: 0.01
+    scale: 0.002
   });
+
+  const [treeInfo, setTreeInfo] = useState(null);
 
   const update = (key, delta) => {
     setDebugTransform(prev => ({
@@ -22,8 +26,18 @@ export default function TreeScene() {
     <>
       {/* 🧩 DEBUG PANEL */}
       <div style={panelStyle}>
-        <h4>Tree Adjust</h4>
+        <h4>🌳 Tree Debug</h4>
 
+        {/* TREE SWITCH */}
+        <div style={rowStyle}>
+          <button onClick={() => setStage(s => Math.max(s - 1, 0))}>⏮</button>
+          <span>Tree {stage}</span>
+          <button onClick={() => setStage(s => Math.min(s + 1, 6))}>⏭</button>
+        </div>
+
+        <hr />
+
+        {/* POSITION CONTROLS */}
         {["x", "y", "z"].map(axis => (
           <div key={axis} style={rowStyle}>
             <span>{axis.toUpperCase()}</span>
@@ -33,12 +47,25 @@ export default function TreeScene() {
           </div>
         ))}
 
+        {/* SCALE */}
         <div style={rowStyle}>
           <span>Scale</span>
           <button onClick={() => update("scale", -0.001)}>-</button>
           <span>{debugTransform.scale}</span>
           <button onClick={() => update("scale", 0.001)}>+</button>
         </div>
+
+        {/* TREE INFO */}
+        {treeInfo && (
+          <>
+            <hr />
+            <div style={{ fontSize: 11 }}>
+              <div><b>Name:</b> {treeInfo.name}</div>
+              <div><b>Size:</b> {treeInfo.size.x.toFixed(1)}, {treeInfo.size.y.toFixed(1)}, {treeInfo.size.z.toFixed(1)}</div>
+              <div><b>World Y:</b> {treeInfo.worldPos.y.toFixed(3)}</div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* 🌍 3D SCENE */}
@@ -56,7 +83,11 @@ export default function TreeScene() {
         <axesHelper args={[10]} />
         <Grid args={[50, 50]} />
 
-        <TreeGrowth debugTransform={debugTransform} />
+        <TreeGrowth
+          stage={stage}
+          debugTransform={debugTransform}
+          onTreeInfo={setTreeInfo}
+        />
 
         <OrbitControls
           enableZoom={false}
@@ -71,7 +102,7 @@ export default function TreeScene() {
   );
 }
 
-/* 🎨 SIMPLE STYLES */
+/* 🎨 STYLES */
 const panelStyle = {
   position: "fixed",
   top: 20,
@@ -81,12 +112,14 @@ const panelStyle = {
   padding: "12px",
   borderRadius: "8px",
   fontSize: "13px",
-  zIndex: 1000
+  zIndex: 1000,
+  width: 220
 };
 
 const rowStyle = {
   display: "flex",
   gap: "6px",
   alignItems: "center",
+  justifyContent: "space-between",
   marginBottom: "6px"
 };
