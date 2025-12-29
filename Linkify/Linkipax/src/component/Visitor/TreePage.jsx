@@ -63,7 +63,7 @@ import { registerVisit } from "./visitor";
 
 const INITIAL_OFFSETS = [
   { x: -3598,   y: -37.5, z: -37.5, scale: 0.17 },
-  { x: -2893.5, y: 138.5, z: -12,    scale: 0.17 },
+  { x: -2893.5, y: 138.5, z: -40,    scale: 0.17 },
   { x: -2082.5, y: 87,    z: -12,    scale: 0.17 },
   { x: -1045.5, y: -42.5, z: -12,    scale: 0.17 },
   { x: 186.5,   y: -10.5, z: -12,    scale: 0.17 },
