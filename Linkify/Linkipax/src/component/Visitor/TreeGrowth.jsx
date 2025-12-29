@@ -1,12 +1,15 @@
 import { useGLTF } from "@react-three/drei";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import axios from "axios";
 
 export default function TreeGrowth() {
   const { scene } = useGLTF("/realistic_trees_collection.glb");
+  const groupRef = useRef();
+
   const [stage, setStage] = useState(0);
 
+  // 🔹 EXACT tree root names (order matters)
   const treeNames = [
     "Tree EZTree1.Bush006",
     "Tree EZTree1.Medium002",
@@ -17,31 +20,60 @@ export default function TreeGrowth() {
     "Tree EZTree1.Large009"
   ];
 
-  // ✅ CENTER THE SCENE
+  // 🔹 Fetch visitor count
   useEffect(() => {
-    const box = new THREE.Box3().setFromObject(scene);
-    const center = box.getCenter(new THREE.Vector3());
-    scene.position.sub(center); // 🔥 magic line
-const size = box.getSize(new THREE.Vector3());
-console.log(size);
+    async function fetchVisitors() {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/visitor/visit`); // your backend
+        const count = res.data.count || 0;
 
-  }, [scene]);
+        // map visits → stage
+        const newStage = Math.min(
+          Math.floor(count / 100),
+          treeNames.length - 1
+        );
 
-  // Visitor logic
-  useEffect(() => {
-    axios.get(`${import.meta.env.VITE_API_URL}/visitor/visit`).then(res => {
-      const count = res.data.count;
-      setStage(Math.min(Math.floor(count / 100), treeNames.length - 1));
-    });
+        setStage(newStage);
+      } catch (err) {
+        console.error("Visitor API error", err);
+      }
+    }
+
+    fetchVisitors();
   }, []);
 
-  // Toggle tree visibility
+  // 🔥 CORE FIX: show ONLY ONE TREE & CENTER IT
   useEffect(() => {
-    treeNames.forEach((name, i) => {
-      const tree = scene.getObjectByName(name);
-      if (tree) tree.visible = i === stage;
+    if (!scene || !groupRef.current) return;
+
+    // Hide EVERYTHING
+    scene.traverse(obj => {
+      obj.visible = false;
     });
+
+    const activeTree = scene.getObjectByName(treeNames[stage]);
+    if (!activeTree) return;
+
+    activeTree.visible = true;
+
+    // Reset transforms (important)
+    activeTree.position.set(0, 0, 0);
+    activeTree.rotation.set(0, 0, 0);
+    activeTree.scale.set(1, 1, 1);
+
+    // 🔥 Center ONLY the active tree
+    const box = new THREE.Box3().setFromObject(activeTree);
+    const center = box.getCenter(new THREE.Vector3());
+
+    activeTree.position.sub(center);
+
+    // Reset group
+    groupRef.current.position.set(0, 0, 0);
   }, [stage, scene]);
 
-  return <primitive object={scene} scale={0.05} />
+  return (
+    <group ref={groupRef} scale={0.3}>
+      <primitive object={scene} />
+    </group>
+  );
 }

@@ -6,14 +6,15 @@ export default function TreeScene() {
   return (
     <Canvas
       camera={{
-        position: [0, 3, 8], // 🔥 farther back
-        fov: 35,
+        position: [0, 2.5, 6],
+        fov: 32,
         near: 0.1,
-        far: 100,
+        far: 50
       }}
+      style={{ background: "#eaf7ff" }}
     >
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[5, 10, 5]} intensity={1} />
+      <ambientLight intensity={0.7} />
+      <directionalLight position={[5, 10, 5]} intensity={1.2} />
 
       <TreeGrowth />
 
@@ -22,6 +23,7 @@ export default function TreeScene() {
         enablePan={false}
         maxPolarAngle={Math.PI / 2.2}
       />
+
       <Environment preset="forest" />
     </Canvas>
   );

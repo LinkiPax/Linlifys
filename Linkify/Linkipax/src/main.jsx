@@ -1,4 +1,3 @@
-
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -6,7 +5,7 @@ import "./index.css";
 import { Provider } from "react-redux";
 import store from "./store";
 import { NotificationProvider } from "./context/NotificationContext";
-import './config/axios';
+import "./config/axios";
 // Import your components
 import Signup from "./component/Signup/Signup";
 import Login from "./component/Login/Login";
@@ -20,7 +19,7 @@ import Resume from "./Surprise/Resume";
 import PeopleProfile from "./component/Profile/PeopleProfile";
 import ChatPage from "./component/messages/ChatPage";
 import MeetingApp from "./component/meeting/Meetingroom";
-import StatusEditorPage from "./component/Status/StatusEditor"; 
+import StatusEditorPage from "./component/Status/StatusEditor";
 import Short from "./component/Shorts/Short";
 import ShortUpload from "./component/Shorts/ShortsUpload";
 import Setting from "./component/Setting/Setting";
@@ -59,11 +58,23 @@ createRoot(document.getElementById("root")).render(
             <Route path="/jobs" element={<Jobs />} />
             <Route path="/hackathons" element={<Hackathons />} />
             <Route path="/startup" element={<Startup />} />
-            <Route path="/create/post" element={<CreatePostCard userId={localStorage.getItem("userId")} />} />
-            <Route path="/tree" element={<TreeScene />} />
-            </Routes>
+            <Route
+              path="/create/post"
+              element={
+                <CreatePostCard userId={localStorage.getItem("userId")} />
+              }
+            />
+            <Route
+              path="/tree"
+              element={
+                <div style={{ width: "100vw", height: "100vh" }}>
+                  <TreeScene />
+                </div>
+              }
+            />
+          </Routes>
         </Router>
       </NotificationProvider>
     </Provider>
-  </StrictMode>    
+  </StrictMode>
 );
