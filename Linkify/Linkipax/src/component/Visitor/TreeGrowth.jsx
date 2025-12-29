@@ -17,20 +17,45 @@ export default function TreeGrowth({ debug }) {
   useEffect(() => {
     if (!scene) return;
 
-    scene.children.forEach(o => (o.visible = false));
+    // ✅ CRITICAL: USE ROOT NODE
+    const root = scene.getObjectByName("RootNode");
 
-    const tree = scene.getObjectByName(NAMES[debug.index]);
-    if (!tree) return;
+    if (!root) {
+      console.error("❌ RootNode NOT FOUND");
+      return;
+    }
+
+    // 🔍 DEBUG ONCE
+    console.log(
+      "AVAILABLE OBJECTS:",
+      root.children.map(o => o.name)
+    );
+
+    // Hide all trees
+    root.children.forEach(obj => {
+      obj.visible = false;
+    });
+
+    const name = NAMES[debug.index];
+    const tree = root.getObjectByName(name);
+
+    if (!tree) {
+      console.error("❌ TREE NOT FOUND:", name);
+      return;
+    }
 
     const cfg = debug.offsets[debug.index];
 
     tree.visible = true;
     tree.position.set(cfg.x, cfg.y, cfg.z);
     tree.scale.setScalar(cfg.scale);
+
     tree.updateMatrixWorld(true);
 
-    console.log("TREE UPDATE", cfg);
+    console.log("🌳 TREE SHOWN:", name, cfg);
   }, [scene, debug.index, debug.offsets]);
 
   return <primitive object={scene} />;
 }
+
+useGLTF.preload("/realistic_trees_collection.glb");
