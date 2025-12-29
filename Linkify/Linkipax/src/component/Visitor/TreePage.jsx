@@ -3,92 +3,32 @@ import TreeScene from "./TreeScene";
 
 /**
  * ✅ UNIVERSAL WORLD COORDINATES (ONE SOURCE OF TRUTH)
- * Each tree has its OWN object (no shared reference)
  */
 const INITIAL_OFFSETS = [
-  { x: -3598,   y: -37.5,   z: -37.5, scale: 0.17 }, // Tree 0
-  { x: -2893.5, y: 138.5, z: -4,   scale: 0.17 }, // Tree 1
-  { x: -2082.5, y: 87,   z: -4,   scale: 0.17 }, // Tree 2
-  { x: -1045.5, y: -42.5, z: -4,   scale: 0.17 }, // Tree 3
-  { x: 186.5, y: -10.5, z: -4,   scale: 0.17 }, // Tree 4
-  { x: 1419, y: -10.5, z: -4,   scale: 0.17 }, // Tree 5
-  { x: 3232, y: -10.5, z: -4,   scale: 0.17 }  // Tree 6
+  { x: -3598,   y: -37.5, z: -37.5, scale: 0.17 },
+  { x: -2893.5, y: 138.5, z: -4,    scale: 0.17 },
+  { x: -2082.5, y: 87,    z: -4,    scale: 0.17 },
+  { x: -1045.5, y: -42.5, z: -4,    scale: 0.17 },
+  { x: 186.5,   y: -10.5, z: -4,    scale: 0.17 },
+  { x: 1419,    y: -10.5, z: -4,    scale: 0.17 },
+  { x: 3232,    y: -10.5, z: -4,    scale: 0.17 }
 ];
 
-const STEP = {
-  x: 1.5,
-  y: 1.5,
-  z: 1.5,
-  scale: 0.005
-};
-
 export default function TreePage() {
-  const [index, setIndex] = useState(0);
-  const [offsets, setOffsets] = useState(INITIAL_OFFSETS);
-
-  /**
-   * ✅ SAFE UPDATE
-   * - No shared reference
-   * - No negative scale
-   */
-  const update = (key, delta) => {
-    setOffsets(prev => {
-      const copy = prev.map(o => ({ ...o }));
-
-      let nextValue = +(copy[index][key] + delta).toFixed(4);
-
-      // ❌ block invalid scale
-      if (key === "scale") {
-        nextValue = Math.max(0.001, nextValue);
-      }
-
-      copy[index][key] = nextValue;
-      return copy;
-    });
-  };
+  // 👉 choose which tree you want to show (0–6)
+  const [index] = useState(0);
+  const [offsets] = useState(INITIAL_OFFSETS);
 
   return (
     <div style={page}>
-      {/* 🎥 3D CANVAS */}
+      {/* 🎥 ONLY 3D TREE */}
       <TreeScene debug={{ index, offsets }} />
-
-      {/* 🌳 DEBUG UI */}
-      <div style={ui}>
-        <h3>🌳 Tree Debug</h3>
-
-        <button onClick={() => setIndex(i => Math.max(0, i - 1))}>⏮</button>
-        <span style={{ margin: "0 8px" }}>Tree {index}</span>
-        <button onClick={() => setIndex(i => Math.min(6, i + 1))}>⏭</button>
-
-        {["x", "y", "z", "scale"].map(k => (
-          <div key={k}>
-            {k.toUpperCase()} :
-            <button onClick={() => update(k, -STEP[k])}>-</button>
-            <span style={{ margin: "0 6px" }}>
-              {offsets[index][k]}
-            </span>
-            <button onClick={() => update(k, STEP[k])}>+</button>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
 
 const page = {
-  width: "100vw",
-  height: "100vh",
+  width: "100%",
+  height: "100%",
   position: "relative"
-};
-
-const ui = {
-  position: "absolute",
-  top: 10,
-  left: 10,
-  background: "rgba(0,0,0,0.85)",
-  color: "#fff",
-  padding: 12,
-  borderRadius: 8,
-  fontFamily: "monospace",
-  zIndex: 10
 };
