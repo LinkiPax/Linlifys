@@ -567,7 +567,7 @@ a:focus {
   transform: translateX(-50%);
 
   width: 280px;
-  height: 280px;            /* ✅ REQUIRED */
+  height: 500px;            /* ✅ REQUIRED */
   
   pointer-events: none;
   overflow: hidden;
