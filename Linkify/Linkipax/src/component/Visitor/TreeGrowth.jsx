@@ -8,49 +8,49 @@ const TREES = [
     x: 0,
     y: -0.4,
     z: 0,
-    scale: 0.002
+    scale: 0.02
   },
   {
     name: "Tree_EZTree1Medium002",
     x: -34.1,
     y: -0.1,
     z: -1.6,
-    scale: 0.002
+    scale: 0.02
   },
   {
     name: "Tree_EZTree0Medium011",
     x: -24.5,
     y: -0.1,
     z: -0.9,
-    scale: 0.002
+    scale: 0.02
   },
   {
     name: "Tree_EZTree0Medium010",
     x: -12.2,
     y: 0,
     z: 0.4,
-    scale: 0.002
+    scale: 0.02
   },
   {
     name: "Tree_EZTree1Large001",
     x: 2,
     y: 0,
     z: 0.4,
-    scale: 0.002
+    scale: 0.02
   },
   {
     name: "Tree_EZTree0Large",
     x: 16.6,
     y: 0,
     z: -0.1,
-    scale: 0.002
+    scale: 0.02
   },
   {
     name: "Tree_EZTree1Large009",
     x: 37.9,
     y: 0,
     z: -0.1,
-    scale: 0.002
+    scale: 0.02
   }
 ];
 
