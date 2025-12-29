@@ -9,10 +9,10 @@ const INITIAL_OFFSETS = [
   { x: -3598,   y: 36,   z: -37.5, scale: 0.17 }, // Tree 0
   { x: -2893.5, y: 138.5, z: -4,   scale: 0.17 }, // Tree 1
   { x: -2082.5, y: 87,   z: -4,   scale: 0.17 }, // Tree 2
-  { x: -1093.5, y: 71.5, z: -4,   scale: 0.17 }, // Tree 3
-  { x: 1100, y: -10.5, z: -4,   scale: 0.17 }, // Tree 4
-  { x: 1200, y: -10.5, z: -4,   scale: 0.17 }, // Tree 5
-  { x: 1300, y: -10.5, z: -4,   scale: 0.17 }  // Tree 6
+  { x: -1045.5, y: -42.5, z: -4,   scale: 0.17 }, // Tree 3
+  { x: 186.5, y: -10.5, z: -4,   scale: 0.17 }, // Tree 4
+  { x: 1419, y: -10.5, z: -4,   scale: 0.17 }, // Tree 5
+  { x: 3232, y: -10.5, z: -4,   scale: 0.17 }  // Tree 6
 ];
 
 const STEP = {
