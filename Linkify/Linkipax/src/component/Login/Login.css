@@ -564,6 +564,12 @@ a:focus {
   bottom: 40px;
   left: 50%;
   transform: translateX(-50%);
-  width: 260px;
+
+  width: 280px;
+  height: 280px;            /* ✅ REQUIRED */
+  
   pointer-events: none;
+  overflow: hidden;
+  border-radius: 16px;
 }
+
