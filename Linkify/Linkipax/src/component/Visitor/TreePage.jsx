@@ -59,7 +59,7 @@
 // };
 import { useEffect, useState } from "react";
 import TreeScene from "./TreeScene";
-import { registerVisit } from "../api/visitor";
+import { registerVisit } from "./visitor";
 
 const INITIAL_OFFSETS = [
   { x: -3598,   y: -37.5, z: -37.5, scale: 0.17 },
