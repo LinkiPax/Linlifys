@@ -77,25 +77,34 @@ export default function TreePage() {
   const [visitorCount, setVisitorCount] = useState(0);
 
   useEffect(() => {
-    async function track() {
-      const { totalVisitors } = await registerVisit();
+  async function track() {
+    const { totalVisitors } = await registerVisit();
 
-      const growthIndex = Math.min(
-        Math.floor((totalVisitors - 1) / 10),
-        6
-      );
+    const growthIndex = Math.min(
+      Math.floor((totalVisitors - 1) / 10),
+      6
+    );
 
-      setIndex(growthIndex);
-      setVisitorCount(totalVisitors);
-    }
+    setIndex(growthIndex);
 
-    track();
-  }, []);
+    // ⏱️ Stopwatch-style counter
+    let current = 0;
+    const interval = setInterval(() => {
+      current++;
+      setVisitorCount(current);
 
+      if (current >= totalVisitors) {
+        clearInterval(interval);
+      }
+    }, 40); // speed (ms)
+  }
+
+  track();
+}, []);
   return (
     <div style={page}>
       {/* 🌳 3D Canvas */}
-      <TreeScene debug={{ index, offsets }} />
+      <TreeScene debug={{ index, offsets }} style={canvasWrapper} />
 
       {/* 👇 Visitor Counter */}
       <div style={counter}>
@@ -107,16 +116,36 @@ export default function TreePage() {
 
 const page = {
   width: "100%",
-  height: "100%",
+  minHeight: "100vh",
   display: "flex",
   flexDirection: "column"
 };
 
-const counter = {
-  textAlign: "center",
-  padding: "12px",
-  fontSize: "18px",
-  fontWeight: "500",
-  color: "#2e7d32",
-  background: "#e8fff1"
+const canvasWrapper = {
+  width: "100%",
+  height: "80vh" // 🔥 increase this (80–90vh recommended)
 };
+
+const counter = {
+  marginTop: "10px",
+  padding: "14px",
+  fontSize: "22px",
+  fontWeight: "700",
+  textAlign: "center",
+  letterSpacing: "1px",
+  color: "#b6ffcc",
+  background: "radial-gradient(circle at top, #062f1a, #020d07)",
+  borderRadius: "12px",
+  textShadow: `
+    0 0 5px #6bff9e,
+    0 0 10px #6bff9e,
+    0 0 20px #4cff8a,
+    0 0 40px #2aff6d
+  `,
+  boxShadow: `
+    inset 0 0 20px rgba(80, 255, 150, 0.2),
+    0 0 25px rgba(80, 255, 150, 0.4)
+  `,
+  animation: "pulseGlow 2s infinite ease-in-out"
+};
+
