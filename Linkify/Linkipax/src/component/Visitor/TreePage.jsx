@@ -8,17 +8,17 @@ import TreeScene from "./TreeScene";
 const INITIAL_OFFSETS = [
   { x: -3598,   y: 36,   z: -37.5, scale: 0.17 }, // Tree 0
   { x: -2893.5, y: 138.5, z: -4,   scale: 0.17 }, // Tree 1
-  { x: -2283.5, y: 15,   z: -4,   scale: 0.17 }, // Tree 2
-  { x: -1893.5, y: 138.5, z: -4,   scale: 0.17 }, // Tree 3
-  { x: -1293.5, y: 138.5, z: -4,   scale: 0.17 }, // Tree 4
-  { x: -1193.5, y: 138.5, z: -4,   scale: 0.17 }, // Tree 5
-  { x: -1093.5, y: 138.5, z: -4,   scale: 0.17 }  // Tree 6
+  { x: -2082.5, y: 87,   z: -4,   scale: 0.17 }, // Tree 2
+  { x: -1093.5, y: 71.5, z: -4,   scale: 0.17 }, // Tree 3
+  { x: 1100, y: -10.5, z: -4,   scale: 0.17 }, // Tree 4
+  { x: 1200, y: -10.5, z: -4,   scale: 0.17 }, // Tree 5
+  { x: 1300, y: -10.5, z: -4,   scale: 0.17 }  // Tree 6
 ];
 
 const STEP = {
-  x: 0.5,
-  y: 0.5,
-  z: 0.5,
+  x: 1.5,
+  y: 1.5,
+  z: 1.5,
   scale: 0.005
 };
 
