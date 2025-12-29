@@ -6,7 +6,7 @@ import TreeScene from "./TreeScene";
  * Each tree has its OWN object (no shared reference)
  */
 const INITIAL_OFFSETS = [
-  { x: -3598,   y: 36,   z: -37.5, scale: 0.17 }, // Tree 0
+  { x: -3598,   y: -37.5,   z: -37.5, scale: 0.17 }, // Tree 0
   { x: -2893.5, y: 138.5, z: -4,   scale: 0.17 }, // Tree 1
   { x: -2082.5, y: 87,   z: -4,   scale: 0.17 }, // Tree 2
   { x: -1045.5, y: -42.5, z: -4,   scale: 0.17 }, // Tree 3
