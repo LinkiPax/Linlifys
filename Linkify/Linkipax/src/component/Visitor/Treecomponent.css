@@ -94,14 +94,11 @@
 .tree-visual {
   width: 100%;
   height: 500px;
-  background: linear-gradient(to bottom, #87CEEB, #98FB98);
   border-radius: 15px;
   overflow: hidden;
-  margin: 20px 0;
   position: relative;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-  border: 2px solid #4CAF50;
 }
+
 
 .tree-stats {
   background: white;

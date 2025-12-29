@@ -71,87 +71,47 @@ const getTreeIndex = (visitorCount) => {
 
 export default function Tree3D({ visitorCount = 0 }) {
   const gltf = useLoader(GLTFLoader, "/realistic_trees_collection.glb");
-  const modelRef = useRef();
-  const currentTreeIndex = useRef(-1);
-  
+  const ref = useRef();
+
   useEffect(() => {
-    console.log("GLTF loaded successfully!");
-    console.log(`Total children in scene: ${gltf}`);
-    const treeIndex = getTreeIndex(visitorCount);
-    const treeConfig = TREE_CONFIGS[treeIndex];
-    
-    console.log(`Showing tree ${treeIndex + 1}: ${treeConfig.name} for ${visitorCount} visitors`);
-    
-    // Don't re-process if same tree
-    if (treeIndex === currentTreeIndex.current) return;
-    currentTreeIndex.current = treeIndex;
-    
-    // First, hide ALL tree groups
-    gltf.scene.traverse((child) => {
-      if (child.name && child.name.startsWith("Tree EZTree")) {
-        child.visible = false;
+    const index = getTreeIndex(visitorCount);
+    const targetName = TREE_CONFIGS[index].name;
+
+    // 1️⃣ Hide EVERYTHING
+    gltf.scene.traverse((obj) => {
+      if (obj.isMesh || obj.isGroup) {
+        obj.visible = false;
       }
     });
-    
-    // Find and show ONLY the selected tree
-    let foundTree = null;
-    gltf.scene.traverse((child) => {
-      if (child.name === treeConfig.name) {
-        foundTree = child;
-        child.visible = true;
-        console.log(`Found and showing tree: ${child.name}`);
-        
-        // Make all children visible
-        child.traverse((mesh) => {
-          if (mesh.isMesh) {
-            mesh.visible = true;
-            
-            // Apply tree-specific colors
-            if (mesh.material) {
-              mesh.material = mesh.material.clone();
-              
-              if (mesh.name.includes("leaves") || 
-                  mesh.material.name?.toLowerCase().includes("leaf")) {
-                // Leaves - use the tree's color
-                mesh.material.color = new THREE.Color(treeConfig.color);
-                mesh.material.transparent = true;
-                mesh.material.opacity = 0.9;
-              } else {
-                // Branches - brown
-                mesh.material.color = new THREE.Color("#8B4513");
-              }
-              
-              mesh.material.needsUpdate = true;
+
+    // 2️⃣ Show ONLY selected tree
+    gltf.scene.traverse((obj) => {
+      if (obj.name === targetName) {
+        obj.visible = true;
+
+        obj.traverse((child) => {
+          if (child.isMesh) {
+            child.visible = true;
+            child.material = child.material.clone();
+
+            if (child.name.toLowerCase().includes("leaves")) {
+              child.material.color.set(TREE_CONFIGS[index].color);
+            } else {
+              child.material.color.set("#8B4513");
             }
           }
         });
       }
     });
-    
-    if (!foundTree) {
-      console.error(`Tree ${treeConfig.name} not found! Available trees:`);
-      gltf.scene.traverse((child) => {
-        if (child.name && child.name.startsWith("Tree EZTree")) {
-          console.log(`  - ${child.name}`);
-        }
-      });
-    }
-    
-    // Apply scale to the entire scene
-    gltf.scene.scale.setScalar(treeConfig.scale);
-    
-  }, [gltf, visitorCount]);
-  
-  useFrame((state) => {
-    if (modelRef.current) {
-      // Gentle rotation
-      modelRef.current.rotation.y += 0.001;
-      
-      // Subtle bobbing animation
-      const time = state.clock.elapsedTime;
-      modelRef.current.position.y = Math.sin(time * 0.5) * 0.01;
-    }
+
+    // 3️⃣ Scale only active tree
+    gltf.scene.scale.setScalar(TREE_CONFIGS[index].scale);
+
+  }, [visitorCount, gltf]);
+
+  useFrame(() => {
+    if (ref.current) ref.current.rotation.y += 0.002;
   });
-  
-  return <primitive ref={modelRef} object={gltf.scene} />;
+
+  return <primitive ref={ref} object={gltf.scene} />;
 }

@@ -79,10 +79,10 @@ const TreeComponent = () => {
       )}
 
       <div className="tree-visual">
-        <Canvas 
-          camera={{ position: [4, 3, 4], fov: 60 }}
-          style={{ background: '#87CEEB' }}
-        >
+        <Canvas
+  camera={{ position: [4, 3, 4], fov: 60 }}
+  gl={{ alpha: true }}
+>
           <ambientLight intensity={0.8} />
           <directionalLight position={[5, 10, 5]} intensity={1} />
           
@@ -95,8 +95,6 @@ const TreeComponent = () => {
             enablePan={true}
             minDistance={2}
             maxDistance={15}
-            autoRotate={true}
-            autoRotateSpeed={0.3}
           />
         </Canvas>
       </div>
