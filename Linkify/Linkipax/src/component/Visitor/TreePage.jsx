@@ -104,7 +104,9 @@ export default function TreePage() {
   return (
     <div style={page}>
       {/* 🌳 3D Canvas */}
-      <TreeScene debug={{ index, offsets }} style={canvasWrapper} />
+      <div className="tree-wrapper">
+        <TreeScene debug={{ index, offsets }} />
+      </div>
     </div>
   );
 }
