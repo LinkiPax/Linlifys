@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TreeScene from "./TreeScene";
+import { registerVisit } from "./visitor";
 
 /**
- * ✅ UNIVERSAL WORLD COORDINATES (ONE SOURCE OF TRUTH)
+ * ❌ DO NOT TOUCH COORDINATES
  */
 const INITIAL_OFFSETS = [
   { x: -3598,   y: -37.5, z: -37.5, scale: 0.17 },
@@ -15,13 +16,37 @@ const INITIAL_OFFSETS = [
 ];
 
 export default function TreePage() {
-  // 👉 choose which tree you want to show (0–6)
-  const [index] = useState(0);
+  const [index, setIndex] = useState(0);
   const [offsets] = useState(INITIAL_OFFSETS);
+
+  useEffect(() => {
+    async function track() {
+      try {
+        const { totalVisitors } = await registerVisit();
+
+        /**
+         * 🌱 Map visitors → tree index
+         * 1–10    → 0
+         * 11–20   → 1
+         * 21–30   → 2
+         * ...
+         */
+        const growthIndex = Math.min(
+          Math.floor((totalVisitors - 1) / 10),
+          6
+        );
+
+        setIndex(growthIndex);
+      } catch (err) {
+        console.error("Visitor tracking failed", err);
+      }
+    }
+
+    track();
+  }, []);
 
   return (
     <div style={page}>
-      {/* 🎥 ONLY 3D TREE */}
       <TreeScene debug={{ index, offsets }} />
     </div>
   );
