@@ -562,11 +562,11 @@ a:focus {
 .tree-wrapper {
   position: absolute;
 
-  width: 593px;
+  width: 483px;
   height: 500px;
 
   left: 8%;              /* 👈 left space (adjust 6–12%) */
-  top: calc(30% + 180px); /* 👈 below the heading text */
+  top: calc(-2% + 180px); /* 👈 below the heading text */
 
   pointer-events: none;
   overflow: hidden;
