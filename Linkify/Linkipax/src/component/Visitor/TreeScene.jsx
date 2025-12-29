@@ -5,14 +5,14 @@ import TreeGrowth from "./TreeGrowth";
 export default function TreeScene() {
   return (
     <Canvas
-      camera={{
-        position: [0, 2.5, 6],
-        fov: 32,
-        near: 0.1,
-        far: 50
-      }}
-      style={{ background: "#eaf7ff" }}
-    >
+  camera={{
+    position: [0, 4, 10],
+    fov: 35,
+    near: 0.1,
+    far: 100
+  }}
+>
+
       {/* 🌍 LIGHTING */}
       <ambientLight intensity={0.7} />
       <directionalLight position={[5, 10, 5]} intensity={1.2} />

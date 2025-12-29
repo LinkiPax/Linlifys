@@ -8,7 +8,7 @@ export default function TreeGrowth() {
   const groupRef = useRef();
   const [stage, setStage] = useState(0);
 
-  // ✅ CORRECT tree names (FROM YOUR LOG)
+  // ✅ Correct names (from your log)
   const treeNames = [
     "Tree_EZTree1Bush006",
     "Tree_EZTree1Medium002",
@@ -19,44 +19,32 @@ export default function TreeGrowth() {
     "Tree_EZTree1Large009"
   ];
 
-  // 🔹 Fetch visitor count
+  // Fetch visitor count
   useEffect(() => {
-    async function fetchVisitors() {
-      try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_URL}/visitor/visit`
-        );
+    axios
+      .get(`${import.meta.env.VITE_API_URL}/visitor/visit`)
+      .then(res => {
         const count = res.data.count || 0;
-
-        const newStage = Math.min(
-          Math.floor(count / 100),
-          treeNames.length - 1
-        );
-
-        setStage(newStage);
-      } catch (err) {
-        console.error("Visitor API error", err);
-      }
-    }
-
-    fetchVisitors();
+        setStage(Math.min(Math.floor(count / 100), treeNames.length - 1));
+      })
+      .catch(console.error);
   }, []);
 
-  // 🔥 SHOW ONE TREE + CENTER IT
   useEffect(() => {
     if (!scene || !groupRef.current) return;
 
-    // 1️⃣ Hide everything
-    scene.traverse(obj => {
-      obj.visible = false;
-    });
-
-    // 2️⃣ Find RootNode
+    // 1️⃣ Find RootNode
     const rootNode = scene.getObjectByName("RootNode");
     if (!rootNode) {
       console.error("RootNode not found");
       return;
     }
+
+    // 2️⃣ Hide ONLY tree siblings (NOT parents)
+    treeNames.forEach(name => {
+      const t = rootNode.getObjectByName(name);
+      if (t) t.visible = false;
+    });
 
     // 3️⃣ Get active tree
     const activeTree = rootNode.getObjectByName(treeNames[stage]);
@@ -65,13 +53,11 @@ export default function TreeGrowth() {
       return;
     }
 
-    // 4️⃣ Show tree
+    // 4️⃣ Show it
     activeTree.visible = true;
 
-    // 5️⃣ Reset transforms
-    activeTree.position.set(0, 0, 0);
-    activeTree.rotation.set(0, 0, 0);
-    activeTree.scale.set(1, 1, 1);
+    // 5️⃣ FIX ROTATION (very important)
+    activeTree.rotation.set(-Math.PI / 2, 0, 0); // stand upright
 
     // 6️⃣ Center ONLY this tree
     const box = new THREE.Box3().setFromObject(activeTree);
@@ -81,13 +67,13 @@ export default function TreeGrowth() {
     // 7️⃣ Reset group
     groupRef.current.position.set(0, 0, 0);
 
-    // 🧪 Optional debug
-    console.log("Showing:", treeNames[stage]);
+    console.log("Showing tree:", treeNames[stage]);
     console.log("Tree size:", box.getSize(new THREE.Vector3()));
   }, [stage, scene]);
 
   return (
-    <group ref={groupRef} scale={0.3}>
+    <group ref={groupRef}>
+      {/* ⚠️ DO NOT SCALE AGAIN */}
       <primitive object={scene} />
     </group>
   );
