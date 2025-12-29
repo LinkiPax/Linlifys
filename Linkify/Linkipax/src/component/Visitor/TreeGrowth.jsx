@@ -1,79 +1,79 @@
 import { useGLTF } from "@react-three/drei";
-import { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import * as THREE from "three";
-import axios from "axios";
 
 export default function TreeGrowth() {
   const { scene } = useGLTF("/realistic_trees_collection.glb");
-  const groupRef = useRef();
 
-  const [stage, setStage] = useState(0);
-
-  // 🔹 EXACT tree root names (order matters)
-  const treeNames = [
-    "Tree EZTree1.Bush006",
-    "Tree EZTree1.Medium002",
-    "Tree EZTree0.Medium011",
-    "Tree EZTree0.Medium010",
-    "Tree EZTree1.Large001",
-    "Tree EZTree0.Large",
-    "Tree EZTree1.Large009"
-  ];
-
-  // 🔹 Fetch visitor count
   useEffect(() => {
-    async function fetchVisitors() {
-      try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/visitor/visit`); // your backend
-        const count = res.data.count || 0;
+    console.log("========= GLB ROOT SCENE =========");
+    console.log(scene);
 
-        // map visits → stage
-        const newStage = Math.min(
-          Math.floor(count / 100),
-          treeNames.length - 1
+    let index = 0;
+
+    scene.traverse(obj => {
+      index++;
+
+      console.log(`\n🔹 OBJECT #${index}`);
+      console.log("Name:", obj.name || "(no-name)");
+      console.log("Type:", obj.type);
+      console.log("UUID:", obj.uuid);
+
+      // Transform info
+      console.log("Local Position:", obj.position.clone());
+      console.log("Local Rotation:", obj.rotation.clone());
+      console.log("Local Scale:", obj.scale.clone());
+
+      // World position
+      const worldPos = new THREE.Vector3();
+      obj.getWorldPosition(worldPos);
+      console.log("World Position:", worldPos);
+
+      // Geometry
+      if (obj.geometry) {
+        console.log("Geometry:", obj.geometry.type);
+        console.log(
+          "Vertex Count:",
+          obj.geometry.attributes?.position?.count
         );
 
-        setStage(newStage);
-      } catch (err) {
-        console.error("Visitor API error", err);
+        obj.geometry.computeBoundingBox();
+        console.log(
+          "Geometry BoundingBox:",
+          obj.geometry.boundingBox
+        );
       }
-    }
 
-    fetchVisitors();
-  }, []);
+      // Material
+      if (obj.material) {
+        if (Array.isArray(obj.material)) {
+          console.log(
+            "Materials:",
+            obj.material.map(m => m.name)
+          );
+        } else {
+          console.log("Material:", obj.material.name);
+        }
+      }
 
-  // 🔥 CORE FIX: show ONLY ONE TREE & CENTER IT
-  useEffect(() => {
-    if (!scene || !groupRef.current) return;
-
-    // Hide EVERYTHING
-    scene.traverse(obj => {
-      obj.visible = false;
+      // Children
+      if (obj.children.length > 0) {
+        console.log(
+          "Children:",
+          obj.children.map(c => c.name)
+        );
+      }
     });
 
-    const activeTree = scene.getObjectByName(treeNames[stage]);
-    if (!activeTree) return;
+    // 🌍 FULL SCENE BOUNDING BOX
+    const sceneBox = new THREE.Box3().setFromObject(scene);
+    console.log("\n========= FULL SCENE BOUNDING BOX =========");
+    console.log("Scene Size:", sceneBox.getSize(new THREE.Vector3()));
+    console.log("Scene Center:", sceneBox.getCenter(new THREE.Vector3()));
+  }, [scene]);
 
-    activeTree.visible = true;
+  // 🔥 Show everything for inspection
+  scene.traverse(obj => (obj.visible = true));
 
-    // Reset transforms (important)
-    activeTree.position.set(0, 0, 0);
-    activeTree.rotation.set(0, 0, 0);
-    activeTree.scale.set(1, 1, 1);
-
-    // 🔥 Center ONLY the active tree
-    const box = new THREE.Box3().setFromObject(activeTree);
-    const center = box.getCenter(new THREE.Vector3());
-
-    activeTree.position.sub(center);
-
-    // Reset group
-    groupRef.current.position.set(0, 0, 0);
-  }, [stage, scene]);
-
-  return (
-    <group ref={groupRef} scale={0.3}>
-      <primitive object={scene} />
-    </group>
-  );
+  return <primitive object={scene} scale={0.3} />;
 }
