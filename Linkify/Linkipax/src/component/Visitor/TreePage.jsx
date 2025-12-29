@@ -11,6 +11,14 @@ const INITIAL_OFFSETS = [
   { x: 37.9, y: 0, z: -0.1, scale: 0.002 }
 ];
 
+// 👇 Proper step sizes (CRITICAL)
+const STEP = {
+  x: 0.01,
+  y: 0.01,
+  z: 0.01,
+  scale: 0.0002
+};
+
 export default function TreePage() {
   const [index, setIndex] = useState(0);
   const [offsets, setOffsets] = useState(INITIAL_OFFSETS);
@@ -20,7 +28,7 @@ export default function TreePage() {
       const copy = [...prev];
       copy[index] = {
         ...copy[index],
-        [key]: +(copy[index][key] + delta).toFixed(4)
+        [key]: +(copy[index][key] + delta).toFixed(6)
       };
       return copy;
     });
@@ -28,7 +36,7 @@ export default function TreePage() {
 
   return (
     <>
-      {/* 🌳 DEBUG UI (HTML) */}
+      {/* 🌳 DEBUG UI */}
       <div style={ui}>
         <h3>🌳 Tree Debug</h3>
 
@@ -37,11 +45,13 @@ export default function TreePage() {
         <button onClick={() => setIndex(i => Math.min(6, i + 1))}>⏭</button>
 
         {["x", "y", "z", "scale"].map(k => (
-          <div key={k}>
+          <div key={k} style={{ marginTop: 6 }}>
             {k.toUpperCase()} :
-            <button onClick={() => update(k, -0.1)}>-</button>
-            <span>{offsets[index][k]}</span>
-            <button onClick={() => update(k, 0.1)}>+</button>
+            <button onClick={() => update(k, -STEP[k])}>-</button>
+            <span style={{ margin: "0 6px" }}>
+              {offsets[index][k]}
+            </span>
+            <button onClick={() => update(k, STEP[k])}>+</button>
           </div>
         ))}
       </div>

@@ -21,9 +21,10 @@ export default function TreeGrowth({ debug }) {
     const root = scene.getObjectByName("RootNode");
     if (!root) return;
 
-    NAMES.forEach(n => {
-      const t = root.getObjectByName(n);
-      if (t) t.visible = false;
+    // Hide all trees
+    NAMES.forEach(name => {
+      const obj = root.getObjectByName(name);
+      if (obj) obj.visible = false;
     });
 
     const name = NAMES[debug.index];
@@ -45,9 +46,13 @@ export default function TreeGrowth({ debug }) {
       -center.z * cfg.scale + cfg.z
     );
 
-    console.log("🌳 TREE DEBUG", name, cfg);
+    // 🔥 VERY IMPORTANT
+    tree.updateMatrixWorld(true);
 
-  }, [scene, debug]);
+    console.log("🌳 TREE DEBUG:", name, cfg);
+  }, [scene, debug.index, debug.offsets]);
 
   return <primitive object={scene} />;
 }
+
+useGLTF.preload("/realistic_trees_collection.glb");
