@@ -20,15 +20,15 @@ export default function TreeGrowth({
     "Tree_EZTree1Large009"
   ];
 
+  /* ============================
+     TREE SETUP (STAGE CHANGE)
+     ============================ */
   useEffect(() => {
     if (!scene || !pivotRef.current) return;
 
     const rootNode = scene.getObjectByName("RootNode");
     if (!rootNode) return;
 
-    // Reset pivot every time (VERY IMPORTANT)
-    pivotRef.current.position.set(0, 0, 0);
-    pivotRef.current.scale.set(1, 1, 1);
     pivotRef.current.clear();
 
     // Hide all trees
@@ -44,32 +44,20 @@ export default function TreeGrowth({
     tree.visible = true;
     pivotRef.current.add(tree);
 
-    // Reset tree transforms
+    // Reset tree transform ONLY
     tree.position.set(0, 0, 0);
     tree.rotation.set(0, 0, 0);
     tree.scale.set(1, 1, 1);
 
-    // 🔥 LOCAL NORMALIZATION (PER TREE)
+    // Normalize tree
     const box = new THREE.Box3().setFromObject(tree);
     const center = box.getCenter(new THREE.Vector3());
     const size = box.getSize(new THREE.Vector3());
 
-    // Center X/Z
     tree.position.x -= center.x;
     tree.position.z -= center.z;
-
-    // Ground Y (ABSOLUTE FIX)
     tree.position.y -= box.min.y;
 
-    // 🔥 GLOBAL DEBUG OFFSET (SAME FOR ALL TREES)
-    pivotRef.current.position.set(
-      debugTransform.x,
-      debugTransform.y,
-      debugTransform.z
-    );
-    pivotRef.current.scale.setScalar(debugTransform.scale);
-
-    // Debug logs
     const worldPos = new THREE.Vector3();
     tree.getWorldPosition(worldPos);
 
@@ -89,7 +77,23 @@ export default function TreeGrowth({
       worldPos
     });
 
-  }, [stage, scene, debugTransform, onTreeInfo]);
+  }, [stage, scene, onTreeInfo]);
+
+  /* ============================
+     DEBUG CONTROLS (BUTTONS)
+     ============================ */
+  useEffect(() => {
+    if (!pivotRef.current) return;
+
+    pivotRef.current.position.set(
+      debugTransform.x,
+      debugTransform.y,
+      debugTransform.z
+    );
+
+    pivotRef.current.scale.setScalar(debugTransform.scale);
+
+  }, [debugTransform]);
 
   return <group ref={pivotRef} />;
 }
