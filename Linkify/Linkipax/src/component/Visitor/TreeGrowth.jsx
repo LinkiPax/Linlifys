@@ -5,7 +5,8 @@ import axios from "axios";
 
 export default function TreeGrowth() {
   const { scene } = useGLTF("/realistic_trees_collection.glb");
-  const groupRef = useRef();
+
+  const pivotRef = useRef(); // 🔥 NEW
   const [stage, setStage] = useState(0);
 
   const treeNames = [
@@ -18,85 +19,62 @@ export default function TreeGrowth() {
     "Tree_EZTree1Large009"
   ];
 
-  // 🔹 Fetch visitor count
   useEffect(() => {
     axios
       .get(`${import.meta.env.VITE_API_URL}/visitor/visit`)
       .then(res => {
         const count = res.data.count || 0;
-        const newStage = Math.min(Math.floor(count / 100), treeNames.length - 1);
-        console.log("Visitor count:", count, "→ stage:", newStage);
-        setStage(newStage);
+        setStage(Math.min(Math.floor(count / 100), treeNames.length - 1));
       })
       .catch(console.error);
   }, []);
 
   useEffect(() => {
-    if (!scene) {
-      console.warn("❌ Scene not loaded yet");
-      return;
-    }
-
-    console.log("✅ Scene loaded:", scene);
+    if (!scene || !pivotRef.current) return;
 
     const rootNode = scene.getObjectByName("RootNode");
-    if (!rootNode) {
-      console.error("❌ RootNode NOT FOUND");
-      return;
-    }
+    if (!rootNode) return;
 
-    console.log("✅ RootNode found:", rootNode);
-    console.log(
-      "🌲 Available trees:",
-      rootNode.children.map(c => c.name)
-    );
-
-    // Hide only tree siblings
+    // Hide all trees
     treeNames.forEach(name => {
       const t = rootNode.getObjectByName(name);
       if (t) t.visible = false;
     });
 
-    const activeTree = rootNode.getObjectByName(treeNames[stage]);
-    if (!activeTree) {
-      console.error("❌ Active tree NOT FOUND:", treeNames[stage]);
-      return;
-    }
+    const tree = rootNode.getObjectByName(treeNames[stage]);
+    if (!tree) return;
 
-    activeTree.visible = true;
+    tree.visible = true;
 
-    console.log("🌳 Showing tree:", activeTree.name);
-    console.log("Local position (before):", activeTree.position);
-    console.log("Local rotation:", activeTree.rotation);
-    console.log("Local scale:", activeTree.scale);
+    // 🔥 DETACH TREE FROM GLB AND MOVE INTO PIVOT
+    pivotRef.current.clear();
+    pivotRef.current.add(tree);
 
-    // Bounding box
-    const box = new THREE.Box3().setFromObject(activeTree);
+    // Reset tree transform
+    tree.position.set(0, 0, 0);
+    tree.rotation.set(0, 0, 0);
+    tree.scale.set(1, 1, 1);
+
+    // Compute bounding box AFTER re-parenting
+    const box = new THREE.Box3().setFromObject(tree);
     const center = box.getCenter(new THREE.Vector3());
     const size = box.getSize(new THREE.Vector3());
 
-    console.log("📦 Tree bounding box:", box);
     console.log("📐 Tree size:", size);
     console.log("🎯 Tree center:", center);
 
-    // Center tree
-    activeTree.position.sub(center);
-    activeTree.position.y += size.y / 2;
+    // Center mesh inside pivot
+    tree.position.sub(center);
+    tree.position.y += size.y / 2;
 
-    // WORLD POSITION CHECK
+    // Debug world position
     const worldPos = new THREE.Vector3();
-    activeTree.getWorldPosition(worldPos);
-    console.log("🌍 Tree WORLD position:", worldPos);
-
-    // Bounding box corners (important!)
-    console.log("📦 BB min:", box.min);
-    console.log("📦 BB max:", box.max);
+    tree.getWorldPosition(worldPos);
+    console.log("🌍 FINAL tree world position:", worldPos);
 
   }, [stage, scene]);
 
   return (
-    <group ref={groupRef} scale={0.1}>
-      <primitive object={scene} />
-    </group>
+    <group ref={pivotRef} scale={0.1} />
   );
 }
