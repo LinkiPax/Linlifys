@@ -5,7 +5,7 @@ import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import "./Login.css";
-import TreePage from "./component/Visitor/TreePage";
+import TreePage from "../Visitor/TreePage";
 // import TestPage from "../Visitor/TestPage.jsx";
 const Login = () => {
   const [email, setEmail] = useState("");
