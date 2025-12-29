@@ -2,10 +2,10 @@ import { useState } from "react";
 import TreeScene from "./TreeScene";
 
 const INITIAL_OFFSETS = Array(7).fill({
-  x: 0,
-  y: 0,
-  z: 0,
-  scale: 0.01
+  x: -3576,
+  y: 15.5,
+  z: -37.5,
+  scale: 0.17
 });
 
 const STEP = {
