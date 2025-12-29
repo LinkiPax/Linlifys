@@ -1,9 +1,7 @@
-import { useHelper } from "@react-three/drei";
-import { useRef } from "react";
-import * as THREE from "three";
+import { axesHelper } from "three";
+import { useMemo } from "react";
 
 export default function OriginHelper({ size = 5 }) {
-  const ref = useRef();
-  useHelper(ref, THREE.AxesHelper, size);
-  return <group ref={ref} />;
+  const helper = useMemo(() => new axesHelper(size), [size]);
+  return <primitive object={helper} />;
 }

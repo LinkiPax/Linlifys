@@ -12,14 +12,15 @@ export default function CommonScene({ children }) {
       <ambientLight intensity={1} />
       <directionalLight position={[10, 10, 10]} />
 
-      {/* Helpers */}
-      <OriginHelper size={5} />
+      {/* ✅ ORIGIN (MUST BE BEFORE CONTENT) */}
+      <OriginHelper size={10} />
+
+      {/* Grid */}
       <Grid args={[50, 50]} />
 
       {/* Scene Content */}
       {children}
 
-      {/* Controls */}
       <OrbitControls />
       <Environment preset="forest" />
     </Canvas>
