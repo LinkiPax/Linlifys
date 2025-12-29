@@ -229,11 +229,11 @@ const Login = () => {
               <h2>Welcome Back</h2>
               <p>Connect with professionals around the world</p>
             </div>
-          </div>
-        </div>
          <div className="tree-wrapper">
          <TreePage />
          </div>
+          </div>
+        </div>
         {/* Right side with login form */}
         <div className="form-container">
           <div className="login-content">
