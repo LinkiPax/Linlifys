@@ -28,7 +28,7 @@ import Jobs from "./component/Jobs/Jobs";
 import Startup from "./component/Jobs/Startup";
 import Hackathons from "./component/Jobs/Hackathons";
 import CreatePostCard from "./component/Cards/CreatePostCard";
-import TreeScene from "./component/Visitor/TreeScene";
+import TreePage from "./component/Visitor/TreePage";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider store={store}>
@@ -67,9 +67,7 @@ createRoot(document.getElementById("root")).render(
             <Route
               path="/tree"
               element={
-                <div style={{ width: "100vw", height: "100vh" }}>
-                  <TreeScene />
-                </div>
+                <TreePage />
               }
             />
           </Routes>
