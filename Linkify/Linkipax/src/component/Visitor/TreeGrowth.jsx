@@ -7,7 +7,7 @@ const TREES = [
     name: "Tree_EZTree1Bush006",
     x: -10.5,
     y: -0.4,
-    z: 0,
+    z: -0.9,
     scale: 0.002
   },
   {
