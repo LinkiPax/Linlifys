@@ -5,6 +5,29 @@
     <link rel="shortcut icon" href="/public/favicon.ico" type="image/x-icon">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Linkipax</title>
+    <script>
+      (function () {
+        try {
+          var storedTheme = localStorage.getItem("theme");
+          var themePreference =
+            storedTheme === "light" || storedTheme === "dark" || storedTheme === "system"
+              ? storedTheme
+              : "system";
+          var systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light";
+          var theme = themePreference === "system" ? systemTheme : themePreference;
+
+          document.documentElement.dataset.theme = theme;
+          document.documentElement.dataset.themePreference = themePreference;
+          document.documentElement.classList.add(theme + "-theme");
+          if (theme === "dark") document.documentElement.classList.add("dark-mode");
+          document.documentElement.style.colorScheme = theme;
+        } catch (error) {
+          document.documentElement.dataset.theme = "light";
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

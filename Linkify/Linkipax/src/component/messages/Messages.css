@@ -1,13 +1,13 @@
 :root {
-  --primary-color: #6c5ce7;
-  --secondary-color: #a29bfe;
-  --accent-color: #fd79a8;
-  --dark-color: #2d3436;
-  --light-color: #f5f6fa;
-  --success-color: #00b894;
-  --danger-color: #d63031;
-  --warning-color: #fdcb6e;
-  --info-color: #0984e3;
+  --primary-color: var(--app-primary, #6c5ce7);
+  --secondary-color: var(--app-accent, #a29bfe);
+  --accent-color: var(--app-accent, #fd79a8);
+  --dark-color: var(--app-text, #2d3436);
+  --light-color: var(--app-bg-soft, #f5f6fa);
+  --success-color: var(--app-primary, #00b894);
+  --danger-color: var(--app-danger, #d63031);
+  --warning-color: var(--app-warning, #fdcb6e);
+  --info-color: var(--app-primary, #0984e3);
 }
 
 .ultra-modern-chat-container {

@@ -230,6 +230,14 @@ const userSchema = new Schema({
     trim: true,
     maxlength: 100 
   },
+  pushSubscription: {
+    type: Object,
+    default: null
+  },
+  pushEnabled: {
+    type: Boolean,
+    default: false
+  },
   website: { 
     type: String, 
     trim: true,

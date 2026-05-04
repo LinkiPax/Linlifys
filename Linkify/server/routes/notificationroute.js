@@ -1,4 +1,3 @@
-const webpush = require('web-push');
 const webPushService = require('../service/webPushService');
 const express = require('express');
 const Notification = require('../model/notificationschema');
@@ -102,19 +101,16 @@ router.post('/', async (req, res) => {
         }
       };
 
-      try {
-        await webPushService.sendWebPushNotification(
-          user.pushSubscription,
-          pushPayload
-        );
-      } catch (error) {
-        console.error('Web push failed:', error);
-        // Remove invalid subscription
-        if (error.statusCode === 410) {
-          await User.findByIdAndUpdate(userId, {
-            $unset: { pushSubscription: 1 }
-          });
-        }
+      const pushResult = await webPushService.sendWebPushNotification(
+        user.pushSubscription,
+        pushPayload
+      );
+
+      if (!pushResult.success && (pushResult.reason === 'expired' || pushResult.reason === 'invalid')) {
+        await User.findByIdAndUpdate(userId, {
+          $unset: { pushSubscription: 1 },
+          $set: { pushEnabled: false }
+        });
       }
     }
 
@@ -383,12 +379,20 @@ router.post(
     try {
       const { userId, subscription } = req.body;
 
-      // Store subscription in database (you might want a separate UserPushSubscription model)
-      await User.findByIdAndUpdate(userId, {
-        pushSubscription: subscription
-      });
+      const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        {
+          pushSubscription: subscription,
+          pushEnabled: true
+        },
+        { new: true }
+      );
 
-      // Send test notification
+      if (!updatedUser) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Send test notification if web push is configured
       if (webPushService.isWebPushEnabled) {
         await webPushService.sendWebPushNotification(subscription, {
           title: 'Subscription successful',
@@ -409,15 +413,29 @@ router.post(
 router.post(
   '/unsubscribe',
   validate([
-    check('userId').isMongoId().withMessage('Invalid user ID')
+    check('userId').optional().isMongoId().withMessage('Invalid user ID'),
+    check('subscription').optional().isObject().withMessage('Invalid subscription data')
   ]),
   async (req, res) => {
     try {
-      const { userId } = req.body;
+      const { userId, subscription } = req.body;
 
-      await User.findByIdAndUpdate(userId, {
-        $unset: { pushSubscription: 1 }
-      });
+      if (subscription?.endpoint) {
+        await User.findOneAndUpdate(
+          { 'pushSubscription.endpoint': subscription.endpoint },
+          {
+            $unset: { pushSubscription: 1 },
+            $set: { pushEnabled: false }
+          }
+        );
+      } else if (userId) {
+        await User.findByIdAndUpdate(userId, {
+          $unset: { pushSubscription: 1 },
+          $set: { pushEnabled: false }
+        });
+      } else {
+        return res.status(400).json({ error: 'userId or subscription endpoint is required' });
+      }
 
       res.status(200).json({ success: true });
     } catch (err) {

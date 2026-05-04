@@ -131,18 +131,18 @@
 }
 
 .dark-mode .custom-tabs .nav-link:hover {
-    color: #00a0dc;
-    background-color: rgba(0, 160, 220, 0.05);
+    color: var(--app-primary);
+    background-color: var(--app-primary-soft);
 }
 
 .dark-mode .custom-tabs .nav-link.active {
-    color: #00a0dc;
-    border-bottom-color: #00a0dc;
+    color: var(--app-primary);
+    border-bottom-color: var(--app-primary);
 }
 
 .dark-mode .notification-card.unread {
-    border-left-color: #00a0dc;
-    background-color: rgba(0, 160, 220, 0.05);
+    border-left-color: var(--app-primary);
+    background-color: var(--app-primary-soft);
 }
 
 .dark-mode .notification-list::-webkit-scrollbar-track {

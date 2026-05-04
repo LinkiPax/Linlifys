@@ -4,6 +4,7 @@ const Message = require('../model/messagemodel');
 const Notification = require('../model/notificationschema');
 const User = require('../model/usermodel');
 const Room = require('../model/roommodel');
+const webPushService = require('../service/webPushService');
 const mongoose = require('mongoose');
 // Track connected users
 const users = {};
@@ -158,10 +159,38 @@ io.on('connection', (socket) => {
       socket.emit('message_sent', newMessage);
 
       // Deliver the message to the receiver if connected
-      if (users[receiverId]) {
-        io.to(users[receiverId]).emit('new_message', newMessage);
+      const recipientId = finalReceiver.toString();
+      if (users[recipientId]) {
+        io.to(users[recipientId]).emit('new_message', newMessage);
       } else {
-        console.log(`User ${receiverId} is offline. Message will be delivered later.`);
+        console.log(`User ${recipientId} is offline. Message will be delivered later.`);
+      }
+
+      // Send push notification if receiver has a subscription
+      const receiverUser = await User.findById(recipientId).select('pushSubscription');
+      if (receiverUser?.pushSubscription) {
+        const pushPayload = {
+          title: `New message from ${data.senderName || 'a contact'}`,
+          body: data.content || 'You have a new message',
+          icon: '/icons/notification-icon.png',
+          tag: `message-${newMessage._id}`,
+          data: {
+            url: `/chat/${recipientId}`,
+            notificationId: newMessage._id.toString()
+          }
+        };
+
+        const pushResult = await webPushService.sendWebPushNotification(
+          receiverUser.pushSubscription,
+          pushPayload
+        );
+
+        if (!pushResult.success && (pushResult.reason === 'expired' || pushResult.reason === 'invalid')) {
+          await User.findByIdAndUpdate(recipientId, {
+            $unset: { pushSubscription: 1 },
+            $set: { pushEnabled: false }
+          });
+        }
       }
     } catch (error) {
       console.error('Error saving message:', error);
@@ -192,6 +221,33 @@ io.on('connection', (socket) => {
         io.to(users[userId]).emit('new_notification', newNotification);
       } else {
         console.log(`User ${userId} is offline. Notification will be delivered later.`);
+      }
+
+      // Send web push notification if subscription exists
+      const receiverUser = await User.findById(userId).select('pushSubscription');
+      if (receiverUser?.pushSubscription) {
+        const pushPayload = {
+          title: newNotification.title || 'New notification',
+          body: newNotification.message || 'You have a new notification',
+          icon: '/icons/notification-icon.png',
+          tag: `notification-${newNotification._id}`,
+          data: {
+            url: newNotification.actionUrl || '/notifications',
+            notificationId: newNotification._id.toString()
+          }
+        };
+
+        const pushResult = await webPushService.sendWebPushNotification(
+          receiverUser.pushSubscription,
+          pushPayload
+        );
+
+        if (!pushResult.success && (pushResult.reason === 'expired' || pushResult.reason === 'invalid')) {
+          await User.findByIdAndUpdate(userId, {
+            $unset: { pushSubscription: 1 },
+            $set: { pushEnabled: false }
+          });
+        }
       }
     } catch (error) {
       console.error('Error saving notification:', error);

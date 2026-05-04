@@ -1,50 +1,52 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 
-const ThemeContext = createContext();
+const ThemeContext = createContext(null);
+const THEME_STORAGE_KEY = "theme";
+const THEMES = ["light", "dark", "system"];
+
+const isBrowser = () => typeof window !== "undefined";
 
 const getPreferredTheme = () => {
-  if (typeof window === "undefined") return "light";
+  if (!isBrowser()) return "light";
   return window.matchMedia("(prefers-color-scheme: dark)").matches
     ? "dark"
     : "light";
 };
 
 const getInitialTheme = () => {
-  if (typeof window === "undefined") return "system";
-  const stored = localStorage.getItem("theme");
-  return stored === "light" || stored === "dark" || stored === "system"
-    ? stored
-    : "system";
+  if (!isBrowser()) return "system";
+  const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+  return THEMES.includes(stored) ? stored : "system";
 };
 
+const resolveTheme = (theme) => (theme === "system" ? getPreferredTheme() : theme);
+
 const applyThemeClasses = (theme) => {
-  const actualTheme = theme === "system" ? getPreferredTheme() : theme;
-  document.documentElement.classList.remove("dark-theme", "light-theme", "dark-mode");
-  document.documentElement.classList.add(`${actualTheme}-theme`);
-  document.documentElement.dataset.theme = actualTheme;
+  if (typeof document === "undefined") return;
+
+  const actualTheme = resolveTheme(theme);
+  const roots = [document.documentElement, document.body].filter(Boolean);
+
+  roots.forEach((root) => {
+    root.classList.remove("dark-theme", "light-theme", "dark-mode");
+    root.classList.add(`${actualTheme}-theme`);
+    root.dataset.theme = actualTheme;
+    if (actualTheme === "dark") root.classList.add("dark-mode");
+  });
+
+  document.documentElement.dataset.themePreference = theme;
   document.documentElement.style.colorScheme = actualTheme;
-  document.body.classList.remove("dark-theme", "light-theme", "dark-mode");
-  document.body.classList.add(`${actualTheme}-theme`);
-  document.body.dataset.theme = actualTheme;
-  if (actualTheme === "dark") {
-    document.documentElement.classList.add("dark-mode");
-    document.body.classList.add("dark-mode");
-  }
 };
 
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState("system");
-  const [resolvedTheme, setResolvedTheme] = useState("light");
+  const [theme, setTheme] = useState(getInitialTheme);
+  const [resolvedTheme, setResolvedTheme] = useState(() =>
+    resolveTheme(getInitialTheme())
+  );
 
   useEffect(() => {
-    const initialTheme = getInitialTheme();
-    setTheme(initialTheme);
-  }, []);
-
-  useEffect(() => {
-    if (!theme) return;
-    localStorage.setItem("theme", theme);
-    const actualTheme = theme === "system" ? getPreferredTheme() : theme;
+    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+    const actualTheme = resolveTheme(theme);
     setResolvedTheme(actualTheme);
     applyThemeClasses(theme);
   }, [theme]);
@@ -52,22 +54,31 @@ export function ThemeProvider({ children }) {
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handleChange = () => {
-      if (theme === "system") {
-        const systemTheme = mediaQuery.matches ? "dark" : "light";
-        setResolvedTheme(systemTheme);
-        applyThemeClasses(theme);
-      }
+      if (theme !== "system") return;
+      const actualTheme = mediaQuery.matches ? "dark" : "light";
+      setResolvedTheme(actualTheme);
+      applyThemeClasses(theme);
     };
+
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+    setTheme((currentTheme) => {
+      const currentResolvedTheme = resolveTheme(currentTheme);
+      return currentResolvedTheme === "dark" ? "light" : "dark";
+    });
   };
 
   const value = useMemo(
-    () => ({ theme, setTheme, resolvedTheme, toggleTheme }),
+    () => ({
+      theme,
+      setTheme,
+      resolvedTheme,
+      isDarkMode: resolvedTheme === "dark",
+      toggleTheme,
+    }),
     [theme, resolvedTheme]
   );
 
@@ -75,5 +86,9 @@ export function ThemeProvider({ children }) {
 }
 
 export function useThemeContext() {
-  return useContext(ThemeContext);
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error("useThemeContext must be used within a ThemeProvider");
+  }
+  return context;
 }

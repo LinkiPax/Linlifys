@@ -36,18 +36,18 @@ body.light-theme {
 
 body.dark-theme {
   color-scheme: dark;
-  --bg: #0b1220;
-  --surface: #111827;
-  --text-primary: #e2e8f0;
-  --text-secondary: #94a3b8;
-  --border: #334155;
-  --muted: #cbd5e1;
-  --link: #7dd3fc;
-  --link-hover: #38bdf8;
-  --button-bg: #2563eb;
-  --button-text: #ffffff;
-  --button-hover: #1d4ed8;
-  --card-bg: #111827;
+  --bg: #000000;
+  --surface: #121212;
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.82);
+  --border: rgba(255, 255, 255, 0.2);
+  --muted: rgba(255, 255, 255, 0.68);
+  --link: #ffd700;
+  --link-hover: #ffffff;
+  --button-bg: #ffd700;
+  --button-text: #000000;
+  --button-hover: #ffffff;
+  --card-bg: #121212;
   --shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
 }
 

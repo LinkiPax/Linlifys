@@ -34,7 +34,7 @@
 .logo-text {
   font-size: 1.75rem;
   font-weight: 700;
-  background: linear-gradient(90deg, #0a66c2, #00a0dc);
+  background: linear-gradient(90deg, var(--app-primary), var(--app-accent));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -44,8 +44,8 @@
 .logo-beta {
   font-size: 0.65rem;
   font-weight: 700;
-  color: #ffffff;
-  background-color: #00a0dc;
+  color: var(--app-primary-contrast);
+  background-color: var(--app-primary);
   padding: 0.1rem 0.35rem;
   border-radius: 10px;
   margin-left: 0.3rem;
@@ -271,8 +271,8 @@
 
 .dark-mode .nav-link:hover,
 .dark-mode .nav-link.active {
-  color: #00a0dc;
-  background-color: rgba(0, 160, 220, 0.1);
+  color: var(--app-primary);
+  background-color: var(--app-primary-soft);
 }
 
 .nav-icon-container {
@@ -327,8 +327,8 @@
 }
 
 .dark-mode .dark-mode-toggle:hover {
-  color: #00a0dc;
-  background-color: rgba(0, 160, 220, 0.1);
+  color: var(--app-primary);
+  background-color: var(--app-primary-soft);
 }
 
 .create-post-button {

@@ -7,8 +7,6 @@ import {
   faCommentDots,
   faBell,
   faUser,
-  faMoon,
-  faSun,
   faFilm,
   faSearch,
   faTimes,
@@ -33,6 +31,7 @@ import "./Navbar.css";
 import Cookies from "js-cookie";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { useThemeContext } from "../../context/ThemeContext";
+import { ThemeToggle } from "../../components/ThemeToggle";
 
 const NavbarComponent = () => {
   const [user, setUser] = useState(null);
@@ -40,7 +39,7 @@ const NavbarComponent = () => {
   const navigate = useNavigate();
   const [clickCount, setClickCount] = useState(0);
   const [expanded, setExpanded] = useState(false);
-  const { theme, resolvedTheme, toggleTheme } = useThemeContext();
+  const { resolvedTheme } = useThemeContext();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [searchSuggestions, setSearchSuggestions] = useState([]);
@@ -272,7 +271,7 @@ const NavbarComponent = () => {
 
   {/* Search Suggestions */}
   {showSuggestions && searchSuggestions.length > 0 && (
-    <div className={`search-suggestions ${darkMode ? "dark" : ""}`}>
+    <div className={`search-suggestions ${isDarkMode ? "dark" : ""}`}>
       <div className="suggestions-header">
         <small>Search Suggestions</small>
       </div>
@@ -417,14 +416,7 @@ const NavbarComponent = () => {
           {/* User Controls */}
           <div className="user-controls">
             {/* Dark Mode Toggle */}
-            <Button
-              variant="link"
-              className="dark-mode-toggle"
-              onClick={toggleTheme}
-              title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-            >
-              <FontAwesomeIcon icon={isDarkMode ? faSun : faMoon} />
-            </Button>
+            <ThemeToggle className="dark-mode-toggle navbar-theme-toggle" />
 
             {/* Create Post Button */}
             <Dropdown className="create-post-dropdown">

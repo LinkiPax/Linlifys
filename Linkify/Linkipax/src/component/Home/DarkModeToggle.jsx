@@ -1,18 +1,6 @@
 import React from "react";
-import { Button } from "react-bootstrap";
-import { FaMoon, FaSun } from "react-icons/fa";
+import { ThemeToggle } from "../../components/ThemeToggle";
 
-const DarkModeToggle = ({ darkMode, toggleDarkMode }) => {
-  return (
-    <Button
-      variant="link"
-      className="dark-mode-toggle"
-      onClick={toggleDarkMode}
-      aria-label={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-    >
-      {darkMode ? <FaSun className="icon" /> : <FaMoon className="icon" />}
-    </Button>
-  );
-};
+const DarkModeToggle = (props) => <ThemeToggle className="dark-mode-toggle" {...props} />;
 
 export default DarkModeToggle;

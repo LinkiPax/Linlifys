@@ -1,0 +1,71 @@
+.theme-toggle {
+  --theme-toggle-size: 2.5rem;
+  align-items: center;
+  background: var(--app-surface-solid);
+  border: 1px solid var(--app-border);
+  border-radius: 999px;
+  box-shadow: var(--app-shadow-sm);
+  color: var(--app-primary);
+  display: inline-flex;
+  gap: 0.5rem;
+  height: var(--theme-toggle-size);
+  justify-content: center;
+  min-width: var(--theme-toggle-size);
+  padding: 0 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.theme-toggle:hover,
+.theme-toggle:focus-visible {
+  background: var(--app-primary);
+  border-color: var(--app-primary);
+  color: var(--app-primary-contrast);
+  transform: translateY(-1px);
+}
+
+.theme-toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--app-focus);
+}
+
+.theme-toggle-icon {
+  display: inline-flex;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.theme-toggle-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.theme-toggle-large {
+  --theme-toggle-size: 3rem;
+}
+
+.theme-toggle-floating {
+  bottom: 1.25rem;
+  position: fixed;
+  right: 1.25rem;
+  z-index: 1060;
+}
+
+html[data-theme="dark"] .theme-toggle {
+  background: #000000;
+  border-color: var(--app-border);
+  color: #ffd700;
+}
+
+html[data-theme="dark"] .theme-toggle:hover,
+html[data-theme="dark"] .theme-toggle:focus-visible {
+  background: #ffd700;
+  border-color: #ffd700;
+  color: #000000;
+}
+
+@media (max-width: 640px) {
+  .theme-toggle-floating {
+    bottom: 1rem;
+    right: 1rem;
+  }
+}

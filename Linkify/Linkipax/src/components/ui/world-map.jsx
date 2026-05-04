@@ -2,20 +2,20 @@
 import { useRef } from "react";
 import { motion } from "framer-motion";
 import DottedMap from "dotted-map";
+import { useThemeContext } from "../../context/ThemeContext";
 
-import { useTheme } from "next-themes";
-
-export function WorldMap({ dots = [], lineColor = "#0ea5e9" }) {
+export function WorldMap({ dots = [], lineColor }) {
   const svgRef = useRef(null);
   const map = new DottedMap({ height: 100, grid: "diagonal" });
-
-  const { theme } = useTheme();
+  const { resolvedTheme } = useThemeContext();
+  const isDarkMode = resolvedTheme === "dark";
+  const activeLineColor = isDarkMode ? "#FFD700" : lineColor || "#0ea5e9";
 
   const svgMap = map.getSVG({
     radius: 0.22,
-    color: theme === "dark" ? "#FFFFFF40" : "#00000040",
+    color: isDarkMode ? "#FFFFFF40" : "#00000040",
     shape: "circle",
-    backgroundColor: theme === "dark" ? "black" : "white",
+    backgroundColor: isDarkMode ? "black" : "white",
   });
 
   const projectPoint = (lat, lng) => {
@@ -75,8 +75,8 @@ export function WorldMap({ dots = [], lineColor = "#0ea5e9" }) {
         <defs>
           <linearGradient id="path-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="white" stopOpacity="0" />
-            <stop offset="5%" stopColor={lineColor} stopOpacity="1" />
-            <stop offset="95%" stopColor={lineColor} stopOpacity="1" />
+            <stop offset="5%" stopColor={activeLineColor} stopOpacity="1" />
+            <stop offset="95%" stopColor={activeLineColor} stopOpacity="1" />
             <stop offset="100%" stopColor="white" stopOpacity="0" />
           </linearGradient>
         </defs>
@@ -88,13 +88,13 @@ export function WorldMap({ dots = [], lineColor = "#0ea5e9" }) {
                 cx={projectPoint(dot.start.lat, dot.start.lng).x}
                 cy={projectPoint(dot.start.lat, dot.start.lng).y}
                 r="2"
-                fill={lineColor}
+                fill={activeLineColor}
               />
               <circle
                 cx={projectPoint(dot.start.lat, dot.start.lng).x}
                 cy={projectPoint(dot.start.lat, dot.start.lng).y}
                 r="2"
-                fill={lineColor}
+                fill={activeLineColor}
                 opacity="0.5"
               >
                 <animate
@@ -120,13 +120,13 @@ export function WorldMap({ dots = [], lineColor = "#0ea5e9" }) {
                 cx={projectPoint(dot.end.lat, dot.end.lng).x}
                 cy={projectPoint(dot.end.lat, dot.end.lng).y}
                 r="2"
-                fill={lineColor}
+                fill={activeLineColor}
               />
               <circle
                 cx={projectPoint(dot.end.lat, dot.end.lng).x}
                 cy={projectPoint(dot.end.lat, dot.end.lng).y}
                 r="2"
-                fill={lineColor}
+                fill={activeLineColor}
                 opacity="0.5"
               >
                 <animate
