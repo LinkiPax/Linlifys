@@ -2,34 +2,73 @@
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: #535bf2;
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --border: #e2e8f0;
+  --muted: #64748b;
+  --link: #2563eb;
+  --link-hover: #1d4ed8;
+  --button-bg: #0ea5e9;
+  --button-text: #ffffff;
+  --button-hover: #0284c7;
+  --card-bg: #ffffff;
+  --shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  /* Removed the following lines that were causing centering: */
-  /* display: flex;
-  place-items: center; */
+  background-color: var(--bg);
+  color: var(--text-primary);
+}
+
+body.light-theme {
+  color-scheme: light;
+}
+
+body.dark-theme {
+  color-scheme: dark;
+  --bg: #0b1220;
+  --surface: #111827;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --border: #334155;
+  --muted: #cbd5e1;
+  --link: #7dd3fc;
+  --link-hover: #38bdf8;
+  --button-bg: #2563eb;
+  --button-text: #ffffff;
+  --button-hover: #1d4ed8;
+  --card-bg: #111827;
+  --shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+body.dark-theme,
+body.dark-mode {
+  background-color: var(--bg);
+}
+
+body.dark-theme a,
+body.dark-mode a {
+  color: var(--link);
+}
+
+a {
+  font-weight: 500;
+  color: var(--link);
+  text-decoration: inherit;
+}
+
+a:hover {
+  color: var(--link-hover);
 }
 
 h1 {
@@ -44,13 +83,14 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: var(--button-bg);
+  color: var(--button-text);
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: border-color 0.25s, background-color 0.25s;
 }
 
 button:hover {
-  border-color: #646cff;
+  background-color: var(--button-hover);
 }
 
 button:focus,
@@ -58,20 +98,6 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-
-  a:hover {
-    color: #747bff;
-  }
-
-  button {
-    background-color: #f9f9f9;
-  }
-}
 @keyframes pulseGlow {
   0% {
     box-shadow:

@@ -6,6 +6,7 @@ import "./index.css";
 import { Provider } from "react-redux";
 import store from "./store";
 import { NotificationProvider } from "./context/NotificationContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import './config/axios';
 // Import your components
 import Signup from "./component/Signup/Signup";
@@ -32,9 +33,10 @@ import CreatePostCard from "./component/Cards/CreatePostCard";
 import TreePage from "./component/Visitor/TreePage";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <Provider store={store}>
-      <NotificationProvider userId={localStorage.getItem("userId")}>
-        <Router>
+    <ThemeProvider>
+      <Provider store={store}>
+        <NotificationProvider userId={localStorage.getItem("userId")}>
+          <Router>
           <Routes>
             <Route path="/" element={<MainPage />} />
             <Route path="/Signup" element={<Signup />} />
@@ -69,8 +71,9 @@ createRoot(document.getElementById("root")).render(
           }
         />
             </Routes>
-        </Router>
-      </NotificationProvider>
-    </Provider>
+          </Router>
+        </NotificationProvider>
+      </Provider>
+    </ThemeProvider>
   </StrictMode>    
 );

@@ -32,6 +32,7 @@ import axios from "axios";
 import "./Navbar.css";
 import Cookies from "js-cookie";
 import { useNotificationContext } from "../../context/NotificationContext";
+import { useThemeContext } from "../../context/ThemeContext";
 
 const NavbarComponent = () => {
   const [user, setUser] = useState(null);
@@ -39,7 +40,7 @@ const NavbarComponent = () => {
   const navigate = useNavigate();
   const [clickCount, setClickCount] = useState(0);
   const [expanded, setExpanded] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+  const { theme, resolvedTheme, toggleTheme } = useThemeContext();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [searchSuggestions, setSearchSuggestions] = useState([]);
@@ -129,14 +130,6 @@ const NavbarComponent = () => {
     return () => clearTimeout(timer);
   }, [clickCount, navigate]);
 
-  // Toggle dark mode
-  const toggleDarkMode = () => {
-    const newMode = !darkMode;
-    setDarkMode(newMode);
-    document.body.classList.toggle("dark-mode", newMode);
-    localStorage.setItem("darkMode", newMode);
-  };
-
   // Handle search
   const handleSearch = (e) => {
     e.preventDefault();
@@ -201,11 +194,13 @@ const NavbarComponent = () => {
     setExpanded(false);
   };
 
+  const isDarkMode = resolvedTheme === "dark";
+
   return (
     <Navbar
       expand="lg"
-      className={`professional-navbar ${darkMode ? "dark-mode" : ""} `}
-      variant={darkMode ? "dark" : "light"}
+      className={`professional-navbar ${isDarkMode ? "dark-mode" : ""} `}
+      variant={isDarkMode ? "dark" : "light"}
       sticky="top"
       expanded={expanded}
     >
@@ -425,10 +420,10 @@ const NavbarComponent = () => {
             <Button
               variant="link"
               className="dark-mode-toggle"
-              onClick={toggleDarkMode}
-              title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              onClick={toggleTheme}
+              title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
-              <FontAwesomeIcon icon={darkMode ? faSun : faMoon} />
+              <FontAwesomeIcon icon={isDarkMode ? faSun : faMoon} />
             </Button>
 
             {/* Create Post Button */}

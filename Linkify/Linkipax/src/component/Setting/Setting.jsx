@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useThemeContext } from "../../context/ThemeContext";
 import {
   FiMoon,
   FiSun,
@@ -21,7 +22,7 @@ const SettingsPage = () => {
   const [startTime, setStartTime] = useState(Date.now());
 
   // Appearance
-  const [theme, setTheme] = useState("system");
+  const { theme, setTheme } = useThemeContext();
   const [fontSize, setFontSize] = useState("medium");
   const [density, setDensity] = useState("comfortable");
 
@@ -68,16 +69,6 @@ const SettingsPage = () => {
     const secs = seconds % 60;
     return `${hrs}h ${mins}m ${secs}s`;
   };
-
-  // Handle theme change
-  useEffect(() => {
-    document.body.className = "";
-    if (theme === "dark") {
-      document.body.classList.add("dark-theme");
-    } else if (theme === "light") {
-      document.body.classList.add("light-theme");
-    }
-  }, [theme]);
 
   // Handle font size change
   useEffect(() => {
