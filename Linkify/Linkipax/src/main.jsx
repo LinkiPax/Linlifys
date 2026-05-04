@@ -31,6 +31,7 @@ import Startup from "./component/Jobs/Startup";
 import Hackathons from "./component/Jobs/Hackathons";
 import CreatePostCard from "./component/Cards/CreatePostCard";
 import TreePage from "./component/Visitor/TreePage";
+import "./theme.css";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ThemeProvider>

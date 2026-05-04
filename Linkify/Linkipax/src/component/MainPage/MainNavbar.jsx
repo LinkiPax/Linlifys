@@ -53,17 +53,17 @@ const MainNavbar = () => {
         <ul className={`navbar-center navbar-menu ${isOpen ? "active" : ""}`}>
           <li className="navbar-item">
             <Link to="/about" className="navbar-link">
-              About
+              About Us
             </Link>
           </li>
           <li className="navbar-item">
             <Link to="/help" className="navbar-link">
-              Help
+              Resources
             </Link>
           </li>
           <li className="navbar-item">
             <Link to="/pricing" className="navbar-link">
-              Pricing
+              Solutions
             </Link>
           </li>
           <li className="navbar-item">
@@ -113,10 +113,10 @@ const MainNavbar = () => {
           </div>
 
           <Link to="/login" className="navbar-link login-btn">
-            Login
+            Sign In
           </Link>
           <Link to="/signup" className="navbar-link signup-btn">
-            Sign Up
+            Join Now
           </Link>
           <button className="navbar-toggle" onClick={toggleMenu}>
             <span className={`hamburger ${isOpen ? "open" : ""}`}></span>

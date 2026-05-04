@@ -1,14 +1,20 @@
-/* Navbar container with transparent glossy effect */
+/* Navbar container with professional networking aesthetic */
 .navbars {
-    background-color: rgba(0, 0, 0, 0); /* semi-transparent white */
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px); /* for Safari */
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2), 0 8px 32px rgba(59, 130, 246, 0.1);
     padding: 1rem 2rem;
     position: sticky;
     top: 0;
     z-index: 100;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3); /* optional soft border */
+    border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+    transition: all 0.3s ease;
+  }
+  
+  .navbars.scrolled {
+    background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   }
   
   .navbar-container {
@@ -16,14 +22,32 @@
     justify-content: space-between;
     align-items: center;
     width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
   }
   
   /* Logo */
   .navbar-logo {
     font-size: 1.5rem;
     font-weight: 700;
-    color: white;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
     text-decoration: none;
+    transition: transform 0.3s ease;
+    letter-spacing: -0.5px;
+  }
+  
+  .navbar-logo:hover {
+    transform: scale(1.05);
+  }
+  
+  /* Center navigation */
+  .navbar-center {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
   }
   
   /* Right side elements */
@@ -31,17 +55,25 @@
     display: flex;
     align-items: center;
     gap: 1.5rem;
-    color: whitesmoke;
+    color: #e2e8f0;
   }
   
   /* Language toggle */
   .language-toggle {
     background: none;
     border: none;
-    color: white;
+    color: #cbd5e1;
     font-weight: 500;
     cursor: pointer;
-    padding: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+  }
+  
+  .language-toggle:hover {
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
   }
   
   /* Mobile menu button */
@@ -61,7 +93,7 @@
     display: block;
     width: 24px;
     height: 2px;
-    background-color: #4b5563;
+    background-color: #cbd5e1;
     position: relative;
     transition: all 0.3s ease;
   }
@@ -86,7 +118,7 @@
     position: absolute;
     width: 24px;
     height: 2px;
-    background-color: #4b5563;
+    background-color: #cbd5e1;
     transition: all 0.3s ease;
   }
   
@@ -101,7 +133,7 @@
   /* Navigation menu */
   .navbar-menu {
     display: flex;
-    gap: 1.5rem;
+    gap: 2rem;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -113,31 +145,63 @@
   }
   
   .navbar-link {
-    color: whitesmoke;
+    color: #cbd5e1;
     text-decoration: none;
     font-weight: 500;
     padding: 0.5rem 0;
-    transition: color 0.3s ease;
+    transition: all 0.3s ease;
+    position: relative;
+    font-size: 0.95rem;
+  }
+  
+  .navbar-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    transition: width 0.3s ease;
   }
   
   .navbar-link:hover {
-    color: #2563eb;
+    color: #3b82f6;
+  }
+  
+  .navbar-link:hover::after {
+    width: 100%;
   }
   
   .login-btn {
-    color: ;
+    color: #cbd5e1;
+    border: 1.5px solid #3b82f6;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+  }
+  
+  .login-btn:hover {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    border-color: #60a5fa;
   }
   
   .signup-btn {
-    background-color: #238636;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
     color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 0.375rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    border: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
   }
   
   .signup-btn:hover {
-    background-color: #1d64bf;
-    color: white;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    transform: translateY(-2px);
   }
   
   /* Responsive styles */
@@ -151,14 +215,15 @@
       top: 100%;
       left: 0;
       width: 100%;
-      background-color: white;
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
       flex-direction: column;
       align-items: center;
       padding: 1rem 0;
-      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
       max-height: 0;
       overflow: hidden;
       transition: max-height 0.3s ease;
+      gap: 0;
     }
   
     .navbar-menu.active {
@@ -175,28 +240,35 @@
       text-align: center;
       padding: 1rem;
     }
+
+    .navbar-link::after {
+      display: none;
+    }
+
+    .navbar-right {
+      gap: 1rem;
+    }
+
+    .login-btn,
+    .signup-btn {
+      padding: 0.5rem 0.8rem;
+      font-size: 0.9rem;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    .navbar-center {
+      gap: 1.5rem;
+    }
+
+    .navbar-right {
+      gap: 1rem;
+    }
   }
   /* Add these styles to your existing MainNavbar.css */
   .language-toggle-container {
     position: relative;
     display: inline-block;
-  }
-  
-  .language-toggle {
-    background: none;
-    border: none;
-    color: whitesmoke;
-    cursor: pointer;
-    padding: 8px 12px;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    transition: all 0.3s ease;
-  }
-  
-  .language-toggle:hover {
-    color: #2563eb;
   }
   
   .language-arrow {
@@ -213,14 +285,14 @@
     position: absolute;
     top: calc(100% + 8px);
     right: 0;
-    background: rgba(15, 15, 15, 0.9);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-radius: 8px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4), 0 0 32px rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.2);
     z-index: 1000;
-    min-width: 220px;
+    min-width: 240px;
     overflow: hidden;
     opacity: 0;
     visibility: hidden;
@@ -241,10 +313,13 @@
   
   .language-modal h4 {
     margin: 0 0 8px 0;
-    padding: 0 16px 8px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.7);
+    padding: 12px 16px 8px;
+    border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+    font-size: 13px;
+    color: #60a5fa;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
   
   .language-list {
@@ -261,18 +336,19 @@
     align-items: center;
     cursor: pointer;
     transition: all 0.2s ease;
-    color: rgba(255, 255, 255, 0.9);
+    color: #cbd5e1;
+    font-size: 0.9rem;
   }
   
   .language-option:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
+    background: rgba(59, 130, 246, 0.15);
+    color: #3b82f6;
   }
   
   .language-option.selected {
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
-    font-weight: bold;
+    background: rgba(59, 130, 246, 0.25);
+    color: #60a5fa;
+    font-weight: 600;
   }
   
   .language-flag {
@@ -280,6 +356,7 @@
     text-align: center;
     margin-right: 12px;
     font-weight: bold;
+    color: #60a5fa;
   }
   
   .language-name {
@@ -288,7 +365,7 @@
   }
   
   .language-country {
-    color: rgba(255, 255, 255, 0.6);
+    color: #64748b;
     font-size: 12px;
   }
   
@@ -298,6 +375,17 @@
   }
   
   .language-list::-webkit-scrollbar-track {
+    background: rgba(59, 130, 246, 0.1);
+  }
+  
+  .language-list::-webkit-scrollbar-thumb {
+    background: rgba(59, 130, 246, 0.3);
+    border-radius: 3px;
+  }
+  
+  .language-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(59, 130, 246, 0.5);
+  }
     background: rgba(255, 255, 255, 0.05);
   }
   

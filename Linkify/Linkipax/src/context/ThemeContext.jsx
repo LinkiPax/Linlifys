@@ -19,9 +19,15 @@ const getInitialTheme = () => {
 
 const applyThemeClasses = (theme) => {
   const actualTheme = theme === "system" ? getPreferredTheme() : theme;
+  document.documentElement.classList.remove("dark-theme", "light-theme", "dark-mode");
+  document.documentElement.classList.add(`${actualTheme}-theme`);
+  document.documentElement.dataset.theme = actualTheme;
+  document.documentElement.style.colorScheme = actualTheme;
   document.body.classList.remove("dark-theme", "light-theme", "dark-mode");
   document.body.classList.add(`${actualTheme}-theme`);
+  document.body.dataset.theme = actualTheme;
   if (actualTheme === "dark") {
+    document.documentElement.classList.add("dark-mode");
     document.body.classList.add("dark-mode");
   }
 };
