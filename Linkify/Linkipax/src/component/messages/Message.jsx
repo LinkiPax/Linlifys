@@ -1781,8 +1781,9 @@ const ProfessionalChat = () => {
   const emojiList = ["👍", "❤️", "😂", "😮", "😢", "🙏"];
 
   return (
-    <div className="professional-chat-container">
+    <div>
       <NavbarComponent />
+    <div className="professional-chat-container">
       {/* Sidebar */}
       <div className="chat-sidebar">
         <div className="sidebar-header">
@@ -2646,6 +2647,7 @@ const ProfessionalChat = () => {
           }
         }}
       />
+    </div>
     </div>
   );
 };
