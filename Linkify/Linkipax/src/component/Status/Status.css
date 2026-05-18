@@ -572,6 +572,81 @@
   transform: none;
 }
 
+html[data-theme="dark"] #root .status-viewer-container,
+body.dark-theme .status-viewer-container {
+  --status-surface: #121212;
+  --status-text: #ffffff;
+  --status-border: rgba(255, 255, 255, 0.2);
+  --status-border-strong: rgba(255, 255, 255, 0.34);
+  --status-primary: #ffd700;
+  --status-primary-hover: #ffffff;
+  --status-primary-contrast: #000000;
+  --status-danger: #ffd700;
+  --status-danger-soft: rgba(255, 215, 0, 0.16);
+  --status-shadow: 0 16px 44px rgba(0, 0, 0, 0.88);
+  background: var(--status-surface) !important;
+  color: var(--status-text) !important;
+  border-color: var(--status-border) !important;
+  box-shadow: var(--status-shadow) !important;
+}
+
+html[data-theme="dark"] #root .status-viewer-profile.my-status-viewer,
+body.dark-theme .status-viewer-profile.my-status-viewer {
+  border-color: var(--status-primary) !important;
+}
+
+html[data-theme="dark"] #root .status-viewer-pic,
+body.dark-theme .status-viewer-pic {
+  border-color: transparent !important;
+}
+
+html[data-theme="dark"] #root .status-viewer-profile.my-status-viewer .status-viewer-pic,
+body.dark-theme .status-viewer-profile.my-status-viewer .status-viewer-pic {
+  background: #000000 !important;
+  border-color: var(--status-border-strong) !important;
+}
+
+html[data-theme="dark"] #root .status-viewer-plus,
+html[data-theme="dark"] #root .status-viewer-plus *,
+body.dark-theme .status-viewer-plus,
+body.dark-theme .status-viewer-plus * {
+  background: var(--status-primary) !important;
+  border-color: var(--status-surface) !important;
+  color: var(--status-primary-contrast) !important;
+}
+
+html[data-theme="dark"] #root .status-viewer-count,
+body.dark-theme .status-viewer-count {
+  border-color: var(--status-surface) !important;
+}
+
+html[data-theme="dark"] #root .status-delete-options,
+body.dark-theme .status-delete-options {
+  background: var(--status-surface) !important;
+  border-color: var(--status-border) !important;
+}
+
+html[data-theme="dark"] #root .status-delete-item,
+html[data-theme="dark"] #root .status-delete-item *,
+body.dark-theme .status-delete-item,
+body.dark-theme .status-delete-item * {
+  color: var(--status-danger) !important;
+}
+
+html[data-theme="dark"] #root .status-delete-item:hover,
+body.dark-theme .status-delete-item:hover {
+  background: var(--status-danger-soft) !important;
+}
+
+html[data-theme="dark"] #root .status-comment-input button,
+html[data-theme="dark"] #root .status-comment-input button *,
+body.dark-theme .status-comment-input button,
+body.dark-theme .status-comment-input button * {
+  background: var(--status-primary) !important;
+  border-color: var(--status-primary) !important;
+  color: var(--status-primary-contrast) !important;
+}
+
 /* Navigation Buttons */
 .status-nav-btn {
   position: absolute;
