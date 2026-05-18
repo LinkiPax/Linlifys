@@ -1,18 +1,32 @@
 .events-container {
+  --events-surface: var(--app-surface-solid, #ffffff);
+  --events-surface-muted: var(--app-surface-muted, #f8f9fa);
+  --events-surface-hover: var(--app-surface-hover, #f8f9fa);
+  --events-text: var(--app-text, #0f172a);
+  --events-text-muted: var(--app-text-muted, #6c757d);
+  --events-border: var(--app-border, #e9ecef);
+  --events-border-strong: var(--app-border-strong, #dee2e6);
+  --events-primary: var(--app-primary, #0b66c3);
+  --events-shadow: var(--app-shadow-sm, 0 4px 12px rgba(0, 0, 0, 0.1));
   max-width: 800px;
   margin: 0 auto;
+  color: var(--events-text, var(--app-text, #0f172a));
 }
 
 .events-card {
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: var(--events-surface, var(--app-surface-solid, #ffffff));
+  border: 1px solid var(--events-border, var(--app-border, #e9ecef));
+  color: var(--events-text, var(--app-text, #0f172a));
+  box-shadow: var(--events-shadow, var(--app-shadow-sm, 0 4px 12px rgba(0, 0, 0, 0.1)));
   overflow: hidden;
 }
 
 .events-card-header {
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #e9ecef;
+  background-color: var(--events-surface-muted, var(--app-surface-muted, #f8f9fa));
+  border-bottom: 1px solid var(--events-border, var(--app-border, #e9ecef));
   padding: 1rem 1.5rem;
+  color: var(--events-text, var(--app-text, #0f172a));
 }
 
 .events-list {
@@ -21,18 +35,19 @@
 }
 
 .event-item {
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--events-border, var(--app-border, #e9ecef));
   padding: 1.25rem 1.5rem;
   cursor: pointer;
   transition: background-color 0.2s;
+  color: var(--events-text, var(--app-text, #0f172a));
 }
 
 .event-item:hover {
-  background-color: #f8f9fa;
+  background-color: var(--events-surface-hover, var(--app-surface-hover, #f8f9fa));
 }
 
 .event-item.expanded {
-  background-color: #f8f9fa;
+  background-color: var(--events-surface-muted, var(--app-surface-muted, #f8f9fa));
 }
 
 .event-main-content {
@@ -48,7 +63,7 @@
 
 .date-label {
   font-weight: 600;
-  color: #495057;
+  color: var(--events-text, var(--app-text, #495057));
 }
 
 .event-content {
@@ -67,7 +82,7 @@
   display: flex;
   gap: 1rem;
   font-size: 0.875rem;
-  color: #6c757d;
+  color: var(--events-text-muted, var(--app-text-muted, #6c757d));
 }
 
 .event-meta span {
@@ -91,7 +106,7 @@
 .event-details {
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid #e9ecef;
+  border-top: 1px solid var(--events-border, var(--app-border, #e9ecef));
 }
 
 .event-image {
@@ -103,21 +118,31 @@
 
 .event-stats {
   padding: 0.5rem 0;
-  border-top: 1px solid #e9ecef;
-  border-bottom: 1px solid #e9ecef;
+  border-top: 1px solid var(--events-border, var(--app-border, #e9ecef));
+  border-bottom: 1px solid var(--events-border, var(--app-border, #e9ecef));
 }
 
 .comments-section {
   max-height: 200px;
   overflow-y: auto;
   padding: 0.5rem;
-  background-color: #f8f9fa;
+  background-color: var(--events-surface-muted, var(--app-surface-muted, #f8f9fa));
+  border: 1px solid var(--events-border, var(--app-border, #e9ecef));
   border-radius: 8px;
 }
 
 .trending-events {
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: var(--events-surface, var(--app-surface-solid, #ffffff));
+  border: 1px solid var(--events-border, var(--app-border, #e9ecef));
+  color: var(--events-text, var(--app-text, #0f172a));
+  box-shadow: var(--events-shadow, var(--app-shadow-sm, 0 4px 12px rgba(0, 0, 0, 0.1)));
+}
+
+.trending-events .card-header {
+  background-color: var(--events-surface-muted, var(--app-surface-muted, #f8f9fa));
+  border-bottom: 1px solid var(--events-border, var(--app-border, #e9ecef));
+  color: var(--events-text, var(--app-text, #0f172a));
 }
 
 .trending-list {
@@ -131,10 +156,11 @@
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.2s;
+  color: var(--events-text, var(--app-text, #0f172a));
 }
 
 .trending-item:hover {
-  background-color: #f8f9fa;
+  background-color: var(--events-surface-hover, var(--app-surface-hover, #f8f9fa));
 }
 
 .trending-image {
@@ -152,7 +178,7 @@
   max-height: 200px;
   object-fit: contain;
   border-radius: 8px;
-  border: 1px dashed #dee2e6;
+  border: 1px dashed var(--events-border-strong, var(--app-border-strong, #dee2e6));
 }
 
 .remove-image-btn {
@@ -169,16 +195,17 @@
 }
 
 .image-upload-container {
-  border: 2px dashed #dee2e6;
+  border: 2px dashed var(--events-border-strong, var(--app-border-strong, #dee2e6));
   border-radius: 8px;
   padding: 2rem;
   text-align: center;
   cursor: pointer;
   transition: border-color 0.2s;
+  background: var(--events-surface-muted, var(--app-surface-muted, #f8f9fa));
 }
 
 .image-upload-container:hover {
-  border-color: #adb5bd;
+  border-color: var(--events-primary, var(--app-primary, #0b66c3));
 }
 
 .image-upload-label {
@@ -186,12 +213,64 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #495057;
+  color: var(--events-text, var(--app-text, #495057));
   font-weight: 500;
 }
 
 .no-events {
   padding: 2rem;
-  background-color: #f8f9fa;
+  background-color: var(--events-surface-muted, var(--app-surface-muted, #f8f9fa));
+  border: 1px solid var(--events-border, var(--app-border, #e9ecef));
   border-radius: 8px;
+}
+
+html[data-theme="dark"] #root .events-container.events-container,
+body.dark-theme .events-container {
+  --events-surface: #121212;
+  --events-surface-muted: #000000;
+  --events-surface-hover: rgba(255, 215, 0, 0.16);
+  --events-text: #ffffff;
+  --events-text-muted: rgba(255, 255, 255, 0.72);
+  --events-border: rgba(255, 255, 255, 0.2);
+  --events-border-strong: rgba(255, 255, 255, 0.34);
+  --events-primary: #ffd700;
+  --events-shadow: 0 16px 44px rgba(0, 0, 0, 0.88);
+  color: var(--events-text) !important;
+}
+
+html[data-theme="dark"] #root .events-container.events-container :where(.events-card, .trending-events),
+body.dark-theme .events-container :where(.events-card, .trending-events) {
+  background: var(--events-surface) !important;
+  border-color: var(--events-border) !important;
+  color: var(--events-text) !important;
+  box-shadow: var(--events-shadow) !important;
+}
+
+html[data-theme="dark"] #root .events-container.events-container :where(.events-card-header, .trending-events .card-header, .event-item.expanded, .comments-section, .image-upload-container, .no-events),
+body.dark-theme .events-container :where(.events-card-header, .trending-events .card-header, .event-item.expanded, .comments-section, .image-upload-container, .no-events) {
+  background: var(--events-surface-muted) !important;
+  border-color: var(--events-border) !important;
+  color: var(--events-text) !important;
+}
+
+html[data-theme="dark"] #root .events-container.events-container :where(.event-item, .event-details, .event-stats, .image-preview),
+body.dark-theme .events-container :where(.event-item, .event-details, .event-stats, .image-preview) {
+  border-color: var(--events-border) !important;
+  color: var(--events-text) !important;
+}
+
+html[data-theme="dark"] #root .events-container.events-container :where(.event-item:hover, .trending-item:hover),
+body.dark-theme .events-container :where(.event-item:hover, .trending-item:hover) {
+  background: var(--events-surface-hover) !important;
+  color: var(--events-primary) !important;
+}
+
+html[data-theme="dark"] #root .events-container.events-container :where(.date-label, .event-title h5, .trending-item h6, .image-upload-label),
+body.dark-theme .events-container :where(.date-label, .event-title h5, .trending-item h6, .image-upload-label) {
+  color: var(--events-text) !important;
+}
+
+html[data-theme="dark"] #root .events-container.events-container :where(.event-meta, .text-muted),
+body.dark-theme .events-container :where(.event-meta, .text-muted) {
+  color: var(--events-text-muted) !important;
 }

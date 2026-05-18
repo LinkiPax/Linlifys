@@ -572,7 +572,7 @@
   transform: none;
 }
 
-html[data-theme="dark"] #root .status-viewer-container,
+html[data-theme="dark"] #root .status-viewer-container.status-viewer-container,
 body.dark-theme .status-viewer-container {
   --status-surface: #121212;
   --status-text: #ffffff;
@@ -590,24 +590,24 @@ body.dark-theme .status-viewer-container {
   box-shadow: var(--status-shadow) !important;
 }
 
-html[data-theme="dark"] #root .status-viewer-profile.my-status-viewer,
+html[data-theme="dark"] #root .status-viewer-container .status-viewer-profile.my-status-viewer,
 body.dark-theme .status-viewer-profile.my-status-viewer {
   border-color: var(--status-primary) !important;
 }
 
-html[data-theme="dark"] #root .status-viewer-pic,
+html[data-theme="dark"] #root .status-viewer-container .status-viewer-pic,
 body.dark-theme .status-viewer-pic {
   border-color: transparent !important;
 }
 
-html[data-theme="dark"] #root .status-viewer-profile.my-status-viewer .status-viewer-pic,
+html[data-theme="dark"] #root .status-viewer-container .status-viewer-profile.my-status-viewer .status-viewer-pic,
 body.dark-theme .status-viewer-profile.my-status-viewer .status-viewer-pic {
   background: #000000 !important;
   border-color: var(--status-border-strong) !important;
 }
 
-html[data-theme="dark"] #root .status-viewer-plus,
-html[data-theme="dark"] #root .status-viewer-plus *,
+html[data-theme="dark"] #root .status-viewer-container .status-viewer-plus,
+html[data-theme="dark"] #root .status-viewer-container .status-viewer-plus *,
 body.dark-theme .status-viewer-plus,
 body.dark-theme .status-viewer-plus * {
   background: var(--status-primary) !important;
@@ -615,31 +615,31 @@ body.dark-theme .status-viewer-plus * {
   color: var(--status-primary-contrast) !important;
 }
 
-html[data-theme="dark"] #root .status-viewer-count,
+html[data-theme="dark"] #root .status-viewer-container .status-viewer-count,
 body.dark-theme .status-viewer-count {
   border-color: var(--status-surface) !important;
 }
 
-html[data-theme="dark"] #root .status-delete-options,
+html[data-theme="dark"] #root .status-viewer-container .status-delete-options,
 body.dark-theme .status-delete-options {
   background: var(--status-surface) !important;
   border-color: var(--status-border) !important;
 }
 
-html[data-theme="dark"] #root .status-delete-item,
-html[data-theme="dark"] #root .status-delete-item *,
+html[data-theme="dark"] #root .status-viewer-container .status-delete-item,
+html[data-theme="dark"] #root .status-viewer-container .status-delete-item *,
 body.dark-theme .status-delete-item,
 body.dark-theme .status-delete-item * {
   color: var(--status-danger) !important;
 }
 
-html[data-theme="dark"] #root .status-delete-item:hover,
+html[data-theme="dark"] #root .status-viewer-container .status-delete-item:hover,
 body.dark-theme .status-delete-item:hover {
   background: var(--status-danger-soft) !important;
 }
 
-html[data-theme="dark"] #root .status-comment-input button,
-html[data-theme="dark"] #root .status-comment-input button *,
+html[data-theme="dark"] #root .status-viewer-container .status-comment-input button,
+html[data-theme="dark"] #root .status-viewer-container .status-comment-input button *,
 body.dark-theme .status-comment-input button,
 body.dark-theme .status-comment-input button * {
   background: var(--status-primary) !important;
