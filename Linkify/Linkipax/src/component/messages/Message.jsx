@@ -1317,7 +1317,6 @@ const ProfessionalChat = () => {
 
         return (
           <div className="location-message">
-            <NavbarComponent/>
             <div
               className="location-map-preview"
               onClick={() => window.open(mapUrl, "_blank")}
@@ -1783,6 +1782,7 @@ const ProfessionalChat = () => {
 
   return (
     <div className="professional-chat-container">
+      <NavbarComponent />
       {/* Sidebar */}
       <div className="chat-sidebar">
         <div className="sidebar-header">
