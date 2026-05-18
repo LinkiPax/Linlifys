@@ -70,7 +70,7 @@ import EmojiPicker from "emoji-picker-react";
 import axios from "axios";
 import Peer from "peerjs";
 import "./ProfessionalChat.css";
-
+import Navbar from "../navbar/Navbar";
 const { Text, Title } = Typography;
 const { Option } = Select;
 const { TextArea } = Input;
@@ -1317,6 +1317,7 @@ const ProfessionalChat = () => {
 
         return (
           <div className="location-message">
+            <Navbar/>
             <div
               className="location-map-preview"
               onClick={() => window.open(mapUrl, "_blank")}
