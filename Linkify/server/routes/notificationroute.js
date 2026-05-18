@@ -88,31 +88,18 @@ router.post('/', async (req, res) => {
     // Emit real-time notification via socket.io
     getIO().to(`user_${userId}`).emit('new_notification', notification);
     
-    // Send web push notification if user has subscription
-    const user = await User.findById(userId).select('pushSubscription');
-    if (user?.pushSubscription) {
-      const pushPayload = {
-        title: notification.title,
-        body: notification.message,
-        icon: '/icons/notification-icon.png',
-        data: {
-          url: notification.actionUrl || '/notifications',
-          notificationId: notification._id.toString()
-        }
-      };
-
-      const pushResult = await webPushService.sendWebPushNotification(
-        user.pushSubscription,
-        pushPayload
-      );
-
-      if (!pushResult.success && (pushResult.reason === 'expired' || pushResult.reason === 'invalid')) {
-        await User.findByIdAndUpdate(userId, {
-          $unset: { pushSubscription: 1 },
-          $set: { pushEnabled: false }
-        });
+    await webPushService.sendWebPushToUser(userId, {
+      title: notification.title,
+      body: notification.message,
+      icon: '/Logo.png',
+      badge: '/favicon.ico',
+      url: notification.actionUrl || '/notifications',
+      tag: `notification-${notification._id}`,
+      data: {
+        url: notification.actionUrl || '/notifications',
+        notificationId: notification._id.toString()
       }
-    }
+    });
 
     res.status(201).json(notification);
   } catch (error) {
@@ -397,7 +384,9 @@ router.post(
         await webPushService.sendWebPushNotification(subscription, {
           title: 'Subscription successful',
           body: 'You will now receive push notifications',
-          icon: '/icons/icon-192x192.png'
+          icon: '/Logo.png',
+          badge: '/favicon.ico',
+          url: '/notifications'
         });
       }
 
@@ -482,7 +471,9 @@ router.post(
         await webPushService.sendWebPushNotification(subscription, {
           title: 'Subscription successful',
           body: 'You will now receive push notifications from our app',
-          icon: '/icons/notification-icon.png'
+          icon: '/Logo.png',
+          badge: '/favicon.ico',
+          url: '/notifications'
         });
       } catch (error) {
         console.error('Welcome push notification failed:', error);

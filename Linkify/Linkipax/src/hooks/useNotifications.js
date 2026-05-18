@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import notificationService from '../services/notificationService';
 
+const apiUrl = import.meta.env.VITE_API_URL || "";
+
 export default function useNotifications(userId) {
   // Notification states
   const [notifications, setNotifications] = useState([]);
@@ -17,16 +19,23 @@ export default function useNotifications(userId) {
 
   // Fetch notifications from API
   const fetchNotifications = async () => {
+    if (!userId) return;
+
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`/api/notifications/${userId}`, {
+      const response = await axios.get(`${apiUrl}/api/notifications`, {
+        params: { userId },
         headers: {
           Authorization: `Bearer ${localStorage.getItem('auth_token')}`
         }
       });
       setNotifications(response.data.notifications || []);
-      setUnreadCount(response.data.unreadCount || 0);
+      setUnreadCount(
+        response.data.unreadCount ??
+          response.data.notifications?.filter((item) => item.status === 'unread').length ??
+          0
+      );
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'Failed to fetch notifications');
       console.error('Notification fetch error:', err);
@@ -88,6 +97,10 @@ export default function useNotifications(userId) {
     try {
       const result = await Notification.requestPermission();
       setPermission(result);
+      if (result === 'granted' && userId) {
+        const subscription = await notificationService.subscribe(userId);
+        setIsSubscribed(!!subscription);
+      }
       return result;
     } catch (err) {
       console.error('Permission request failed:', err);
@@ -97,11 +110,18 @@ export default function useNotifications(userId) {
 
   // Subscribe to push notifications
   const subscribe = async () => {
-    if (!isSupported || !isInitialized) return false;
+    if (!isSupported || !userId) return false;
     
     try {
+      if (!isInitialized) {
+        const initialized = await notificationService.init();
+        setIsInitialized(initialized);
+        if (!initialized) return false;
+      }
+
       const result = await notificationService.subscribe(userId);
       setIsSubscribed(!!result);
+      setPermission(Notification.permission);
       return result;
     } catch (err) {
       console.error('Subscription failed:', err);

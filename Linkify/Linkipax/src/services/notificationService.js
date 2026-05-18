@@ -1,13 +1,14 @@
 import axios from "axios";
 
-const publicVapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+const apiUrl = import.meta.env.VITE_API_URL || "";
+const configuredPublicVapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 
 class NotificationService {
   constructor() {
     this.registration = null;
     this.subscription = null;
     this.isSupported =
-      "serviceWorker" in navigator && // Fixed typo here
+      "serviceWorker" in navigator &&
       "PushManager" in window &&
       "Notification" in window;
     this.subscriptionCheckInterval = null;
@@ -23,20 +24,12 @@ class NotificationService {
     }
 
     try {
-      // Clear any existing service workers
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      for (let registration of registrations) {
-        await registration.unregister();
-      }
-
-      // Register new service worker
       this.registration = await navigator.serviceWorker.register("/sw.js", {
         scope: "/",
         updateViaCache: "none",
       });
 
-      // Wait for service worker to be ready
-      await navigator.serviceWorker.ready;
+      this.registration = await navigator.serviceWorker.ready;
 
       console.log("Service Worker registered:", this.registration);
 
@@ -60,6 +53,10 @@ class NotificationService {
     if (!this.isSupported) return false;
 
     try {
+      if (!this.registration) {
+        this.registration = await navigator.serviceWorker.ready;
+      }
+
       this.subscription = await this.registration.pushManager.getSubscription();
 
       if (!this.subscription) {
@@ -92,6 +89,7 @@ class NotificationService {
       return false;
     }
 
+    const publicVapidKey = await this.getPublicVapidKey();
     if (!publicVapidKey) {
       console.error("VAPID public key is not defined");
       return false;
@@ -114,20 +112,22 @@ class NotificationService {
 
       // Convert VAPID key
       const applicationServerKey = this.urlBase64ToUint8Array(publicVapidKey);
+      const existingSubscription =
+        await this.registration.pushManager.getSubscription();
 
-      // Subscribe to push service
-      this.subscription = await this.registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey,
-      });
+      this.subscription =
+        existingSubscription ||
+        (await this.registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey,
+        }));
 
       // Send subscription to backend
-      const apiUrl = import.meta.env.VITE_API_URL || "";
       await axios.post(
         `${apiUrl}/api/notifications/subscribe`,
         {
           userId,
-          subscription: this.subscription,
+          subscription: this.subscription.toJSON(),
         },
         {
           headers: {
@@ -169,11 +169,11 @@ class NotificationService {
       }
 
       // Inform backend about unsubscription
-      const apiUrl = import.meta.env.VITE_API_URL || "";
       await axios.post(
         `${apiUrl}/api/notifications/unsubscribe`,
         {
-          subscription: this.subscription,
+          userId: localStorage.getItem("userId"),
+          subscription: this.subscription.toJSON(),
         },
         {
           headers: {
@@ -214,6 +214,20 @@ class NotificationService {
       outputArray[i] = rawData.charCodeAt(i);
     }
     return outputArray;
+  }
+
+  async getPublicVapidKey() {
+    if (configuredPublicVapidKey) return configuredPublicVapidKey;
+
+    try {
+      const response = await axios.get(
+        `${apiUrl}/api/notifications/vapid-public-key`
+      );
+      return response.data?.publicKey || "";
+    } catch (error) {
+      console.error("Failed to load VAPID public key:", error);
+      return "";
+    }
   }
 
   /**

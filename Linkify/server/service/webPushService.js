@@ -1,6 +1,7 @@
 const webpush = require('web-push');
 const logger = require('../utils/logger');
- require('dotenv').config();
+const User = require('../model/usermodel');
+require('dotenv').config();
 // Initialize web-push with VAPID keys
 const initializeWebPush = () => {
   const vapidKeys = {
@@ -24,14 +25,35 @@ const initializeWebPush = () => {
 
 const isWebPushEnabled = initializeWebPush();
 
+const normalizePayload = (payload = {}) => ({
+  title: payload.title || 'Linkipax',
+  body: payload.body || payload.message || 'You have a new notification',
+  icon: payload.icon || '/Logo.png',
+  badge: payload.badge || '/favicon.ico',
+  tag: payload.tag,
+  url: payload.url || payload.data?.url || '/notifications',
+  requireInteraction: Boolean(payload.requireInteraction),
+  data: {
+    ...(payload.data || {}),
+    url: payload.url || payload.data?.url || '/notifications'
+  }
+});
+
 const sendWebPushNotification = async (subscription, payload) => {
   if (!isWebPushEnabled) {
     logger.warn('Web push not enabled - skipping notification');
     return { success: false, reason: 'web_push_disabled' };
   }
 
+  if (!subscription?.endpoint) {
+    return { success: false, reason: 'invalid' };
+  }
+
   try {
-    await webpush.sendNotification(subscription, JSON.stringify(payload));
+    await webpush.sendNotification(subscription, JSON.stringify(normalizePayload(payload)), {
+      TTL: 60 * 60 * 24,
+      urgency: payload.urgency || 'high'
+    });
     return { success: true };
   } catch (err) {
     logger.error('Failed to send web push notification', { 
@@ -53,8 +75,28 @@ const sendWebPushNotification = async (subscription, payload) => {
   }
 };
 
+const sendWebPushToUser = async (userId, payload) => {
+  const user = await User.findById(userId).select('pushSubscription pushEnabled');
+
+  if (!user?.pushEnabled || !user?.pushSubscription) {
+    return { success: false, reason: 'not_subscribed' };
+  }
+
+  const result = await sendWebPushNotification(user.pushSubscription, payload);
+
+  if (!result.success && ['expired', 'invalid'].includes(result.reason)) {
+    await User.findByIdAndUpdate(userId, {
+      $unset: { pushSubscription: 1 },
+      $set: { pushEnabled: false }
+    });
+  }
+
+  return result;
+};
+
 module.exports = {
   sendWebPushNotification,
-    isWebPushEnabled,
-    publicKey: process.env.VAPID_PUBLIC_KEY
+  sendWebPushToUser,
+  isWebPushEnabled,
+  publicKey: process.env.VAPID_PUBLIC_KEY
 };

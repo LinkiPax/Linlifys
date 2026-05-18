@@ -32,6 +32,11 @@ export function NotificationProvider({ children, userId }) {
     requestPushPermission: requestPermission,
     subscribeToPush: subscribe,
     unsubscribeFromPush: unsubscribe,
+    isSupported,
+    permission,
+    requestPermission,
+    subscribe,
+    unsubscribe,
   };
 
   return (

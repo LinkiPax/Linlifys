@@ -92,9 +92,10 @@ const NotificationPage = () => {
 
   const registerServiceWorker = async () => {
     try {
-      const registration = await navigator.serviceWorker.register(
-        "/sw-notifications.js"
-      );
+      const registration = await navigator.serviceWorker.register("/sw.js", {
+        scope: "/",
+        updateViaCache: "none",
+      });
       console.log("Service Worker registered:", registration);
       return registration;
     } catch (error) {

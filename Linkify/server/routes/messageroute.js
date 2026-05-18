@@ -768,6 +768,9 @@ const mongoose = require('mongoose');
 const express = require('express');
 const router = express.Router();
 const Message = require('../model/messagemodel');
+const Notification = require('../model/notificationschema');
+const User = require('../model/usermodel');
+const webPushService = require('../service/webPushService');
 const { storage, uploadProfilePic, uploadImage, deleteImage, deleteFromCloudinary, } = require('../cloudinary');
 const multer = require('multer');
 const fs = require('fs');
@@ -838,6 +841,57 @@ const uploadAudio = multer({
 
 const uploadCache = new Set();
 
+const emitMessageToReceiver = (receiverId, message) => {
+  const io = getIO();
+  const receiverSocketId = users[receiverId];
+
+  if (receiverSocketId) {
+    io.to(receiverSocketId).emit('new_message', message);
+  }
+};
+
+const notifyMessageReceiver = async (message, fallbackBody = 'You have a new message') => {
+  const senderId = message.sender.toString();
+  const receiverId = message.receiver.toString();
+  const senderUser = await User.findById(senderId).select('name username');
+  const senderName = senderUser?.name || senderUser?.username || 'a contact';
+  const actionUrl = `/messages/chat/${senderId}`;
+  const body = message.content || fallbackBody;
+
+  const notification = await Notification.create({
+    userId: receiverId,
+    title: `New message from ${senderName}`,
+    message: body,
+    type: 'message',
+    status: 'unread',
+    actionUrl,
+    sender: senderId,
+    relatedEntity: message._id,
+    relatedEntityModel: 'Message',
+    priority: 1
+  });
+
+  const receiverSocketId = users[receiverId];
+  if (receiverSocketId) {
+    getIO().to(receiverSocketId).emit('new_notification', notification);
+  }
+
+  await webPushService.sendWebPushToUser(receiverId, {
+    title: notification.title,
+    body: notification.message,
+    icon: '/Logo.png',
+    badge: '/favicon.ico',
+    tag: `message-${message._id}`,
+    url: actionUrl,
+    data: {
+      url: actionUrl,
+      notificationId: notification._id.toString(),
+      messageId: message._id.toString(),
+      senderId
+    }
+  });
+};
+
 // ==============================================
 // MESSAGE CRUD OPERATIONS
 // ==============================================
@@ -880,8 +934,10 @@ router.post('/api/messages', async (req, res) => {
       content
     });
 
-    await newMessage.save();
-    res.status(201).json(newMessage);
+    const savedMessage = await newMessage.save();
+    emitMessageToReceiver(receiverId, savedMessage);
+    await notifyMessageReceiver(savedMessage);
+    res.status(201).json(savedMessage);
   } catch (error) {
     console.error("Error saving message:", error);
     res.status(500).json({ message: "Error saving message" });
@@ -1000,11 +1056,8 @@ router.post('/api/messages/images', upload.single('image'), async (req, res) => 
     const savedMessage = await newMessage.save();
     uploadCache.delete(fileFingerprint);
 
-    const io = getIO();
-    const receiverSocketId = users[receiverId];
-    if (receiverSocketId) {
-      io.to(receiverSocketId).emit('new_message', savedMessage);
-    }
+    emitMessageToReceiver(receiverId, savedMessage);
+    await notifyMessageReceiver(savedMessage, 'Shared an image');
 
     res.status(201).json(savedMessage);
   } catch (error) {
@@ -1064,7 +1117,8 @@ router.post('/api/messages/videos', upload.single('video'), async (req, res) => 
     } else {
       console.log(`User ${receiverId} is offline → video will be delivered later.`);
     }
-    res.status(201).json(newMessage);
+    await notifyMessageReceiver(savedMessage, 'Shared a video');
+    res.status(201).json(savedMessage);
   } catch (error) {
     console.error("Error sending video:", error);
     if (req.file?.filename) {
@@ -1112,6 +1166,7 @@ router.post('/api/messages/audio', uploadAudio.single('audio'), async (req, res)
     } else {
       console.log(`User ${receiverId} is offline → audio will be delivered later.`);
     }
+    await notifyMessageReceiver(savedMessage, 'Voice message');
     res.status(201).json({
       success: true,
       message: savedMessage
@@ -1194,7 +1249,8 @@ router.post('/api/messages/documents', upload.single('document'), async (req, re
       fs.unlinkSync(localFilePath);
     }
     
-    res.status(201).json(newMessage);
+    await notifyMessageReceiver(savedMessage, 'Shared a document');
+    res.status(201).json(savedMessage);
   } catch (error) {
     console.error("Error sharing document:", error);
     
@@ -1250,6 +1306,8 @@ router.post('/api/messages/live-location', async (req, res) => {
       console.log(`User ${receiverId} is offline → location will be delivered later.`);
     }
 
+    await notifyMessageReceiver(savedMessage, 'Shared live location');
+    await notifyMessageReceiver(savedMessage, `Poll: ${question}`);
     return res.status(201).json(savedMessage);
   } catch (error) {
     console.error('Error sharing location:', error);
@@ -1293,8 +1351,10 @@ router.post('/api/messages/events', upload.single('image'), async (req, res) => 
       content: `Event: ${title} on ${new Date(date).toLocaleString()}`
     });
 
-    await newMessage.save();
-    res.status(201).json(newMessage);
+    const savedMessage = await newMessage.save();
+    emitMessageToReceiver(receiverId, savedMessage);
+    await notifyMessageReceiver(savedMessage, `Event: ${title}`);
+    res.status(201).json(savedMessage);
   } catch (error) {
     console.error("Error creating event:", error);
     
@@ -1409,6 +1469,7 @@ router.post('/api/messages/contacts', async (req, res) => {
         console.log(`User ${receiverId} is offline → contact message will be delivered later.`);
       }
 
+      await notifyMessageReceiver(savedMessage, `Shared ${contacts.length} contact(s)`);
       return res.status(201).json(savedMessage);
     }
 

@@ -166,32 +166,40 @@ io.on('connection', (socket) => {
         console.log(`User ${recipientId} is offline. Message will be delivered later.`);
       }
 
-      // Send push notification if receiver has a subscription
-      const receiverUser = await User.findById(recipientId).select('pushSubscription');
-      if (receiverUser?.pushSubscription) {
-        const pushPayload = {
-          title: `New message from ${data.senderName || 'a contact'}`,
-          body: data.content || 'You have a new message',
-          icon: '/icons/notification-icon.png',
-          tag: `message-${newMessage._id}`,
-          data: {
-            url: `/chat/${recipientId}`,
-            notificationId: newMessage._id.toString()
-          }
-        };
+      const senderUser = await User.findById(finalSender).select('name username');
+      const senderName = data.senderName || senderUser?.name || senderUser?.username || 'a contact';
+      const actionUrl = `/messages/chat/${finalSender}`;
+      const notification = await Notification.create({
+        userId: recipientId,
+        title: `New message from ${senderName}`,
+        message: content || 'You have a new message',
+        type: 'message',
+        status: 'unread',
+        actionUrl,
+        sender: finalSender,
+        relatedEntity: newMessage._id,
+        relatedEntityModel: 'Message',
+        priority: 1
+      });
 
-        const pushResult = await webPushService.sendWebPushNotification(
-          receiverUser.pushSubscription,
-          pushPayload
-        );
-
-        if (!pushResult.success && (pushResult.reason === 'expired' || pushResult.reason === 'invalid')) {
-          await User.findByIdAndUpdate(recipientId, {
-            $unset: { pushSubscription: 1 },
-            $set: { pushEnabled: false }
-          });
-        }
+      if (users[recipientId]) {
+        io.to(users[recipientId]).emit('new_notification', notification);
       }
+
+      await webPushService.sendWebPushToUser(recipientId, {
+        title: notification.title,
+        body: notification.message,
+        icon: '/Logo.png',
+        badge: '/favicon.ico',
+        tag: `message-${newMessage._id}`,
+        url: actionUrl,
+        data: {
+          url: actionUrl,
+          notificationId: notification._id.toString(),
+          messageId: newMessage._id.toString(),
+          senderId: finalSender.toString()
+        }
+      });
     } catch (error) {
       console.error('Error saving message:', error);
       socket.emit('message_error', { error: 'Failed to send message' });
@@ -223,32 +231,18 @@ io.on('connection', (socket) => {
         console.log(`User ${userId} is offline. Notification will be delivered later.`);
       }
 
-      // Send web push notification if subscription exists
-      const receiverUser = await User.findById(userId).select('pushSubscription');
-      if (receiverUser?.pushSubscription) {
-        const pushPayload = {
-          title: newNotification.title || 'New notification',
-          body: newNotification.message || 'You have a new notification',
-          icon: '/icons/notification-icon.png',
-          tag: `notification-${newNotification._id}`,
-          data: {
-            url: newNotification.actionUrl || '/notifications',
-            notificationId: newNotification._id.toString()
-          }
-        };
-
-        const pushResult = await webPushService.sendWebPushNotification(
-          receiverUser.pushSubscription,
-          pushPayload
-        );
-
-        if (!pushResult.success && (pushResult.reason === 'expired' || pushResult.reason === 'invalid')) {
-          await User.findByIdAndUpdate(userId, {
-            $unset: { pushSubscription: 1 },
-            $set: { pushEnabled: false }
-          });
+      await webPushService.sendWebPushToUser(userId, {
+        title: newNotification.title || 'New notification',
+        body: newNotification.message || 'You have a new notification',
+        icon: '/Logo.png',
+        badge: '/favicon.ico',
+        tag: `notification-${newNotification._id}`,
+        url: newNotification.actionUrl || '/notifications',
+        data: {
+          url: newNotification.actionUrl || '/notifications',
+          notificationId: newNotification._id.toString()
         }
-      }
+      });
     } catch (error) {
       console.error('Error saving notification:', error);
       socket.emit('notification_error', { error: 'Failed to send notification' });

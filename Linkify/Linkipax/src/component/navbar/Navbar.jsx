@@ -55,12 +55,12 @@ const NavbarComponent = () => {
     error: notificationError,
     markAsRead,
     fetchNotifications,
-    isSupported: pushSupported,
-    permission: pushPermission,
+    pushSupported,
+    pushPermission,
     isSubscribed,
-    requestPermission: requestPushPermission,
-    subscribe: subscribeToPush,
-    unsubscribe: unsubscribeFromPush,
+    requestPushPermission,
+    subscribeToPush,
+    unsubscribeFromPush,
   } = useNotificationContext();
 
   // Navigation items data
