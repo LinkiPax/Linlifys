@@ -1,12 +1,24 @@
 /* Status Viewer Styles - Unique class names to prevent collisions */
 .status-viewer-container {
+  --status-surface: var(--app-surface-solid, #fafafa);
+  --status-text: var(--app-text, #0f172a);
+  --status-border: var(--app-border, rgba(15, 23, 42, 0.11));
+  --status-border-strong: var(--app-border-strong, rgba(15, 23, 42, 0.18));
+  --status-primary: var(--app-primary, #0095f6);
+  --status-primary-hover: var(--app-primary-hover, #0080e6);
+  --status-primary-contrast: var(--app-primary-contrast, #ffffff);
+  --status-danger: #ed4956;
+  --status-danger-soft: rgba(237, 73, 86, 0.08);
+  --status-shadow: var(--app-shadow-sm, 0 2px 20px rgba(0, 0, 0, 0.1));
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
   padding: 20px;
-  background: #fafafa;
+  background: var(--status-surface);
+  color: var(--status-text);
+  border: 1px solid var(--status-border);
   border-radius: 16px;
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--status-shadow);
 }
 
 /* Status Bar */
@@ -34,7 +46,7 @@
 }
 
 .status-viewer-profile.my-status-viewer {
-  border: 2px dashed #0095f6;
+  border: 2px dashed var(--status-primary);
   border-radius: 50%;
   padding: 2px;
 }
@@ -50,23 +62,23 @@
 }
 
 .status-viewer-profile.my-status-viewer .status-viewer-pic {
-  background: white;
-  border: 2px solid #dbdbdb;
+  background: var(--status-surface);
+  border: 2px solid var(--status-border-strong);
 }
 
 .status-viewer-plus {
   position: absolute;
   bottom: 2px;
   right: 2px;
-  background: #0095f6;
-  color: white;
+  background: var(--status-primary);
+  color: var(--status-primary-contrast);
   border-radius: 50%;
   width: 22px;
   height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid white;
+  border: 2px solid var(--status-surface);
   font-weight: bold;
 }
 
@@ -84,7 +96,7 @@
   justify-content: center;
   font-size: 10px;
   font-weight: bold;
-  border: 2px solid white;
+  border: 2px solid var(--status-surface);
 }
 
 /* Status Modal */
@@ -151,7 +163,7 @@
 }
 
 .status-progress-bar.status-progress-active {
-  background: #0095f6;
+  background: var(--status-primary);
   box-shadow: 0 0 15px rgba(0, 149, 246, 0.5);
 }
 
@@ -260,7 +272,8 @@
   position: absolute;
   top: 100%;
   right: 0;
-  background: white;
+  background: var(--status-surface);
+  border: 1px solid var(--status-border);
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   z-index: 1000;
@@ -282,7 +295,7 @@
   padding: 14px 16px;
   border: none;
   background: none;
-  color: #ed4956;
+  color: var(--status-danger);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -290,7 +303,7 @@
 }
 
 .status-delete-item:hover {
-  background: rgba(237, 73, 86, 0.08);
+  background: var(--status-danger-soft);
 }
 
 .status-close-btn {
@@ -534,7 +547,7 @@
 }
 
 .status-comment-input button {
-  background: #0095f6;
+  background: var(--status-primary);
   border: none;
   border-radius: 50%;
   width: 38px;
@@ -542,14 +555,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--status-primary-contrast);
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(0, 149, 246, 0.3);
 }
 
 .status-comment-input button:hover:not(:disabled) {
-  background: #0080e6;
+  background: var(--status-primary-hover);
   transform: scale(1.05);
 }
 
