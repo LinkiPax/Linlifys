@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useCallback, useState, useEffect, useRef } from "react";
 import {
   Avatar,
   Badge,
@@ -32,7 +32,6 @@ import {
   SendOutlined,
   SmileOutlined,
   VideoCameraOutlined,
-  MenuOutlined,
   CloseOutlined,
   CheckOutlined,
   CheckCircleOutlined,
@@ -57,7 +56,6 @@ import {
   FilePdfOutlined,
   FileTextOutlined,
   FileZipOutlined,
-  WechatOutlined,
   MessageOutlined,
   EllipsisOutlined,
   SettingOutlined,
@@ -96,7 +94,7 @@ const ProfessionalChat = () => {
   const [replyTo, setReplyTo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [unreadCounts, setUnreadCounts] = useState({});
-  const [isInCall, setIsInCall] = useState(false);
+  const [, setIsInCall] = useState(false);
   const [currentCall, setCurrentCall] = useState(null);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [locationDuration, setLocationDuration] = useState(15);
@@ -122,7 +120,6 @@ const ProfessionalChat = () => {
   const [recordingTime, setRecordingTime] = useState(0);
   const [expanded, setExpanded] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [activeTab, setActiveTab] = useState("chats");
   const [onlineUsers, setOnlineUsers] = useState([]);
 
   // Refs
@@ -374,6 +371,34 @@ const ProfessionalChat = () => {
     }
   }, [currentUser.id, onlineUsers]);
 
+  const markMessagesAsRead = useCallback(
+    async (contactId) => {
+      try {
+        const unreadMessages = messages.filter(
+          (msg) => msg.receiver === currentUser.id && !msg.isRead
+        );
+
+        if (unreadMessages.length > 0) {
+          await axios.patch(
+            `${import.meta.env.VITE_API_URL}/api/messages/mark-as-read`,
+            {
+              messageIds: unreadMessages.map((msg) => msg._id),
+              readerId: currentUser.id,
+            }
+          );
+
+          setUnreadCounts((prev) => ({
+            ...prev,
+            [contactId]: 0,
+          }));
+        }
+      } catch (error) {
+        console.error("Error marking messages as read:", error);
+      }
+    },
+    [currentUser.id, messages]
+  );
+
   // Set active contact when contactId changes
   useEffect(() => {
     if (contactId && contacts.length > 0) {
@@ -383,7 +408,7 @@ const ProfessionalChat = () => {
         markMessagesAsRead(contact.id);
       }
     }
-  }, [contactId, contacts]);
+  }, [contactId, contacts, markMessagesAsRead]);
 
   // Fetch messages when active contact changes
   useEffect(() => {
@@ -425,33 +450,6 @@ const ProfessionalChat = () => {
   // Helper functions
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const markMessagesAsRead = async (contactId) => {
-    try {
-      // Only pick the messages where I am the receiver and isRead is false
-      const unreadMessages = messages.filter(
-        (msg) => msg.receiver === currentUser.id && !msg.isRead
-      );
-
-      if (unreadMessages.length > 0) {
-        await axios.patch(
-          `${import.meta.env.VITE_API_URL}/api/messages/mark-as-read`,
-          {
-            messageIds: unreadMessages.map((msg) => msg._id),
-            readerId: currentUser.id,
-          }
-        );
-
-        // Locally zero out the unread count for this contact
-        setUnreadCounts((prev) => ({
-          ...prev,
-          [contactId]: 0,
-        }));
-      }
-    } catch (error) {
-      console.error("Error marking messages as read:", error);
-    }
   };
 
   const pinMessage = (message) => {
@@ -1208,7 +1206,9 @@ const ProfessionalChat = () => {
             </div>
 
             <div className="video-meta">
-              <span className="video-icon">🎥 Video</span>
+              <span className="video-icon">
+                <VideoCameraOutlined /> Video
+              </span>
               <span>{formatFileSize(msg.video?.size)}</span>
               {msg.video?.duration > 0 && (
                 <span>
@@ -1566,7 +1566,7 @@ const ProfessionalChat = () => {
                 );
               })}
               <Text type="secondary">
-                {msg.poll.totalVotes} total votes •{" "}
+                {msg.poll.totalVotes} total votes {"\u2022"}{" "}
                 {msg.poll.isMultiSelect
                   ? "Multiple answers allowed"
                   : "Single answer"}
@@ -1721,6 +1721,7 @@ const ProfessionalChat = () => {
 
   const renderAdditionalMessageOptions = () => (
     <Dropdown
+      overlayClassName="chat-dropdown-menu"
       overlay={
         <Menu>
           <Menu.Item
@@ -1774,14 +1775,28 @@ const ProfessionalChat = () => {
         type="text"
         icon={<MoreOutlined />}
         className="input-action-btn"
+        disabled={uploading}
       />
     </Dropdown>
   );
 
-  const emojiList = ["👍", "❤️", "😂", "😮", "😢", "🙏"];
+  const filteredContacts = contacts.filter((contact) =>
+    contact.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  const onlineContactCount = contacts.filter(
+    (contact) => contact.status === "online"
+  ).length;
+  const emojiList = [
+    "\u{1F44D}",
+    "\u2764\uFE0F",
+    "\u{1F602}",
+    "\u{1F62E}",
+    "\u{1F622}",
+    "\u{1F64F}",
+  ];
 
   return (
-    <div>
+    <div className="professional-chat-page">
       <NavbarComponent />
     <div className="professional-chat-container">
       {/* Sidebar */}
@@ -1815,6 +1830,7 @@ const ProfessionalChat = () => {
               onClick={() => setShowDrawer(true)}
             />
             <Dropdown
+              overlayClassName="chat-dropdown-menu"
               overlay={
                 <Menu>
                   <Menu.Item icon={<SettingOutlined />}>Settings</Menu.Item>
@@ -1833,6 +1849,10 @@ const ProfessionalChat = () => {
           </Space>
         </div>
         <div className="sidebar-search">
+          <div className="sidebar-title">
+            <Title level={5}>Messages</Title>
+            <Text type="secondary">{onlineContactCount} online</Text>
+          </div>
           <Input
             placeholder="Search contacts"
             prefix={<SearchOutlined />}
@@ -1843,11 +1863,8 @@ const ProfessionalChat = () => {
         </div>
 
         <div className="contacts-list">
-          {contacts
-            .filter((contact) =>
-              contact.name.toLowerCase().includes(searchQuery.toLowerCase())
-            )
-            .map((contact) => (
+          {filteredContacts.length > 0 ? (
+            filteredContacts.map((contact) => (
               <div
                 key={contact.id}
                 className={`contact-item ${
@@ -1883,7 +1900,13 @@ const ProfessionalChat = () => {
                   </Text>
                 </div>
               </div>
-            ))}
+            ))
+          ) : (
+            <div className="contacts-empty">
+              <MessageOutlined />
+              <Text>No conversations found</Text>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1945,7 +1968,7 @@ const ProfessionalChat = () => {
               </Space>
             </div>
 
-            <Divider style={{ margin: 0 }} />
+            <Divider className="chat-divider" style={{ margin: 0 }} />
 
             <div className="messages-container">
               {loading ? (
@@ -1962,6 +1985,7 @@ const ProfessionalChat = () => {
                       }`}
                     >
                       <Dropdown
+                        overlayClassName="chat-dropdown-menu"
                         overlay={
                           <Menu>
                             <Menu.Item
@@ -2135,9 +2159,13 @@ const ProfessionalChat = () => {
                     icon={<PaperClipOutlined />}
                     className="input-action-btn"
                     onClick={() => documentInputRef.current?.click()}
+                    disabled={uploading}
                   />
 
                   {renderAdditionalMessageOptions()}
+                  {uploading && (
+                    <Spin size="small" className="input-upload-spinner" />
+                  )}
 
                   <Input.TextArea
                     value={inputMessage}
@@ -2173,6 +2201,7 @@ const ProfessionalChat = () => {
                         icon={<SendOutlined />}
                         onClick={handleSendMessage}
                         className="send-btn"
+                        disabled={uploading}
                       />
                     ) : (
                       <Button
@@ -2185,6 +2214,7 @@ const ProfessionalChat = () => {
                         onMouseUp={stopRecording}
                         onTouchStart={startRecording}
                         onTouchEnd={stopRecording}
+                        disabled={uploading}
                       />
                     )}
                   </Space>
@@ -2227,7 +2257,7 @@ const ProfessionalChat = () => {
         width={350}
         onClose={() => setShowDrawer(false)}
         visible={showDrawer}
-        className="info-drawer"
+        className="info-drawer chat-surface-drawer"
       >
         {activeContact && (
           <>
@@ -2331,7 +2361,7 @@ const ProfessionalChat = () => {
         onCancel={() => setShowMediaViewer(false)}
         footer={null}
         width="80%"
-        className="media-modal"
+        className="media-modal chat-modal"
       >
         <div className="media-grid">
           {messages
@@ -2380,7 +2410,7 @@ const ProfessionalChat = () => {
           onCancel={endCall}
           footer={null}
           centered
-          className="call-modal"
+          className="call-modal chat-modal"
           closable={false}
         >
           <div className="call-content">
@@ -2438,7 +2468,7 @@ const ProfessionalChat = () => {
         onCancel={() => setShowLocationModal(false)}
         onOk={handleShareLocation}
         confirmLoading={loading}
-        className="location-modal"
+        className="location-modal chat-modal"
       >
         <Form layout="vertical">
           <Form.Item label="Duration (minutes)">
@@ -2460,6 +2490,7 @@ const ProfessionalChat = () => {
         onCancel={() => setShowContactsModal(false)}
         onOk={handleShareContacts}
         width={600}
+        className="contacts-modal chat-modal"
       >
         <Form layout="vertical">
           <Form.Item label="Select Contacts">
@@ -2494,6 +2525,7 @@ const ProfessionalChat = () => {
         visible={showDocumentModal}
         onCancel={() => setShowDocumentModal(false)}
         onOk={handleDocumentUpload}
+        className="document-modal chat-modal"
       >
         <input
           type="file"
@@ -2527,6 +2559,7 @@ const ProfessionalChat = () => {
         onCancel={() => setShowPollModal(false)}
         onOk={handleCreatePoll}
         width={600}
+        className="poll-modal chat-modal"
       >
         <Form layout="vertical">
           <Form.Item label="Question" required>
@@ -2588,6 +2621,7 @@ const ProfessionalChat = () => {
         onCancel={() => setShowEventModal(false)}
         onOk={handleCreateEvent}
         width={600}
+        className="event-modal chat-modal"
       >
         <Form layout="vertical">
           <Form.Item label="Title" required>
