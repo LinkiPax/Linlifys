@@ -32,6 +32,7 @@ body {
 
 /* Middle Column */
 .scrollable-postcards {
+  background-color: none;
   max-height: 80vh;
   overflow-y: auto;
   padding-right: 0.5rem;
@@ -233,6 +234,7 @@ body {
   }
   
   .px-2 {
+    background-color: none !important;
     padding-left: 5px !important;
     padding-right: 5px !important;
   }
