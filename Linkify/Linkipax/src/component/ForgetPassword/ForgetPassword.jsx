@@ -13,7 +13,7 @@ const ForgotPassword = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/forgot-password`,
+        `${import.meta.env.VITE_API_URL}/user/forgot-password`,
         { email }
       );
       console.log("Reset password link sent to", email);

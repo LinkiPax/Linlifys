@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useThemeContext } from "../../context/ThemeContext";
+import NavbarComponent from "../navbar/Navbar";
 import {
   FiMoon,
   FiSun,
@@ -77,7 +78,9 @@ const SettingsPage = () => {
   }, [fontSize]);
 
   return (
-    <div className="settings-container">
+    <>
+      <NavbarComponent />
+      <div className="settings-container">
       <div className="settings-header">
         <h1>Settings</h1>
         <p className="settings-subtitle">Manage your account preferences</p>
@@ -425,6 +428,7 @@ const SettingsPage = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

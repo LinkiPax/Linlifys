@@ -32,6 +32,10 @@ import Hackathons from "./component/Jobs/Hackathons";
 import CreatePostCard from "./component/Cards/CreatePostCard";
 import TreePage from "./component/Visitor/TreePage";
 import { GlobalThemeToggle } from "./components/ThemeToggle";
+import ForgotPassword from "./component/ForgetPassword/ForgetPassword";
+import ResetPassword from "./component/ForgetPassword/ResetPassword";
+import JobDetail from "./component/Jobs/JobDetail";
+import SearchPage from "./component/search/SearchPage";
 import "./theme.css";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -48,6 +52,10 @@ createRoot(document.getElementById("root")).render(
                 element={<PersonalDetails />}
               />
               <Route path="/login" element={<Login />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password/:token" element={<ResetPassword />} />
+              <Route path="/jobs/:id" element={<JobDetail />} />
+              <Route path="/search" element={<SearchPage />} />
               <Route path="/home/:userId" element={<HomePage />} />
               <Route path="/profile/:userId" element={<ProfilePage />} />
               <Route path="/network" element={<MyNetwork />} />

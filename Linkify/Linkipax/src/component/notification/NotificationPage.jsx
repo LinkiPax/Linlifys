@@ -389,7 +389,7 @@ const NotificationPage = () => {
 
   useEffect(() => {
     const socketConnection = io(
-      import.meta.env.VITE_API_URL || "${import.meta.env.VITE_API_URL}",
+      import.meta.env.VITE_API_URL || "http://localhost:5001",
       {
         withCredentials: true,
         transports: ["websocket"],
@@ -397,6 +397,14 @@ const NotificationPage = () => {
     );
 
     setSocket(socketConnection);
+
+    socketConnection.on("connect", () => {
+      const userId = localStorage.getItem("userId");
+      if (userId) {
+        socketConnection.emit("join", userId);
+        console.log("Joined notification socket room for user:", userId);
+      }
+    });
 
     socketConnection.on("new_notification", (newNotification) => {
       setNotifications((prev) => [

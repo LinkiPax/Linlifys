@@ -1858,7 +1858,7 @@ router.post('/forgot-password', async (req, res) => {
             },
         });
 
-        const resetURL = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+        const resetURL = `${process.env.FRONTEND_ORIGIN || 'http://localhost:5173'}/reset-password/${resetToken}`;
         const mailOptions = {
             to: user.email,
             from: process.env.EMAIL_USERNAME,

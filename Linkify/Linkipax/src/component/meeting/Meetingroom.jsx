@@ -120,7 +120,7 @@ const MeetingApp = () => {
   const userVideoRefs = useRef({});
   const userId = useRef(uuidv4());
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
   const PEER_CONFIG = {
     host: import.meta.env.VITE_PEER_HOST || "0.peerjs.com",
     port: import.meta.env.VITE_PEER_PORT ? parseInt(import.meta.env.VITE_PEER_PORT) : 443,
@@ -1102,7 +1102,7 @@ const handleRemoteStream = (userId, remoteStream) => {
   const handleCreateRoom = async () => {
     setLoading(true);
     try {
-      const response = await axios.post(`${API_URL}/api/room/create`, {
+      const response = await axios.post(`/api/room/create`, {
         userId: userId.current,
         username,
       });
@@ -1163,7 +1163,7 @@ const handleRemoteStream = (userId, remoteStream) => {
       setupSocketListeners();
 
       // Join the room
-      const response = await axios.post(`${API_URL}/api/room/join`, {
+      const response = await axios.post(`/api/room/join`, {
         meetingId,
         username,
         userId: userId.current,
@@ -1218,7 +1218,7 @@ const handleRemoteStream = (userId, remoteStream) => {
       }
 
       // Notify server we're leaving
-      await axios.post(`${API_URL}/api/room/leave`, {
+      await axios.post(`/api/room/leave`, {
         roomId: meetingId,
         userId: userId.current,
       }).catch(err => console.error("Error notifying server:", err));

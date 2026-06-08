@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import {
   FiSearch,
   FiFilter,
@@ -17,12 +18,20 @@ export default function Jobs() {
   const [showModal, setShowModal] = useState(false);
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [hackathons, setHackathons] = useState([]);
-  const [startups, setStartups] = useState([]);
-  const [resources, setResources] = useState([]);
+  const [backendJobs, setBackendJobs] = useState([]);
+
+  const fetchJobs = async () => {
+    try {
+      const response = await axios.get("/jobs/getPost");
+      setBackendJobs(response.data || []);
+    } catch (error) {
+      console.error("Error fetching jobs:", error);
+    }
+  };
 
   // Mock data loading
   useEffect(() => {
+    fetchJobs();
     // Simulate API calls
     setHackathons([
       {
@@ -103,13 +112,106 @@ export default function Jobs() {
     ]);
   }, []);
 
-  const filteredJobs = jobs.jobs.filter(job => {
-    const matchesSearch = job.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         job.skills.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()));
+  const [hackathons, setHackathons] = useState([]);
+  const [startups, setStartups] = useState([]);
+  const [resources, setResources] = useState([]);
+
+  // Mock data loading inside other useEffect
+  useEffect(() => {
+    setHackathons([
+      {
+        id: 1,
+        title: "AI Innovation Challenge",
+        deadline: "2023-12-15",
+        prize: "$50,000",
+        participants: 1200,
+        tech: ["AI", "ML", "NLP"],
+      },
+      {
+        id: 2,
+        title: "Blockchain Hackathon",
+        deadline: "2023-11-30",
+        prize: "5 ETH",
+        participants: 850,
+        tech: ["Blockchain", "Smart Contracts"],
+      },
+      {
+        id: 3,
+        title: "Climate Tech Solutions",
+        deadline: "2024-01-20",
+        prize: "$30,000",
+        participants: 650,
+        tech: ["Sustainability", "Clean Energy"],
+      },
+    ]);
+
+    setStartups([
+      {
+        id: 1,
+        name: "Neuralink",
+        funding: "Series D",
+        hiring: true,
+        tech: ["AI", "Neuroscience"],
+      },
+      {
+        id: 2,
+        name: "QuantumScape",
+        funding: "Series C",
+        hiring: true,
+        tech: ["Batteries", "Energy"],
+      },
+      {
+        id: 3,
+        name: "Astra",
+        funding: "Series B",
+        hiring: false,
+        tech: ["Space", "Aerospace"],
+      },
+    ]);
+
+    setResources([
+      {
+        id: 1,
+        title: "Cracking the Coding Interview",
+        type: "Book",
+        rating: 4.8,
+        reviews: 1245,
+        likes: 3200,
+      },
+      {
+        id: 2,
+        title: "System Design Primer",
+        type: "GitHub Repo",
+        rating: 4.9,
+        reviews: 890,
+        likes: 4500,
+      },
+      {
+        id: 3,
+        title: "Frontend Interview Handbook",
+        type: "Online Course",
+        rating: 4.7,
+        reviews: 760,
+        likes: 2800,
+      },
+    ]);
+  }, []);
+
+  // Combine static and backend jobs, resolving duplicates (we prioritize backend)
+  const allJobs = [...backendJobs, ...(jobs.jobs || [])];
+
+  const filteredJobs = allJobs.filter(job => {
+    const title = job.Title || job.title || "";
+    const company = job.Company || job.company || "";
+    const skills = job.Skills || job.skills || [];
+    const type = job.Type || job.type || "";
+
+    const matchesSearch = title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         company.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         skills.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()));
     
     const matchesFilter = activeFilter === "all" || 
-                         job.type === activeFilter;
+                         type.toLowerCase().replace("-", "") === activeFilter.toLowerCase().replace("-", "");
     
     return matchesSearch && matchesFilter;
   });
@@ -296,7 +398,7 @@ export default function Jobs() {
         </div>
       </div>
 
-      {showModal && <PostJobModal onClose={() => setShowModal(false)} />}
+      {showModal && <PostJobModal onClose={() => setShowModal(false)} onJobPosted={fetchJobs} />}
     </div>
   );
 }
@@ -305,8 +407,8 @@ const JobCard = ({ job }) => (
   <div className="job-card">
     <div className="job-card-header">
       <div className="job-title">
-        <h3>{job.title}</h3>
-        <span className="job-type">{job.type}</span>
+        <h3>{job.Title || job.title}</h3>
+        <span className="job-type">{job.Type || job.type}</span>
       </div>
       <button className="save-btn">
         <FiBookmark />
@@ -314,35 +416,35 @@ const JobCard = ({ job }) => (
     </div>
 
     <div className="job-company">
-      <span className="company-name">{job.company}</span>
+      <span className="company-name">{job.Company || job.company}</span>
       <span className="company-rating">
-        <FiStar /> {job.rating}
+        <FiStar /> {job.rating || "4.5"}
       </span>
     </div>
 
     <div className="job-location">
-      <FiMapPin /> {job.location}{" "}
-      {job.remote && <span className="remote-badge">Remote</span>}
+      <FiMapPin /> {job.Location || job.location}{" "}
+      {(job.remote || job.Type === "remote" || job.type === "remote") && <span className="remote-badge">Remote</span>}
     </div>
 
     <div className="job-details">
       <span>
-        <FiClock /> {job.experience}
+        <FiClock /> {job.Experience || job.experience}
       </span>
       <span>
-        <FiDollarSign /> {job.salary}
+        <FiDollarSign /> {job.Salary || job.salary}
       </span>
-      <span>Posted {job.posted}</span>
+      <span>Posted {job.posted || (job.createdAt ? new Date(job.createdAt).toLocaleDateString() : "Just now")}</span>
     </div>
 
     <div className="job-skills">
-      {job.skills.map((skill) => (
+      {(job.Skills || job.skills || []).map((skill) => (
         <span key={skill}>{skill}</span>
       ))}
     </div>
 
     <div className="job-actions">
-      <Link to={`/apply/${job.id}`} className="apply-btn">
+      <Link to={`/jobs/${job._id || job.id}`} className="apply-btn">
         Apply Now
       </Link>
       <button className="quick-apply-btn">Quick Apply</button>

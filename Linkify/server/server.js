@@ -307,6 +307,7 @@ app.use('/api/short', require('./routes/shortRoutes'));
 app.use('/connections', require('./routes/connectionroute'));
 app.use('/api/groups', require('./routes/grouproute'));
 app.use('/jobs', require('./routes/Jobsroutes'));
+app.use('/search', require('./routes/searchroutes'));
 app.use('/visitor', visitorRoutes);
 // ----------------------
 // 🔎 Debug / Health Check

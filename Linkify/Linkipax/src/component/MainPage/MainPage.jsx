@@ -27,9 +27,9 @@ import { GlitchPass } from "three/addons/postprocessing/GlitchPass.js";
 import { World } from "../../components/ui/globe";
 import { AnimatedTooltip } from "../../components/ui/animated-tooltip";
 import { WorldMap } from "../../components/ui/world-map";
-import aroraImage from "../../../public/aurora.d2a6947c3dcfb777c25f.webp";
 import { debounce } from "lodash";
-import dashboardvideo from "../../../public/videos/Dashboard.mp4";
+const aroraImage = "/aurora.d2a6947c3dcfb777c25f.webp";
+const dashboardvideo = "/videos/Dashboard.mp4";
 const MainPage = () => {
   const navigate = useNavigate();
   
@@ -75,7 +75,13 @@ console.log(features[0].video);
 
     const handleVideoError = () => {
       console.error("Video failed to load:", videoSrc);
-      setIsPlaying(false);
+      if (videoSrc !== dashboardvideo) {
+        console.log("Falling back to default dashboard video.");
+        setVideoSrc(dashboardvideo);
+      } else {
+        setIsPlaying(false);
+        setVideoError(true);
+      }
     };
 
     const handleVideoLoad = () => {

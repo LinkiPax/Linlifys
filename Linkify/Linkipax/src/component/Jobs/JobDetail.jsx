@@ -21,7 +21,7 @@ const JobDetail = () => {
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        const response = await axios.get(`/api/getPost/${id}`);
+        const response = await axios.get(`/jobs/getPost/${id}`);
         setJob(response.data);
         setLoading(false);
       } catch (err) {
