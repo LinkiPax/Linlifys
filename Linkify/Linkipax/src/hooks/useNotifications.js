@@ -48,7 +48,7 @@ export default function useNotifications(userId) {
   const markAsRead = async (notificationId) => {
     try {
       await axios.patch(
-        `/api/notifications/${notificationId}/read`,
+        `${apiUrl}/api/notifications/${notificationId}/read`,
         { userId },
         {
           headers: {

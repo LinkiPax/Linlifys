@@ -78,7 +78,13 @@
     flex-shrink: 0;
 }
 
-.notification-icon.default {
+.notification-icon.default,
+.notification-icon.system,
+.notification-icon.info,
+.notification-icon.friend_request,
+.notification-icon.post,
+.notification-icon.comment,
+.notification-icon.like {
     background-color: rgba(13, 110, 253, 0.1);
     color: #0d6efd;
 }
@@ -94,6 +100,11 @@
 }
 
 .notification-icon.success {
+    background-color: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+}
+
+.notification-icon.warning {
     background-color: rgba(255, 193, 7, 0.1);
     color: #ffc107;
 }
@@ -168,4 +179,5 @@
         width: 30px;
         height: 30px;
         font-size: 0.9rem;
-    } }
+    }
+}

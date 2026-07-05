@@ -115,15 +115,15 @@ router.post('/request', async (req, res) => {
     }
 
     // Check if already connected or request exists
-    if (user.connections.includes(targetUserId)) {
+    if (user.connections.some(id => id.toString() === targetUserId)) {
       return res.status(400).json({ message: 'Already connected' });
     }
 
-    if (user.pendingRequests.includes(targetUserId)) {
+    if (user.pendingRequests.some(id => id.toString() === targetUserId)) {
       return res.status(400).json({ message: 'Request already sent' });
     }
 
-    if (targetUser.blockedUsers.includes(userId)) {
+    if (targetUser.blockedUsers.some(id => id.toString() === userId)) {
       return res.status(403).json({ message: 'Cannot send request' });
     }
 
@@ -169,16 +169,20 @@ router.post('/accept', async (req, res) => {
     }
 
     // Verify request exists
-    if (!user.connectionRequests.includes(targetUserId)) {
+    if (!user.connectionRequests.some(id => id.toString() === targetUserId)) {
       return res.status(400).json({ message: 'No pending request' });
     }
 
     // Update both users
-    user.connectionRequests = user.connectionRequests.filter(id => !id.equals(targetUserId));
-    user.connections.push(targetUserId);
+    user.connectionRequests = user.connectionRequests.filter(id => id.toString() !== targetUserId);
+    if (!user.connections.some(id => id.toString() === targetUserId)) {
+      user.connections.push(targetUserId);
+    }
     
-    targetUser.pendingRequests = targetUser.pendingRequests.filter(id => !id.equals(userId));
-    targetUser.connections.push(userId);
+    targetUser.pendingRequests = targetUser.pendingRequests.filter(id => id.toString() !== userId);
+    if (!targetUser.connections.some(id => id.toString() === userId)) {
+      targetUser.connections.push(userId);
+    }
 
     await Promise.all([user.save(), targetUser.save()]);
 
@@ -271,11 +275,23 @@ router.get('/network', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Deduplicate and filter out potentially null populated objects (if users deleted)
+    const filterValid = (arr) => (arr || []).filter(item => item && item._id);
+    const validConnections = filterValid(user.connections);
+    const validRequests = filterValid(user.connectionRequests);
+    const validPending = filterValid(user.pendingRequests);
+    const validBlocked = filterValid(user.blockedUsers);
+
+    const uniqueConnections = Array.from(new Map(validConnections.map(item => [item._id.toString(), item])).values());
+    const uniqueRequests = Array.from(new Map(validRequests.map(item => [item._id.toString(), item])).values());
+    const uniquePending = Array.from(new Map(validPending.map(item => [item._id.toString(), item])).values());
+    const uniqueBlocked = Array.from(new Map(validBlocked.map(item => [item._id.toString(), item])).values());
+
     res.json({
-      connections: user.connections,
-      requests: user.connectionRequests,
-      pending: user.pendingRequests,
-      blocked: user.blockedUsers
+      connections: uniqueConnections,
+      requests: uniqueRequests,
+      pending: uniquePending,
+      blocked: uniqueBlocked
     });
   } catch (error) {
     console.error('Error getting network:', error);

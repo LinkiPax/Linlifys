@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Connection = require('../model/connectionmodel');
+const User = require('../model/usermodel');
 
 // Check connection status between two users
 router.get("/status/:user1/:user2", async (req, res) => {

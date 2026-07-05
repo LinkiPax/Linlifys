@@ -152,30 +152,30 @@
   font-weight: 600;
 }
 
-.search-containers {
+.search-container {
   flex: 1;
   max-width: 300px;
 }
 
-.search-input-groups {
+.search-input-group {
   border-radius: 8px;
   overflow: hidden;
 }
 
-.search-icons {
+.search-icon {
   background: white;
   border: 1px solid #ced4da;
   border-right: none;
   color: #6c757d;
 }
 
-.search-fields {
+.search-field {
   border: 1px solid #ced4da;
   border-left: none;
   box-shadow: none;
 }
 
-.search-fields:focus {
+.search-field:focus {
   box-shadow: none;
   border-color: #ced4da;
 }

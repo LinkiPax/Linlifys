@@ -26,7 +26,7 @@ const initializeSocket = (server) => {
 io.on('connection', (socket) => {
   console.log('New client connected:', socket.id);
    
-  socket.on('join-meeting', async ({ meetingId, userId, username }) => {
+  socket.on('join-meeting', async ({ meetingId, userId, username, isMicOn, isVideoOn }) => {
     try {
       socket.join(meetingId);
       
@@ -36,10 +36,16 @@ io.on('connection', (socket) => {
         return;
       }
 
-      // Update user with socket ID
+      // Update user with socket ID and initial states
       await Room.updateOne(
         { roomId: meetingId, 'users.userId': userId },
-        { $set: { 'users.$.socketId': socket.id } }
+        { 
+          $set: { 
+            'users.$.socketId': socket.id,
+            'users.$.isMicOn': isMicOn ?? false,
+            'users.$.isVideoOn': isVideoOn ?? true
+          } 
+        }
       );
 
       // Get updated room data
@@ -49,7 +55,9 @@ io.on('connection', (socket) => {
       socket.to(meetingId).emit('user-joined', {
         id: userId,
         username,
-        socketId: socket.id
+        socketId: socket.id,
+        isMicOn: isMicOn ?? false,
+        isVideoOn: isVideoOn ?? true
       });
 
       // Send existing users to the new user
@@ -58,7 +66,9 @@ io.on('connection', (socket) => {
         .map(user => ({
           id: user.userId,
           username: user.username,
-          socketId: user.socketId
+          socketId: user.socketId,
+          isMicOn: user.isMicOn,
+          isVideoOn: user.isVideoOn
         }));
 
       socket.emit('existing-users', existingUsers);
@@ -98,12 +108,41 @@ io.on('connection', (socket) => {
   });
 
   // Handle screen sharing
-  socket.on('start-screen-share', ({ roomId, userId }) => {
-    socket.to(roomId).emit('screen-share-started', { userId });
+  socket.on('start-screen-share', async ({ roomId, userId }) => {
+    try {
+      await Room.updateOne(
+        { roomId, 'users.userId': userId },
+        { $set: { 'users.$.isScreenSharing': true } }
+      );
+      socket.to(roomId).emit('screen-share-started', { userId });
+    } catch (err) {
+      console.error('Error starting screen share:', err);
+    }
   });
 
-  socket.on('stop-screen-share', ({ roomId, userId }) => {
-    socket.to(roomId).emit('screen-share-stopped', { userId });
+  socket.on('stop-screen-share', async ({ roomId, userId }) => {
+    try {
+      await Room.updateOne(
+        { roomId, 'users.userId': userId },
+        { $set: { 'users.$.isScreenSharing': false } }
+      );
+      socket.to(roomId).emit('screen-share-stopped', { userId });
+    } catch (err) {
+      console.error('Error stopping screen share:', err);
+    }
+  });
+
+  // Handle user mic/video status update
+  socket.on('user-status-update', async ({ roomId, userId, isMicOn, isVideoOn }) => {
+    try {
+      await Room.updateOne(
+        { roomId, 'users.userId': userId },
+        { $set: { 'users.$.isMicOn': isMicOn, 'users.$.isVideoOn': isVideoOn } }
+      );
+      socket.to(roomId).emit('user-status-update', { userId, isMicOn, isVideoOn });
+    } catch (err) {
+      console.error('Error updating user status:', err);
+    }
   });
 
   // Map userId to socket.id
@@ -267,6 +306,15 @@ io.on('connection', (socket) => {
   socket.on('disconnect', async () => {
     console.log(`Socket disconnected: ${socket.id}`);
     
+    // Clean up users mapping
+    for (const [uid, sid] of Object.entries(users)) {
+      if (sid === socket.id) {
+        delete users[uid];
+        console.log(`Removed user mapping for offline user ${uid}`);
+        break;
+      }
+    }
+    
     try {
       // Find the room with this socket ID
       const room = await Room.findOne({ 'users.socketId': socket.id });
@@ -279,11 +327,20 @@ io.on('connection', (socket) => {
             username: user.username
           });
 
-          // Remove socket ID from user data
+          // Remove the user completely from room users
           await Room.updateOne(
-            { roomId: room.roomId, 'users.userId': user.userId },
-            { $unset: { 'users.$.socketId': '' } }
+            { roomId: room.roomId },
+            { $pull: { users: { userId: user.userId } } }
           );
+
+          // If room has no users left, set isActive to false
+          const updatedRoom = await Room.findOne({ roomId: room.roomId });
+          if (updatedRoom && updatedRoom.users.length === 0) {
+            await Room.updateOne(
+              { roomId: room.roomId },
+              { $set: { isActive: false } }
+            );
+          }
         }
       }
     } catch (error) {
