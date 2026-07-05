@@ -876,7 +876,10 @@ const MeetingApp = () => {
     setError("");
 
     try {
-      const mediaSuccess = await startMedia();
+      let mediaSuccess = !!localStream.current;
+      if (!mediaSuccess) {
+        mediaSuccess = await startMedia();
+      }
       if (!mediaSuccess) {
         addMessage("Joining without camera/microphone due to permission issues", "system");
       }
@@ -1060,6 +1063,12 @@ const MeetingApp = () => {
   }, [messages]);
 
   useEffect(() => {
+    if (!joined) {
+      startMedia();
+    }
+  }, [joined]);
+
+  useEffect(() => {
     return () => {
       cleanupMediaStreams();
       if (peerRef.current) peerRef.current.destroy();
@@ -1081,6 +1090,11 @@ const MeetingApp = () => {
           handleCreateRoom={handleCreateRoom}
           handleJoinMeeting={handleJoinMeeting}
           copyMeetingId={copyMeetingId}
+          localVideoRef={localVideoRef}
+          isVideoOn={isVideoOn}
+          isMicOn={isMicOn}
+          toggleVideo={toggleVideo}
+          toggleMic={toggleMic}
         />
       ) : (
         <div className="meeting-room">
@@ -1149,6 +1163,7 @@ const MeetingApp = () => {
           )}
 
           <MeetingControls
+            meetingId={meetingId}
             isMicOn={isMicOn}
             toggleMic={toggleMic}
             mediaAccessGranted={mediaAccessGranted}

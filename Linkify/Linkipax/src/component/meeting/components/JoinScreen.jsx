@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, Form, Alert, Spinner, OverlayTrigger, Tooltip } from "react-bootstrap";
-import { FiCopy } from "react-icons/fi";
+import { FiCopy, FiMic, FiMicOff, FiVideo, FiVideoOff } from "react-icons/fi";
 
 export default function JoinScreen({
   meetingId,
@@ -13,99 +13,133 @@ export default function JoinScreen({
   handleCreateRoom,
   handleJoinMeeting,
   copyMeetingId,
+  localVideoRef,
+  isVideoOn,
+  isMicOn,
+  toggleVideo,
+  toggleMic,
 }) {
   return (
-    <div className="join-screen">
-      <div className="join-card">
-        <h1 className="text-center mb-4">
-          <span className="logo-primary">Meeting</span>
-          <span className="logo-secondary">Room</span>
-          <span className="logo-tagline">Premium Video Meetings</span>
-        </h1>
-
-        {error && (
-          <Alert variant="danger" className="text-center">
-            {error}
-          </Alert>
-        )}
-
-        <div className="action-buttons mb-4">
-          <Button
-            variant="primary"
-            onClick={handleCreateRoom}
-            disabled={loading}
-            className="action-btn"
-          >
-            {loading ? (
-              <>
-                <Spinner animation="border" size="sm" /> Creating...
-              </>
-            ) : (
-              "New Meeting"
+    <div className="google-meet-green-room">
+      <div className="green-room-container">
+        {/* Left Side: Video Preview Frame */}
+        <div className="preview-panel">
+          <div className="video-preview-wrapper">
+            <video
+              ref={localVideoRef}
+              autoPlay
+              muted
+              playsInline
+              className={`local-preview-video ${!isVideoOn ? "video-off" : ""}`}
+            />
+            {!isVideoOn && (
+              <div className="avatar-placeholder">
+                <div className="avatar-circle">
+                  {username ? username.charAt(0).toUpperCase() : "?"}
+                </div>
+              </div>
             )}
-          </Button>
-          <div className="divider">or</div>
-          <Form.Control
-            type="text"
-            placeholder="Enter Meeting ID"
-            value={meetingId}
-            onChange={(e) => setMeetingId(e.target.value)}
-            className="meeting-id-input"
-          />
-        </div>
-
-        {roomCreated && (
-          <div className="meeting-id-container">
-            <p className="text-muted">Your Meeting ID:</p>
-            <div className="meeting-id-display">
-              <span>{meetingId}</span>
+            
+            {/* Camera/Mic floating overlays */}
+            <div className="preview-controls-overlay">
               <OverlayTrigger
                 placement="top"
-                overlay={<Tooltip>Copy to clipboard</Tooltip>}
+                overlay={<Tooltip>{isMicOn ? "Mute microphone" : "Unmute microphone"}</Tooltip>}
               >
-                <Button
-                  variant="outline-secondary"
-                  size="sm"
-                  onClick={copyMeetingId}
-                  className="copy-btn"
+                <button
+                  type="button"
+                  className={`overlay-btn ${!isMicOn ? "off" : ""}`}
+                  onClick={toggleMic}
                 >
-                  <FiCopy />
-                </Button>
+                  {isMicOn ? <FiMic /> : <FiMicOff />}
+                </button>
+              </OverlayTrigger>
+              
+              <OverlayTrigger
+                placement="top"
+                overlay={<Tooltip>{isVideoOn ? "Turn camera off" : "Turn camera on"}</Tooltip>}
+              >
+                <button
+                  type="button"
+                  className={`overlay-btn ${!isVideoOn ? "off" : ""}`}
+                  onClick={toggleVideo}
+                >
+                  {isVideoOn ? <FiVideo /> : <FiVideoOff />}
+                </button>
               </OverlayTrigger>
             </div>
-            <p className="text-muted small mt-2">
-              Share this ID with participants to join the meeting
-            </p>
           </div>
-        )}
+        </div>
 
-        <Form className="join-form" onSubmit={(e) => { e.preventDefault(); handleJoinMeeting(); }}>
-          <Form.Group className="mb-3">
-            <Form.Label>Your Name</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Enter your name"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-          </Form.Group>
-
-          <Button
-            variant="success"
-            type="submit"
-            disabled={!meetingId || !username || loading}
-            className="join-btn"
-          >
-            {loading ? (
-              <>
-                <Spinner animation="border" size="sm" /> Joining...
-              </>
-            ) : (
-              "Join Meeting"
+        {/* Right Side: Credentials & Join Card */}
+        <div className="join-panel">
+          <div className="join-actions-card">
+            <h2>Ready to join?</h2>
+            
+            {error && (
+              <Alert variant="danger" className="text-center py-2 mb-3">
+                {error}
+              </Alert>
             )}
-          </Button>
-        </Form>
+
+            <Form className="join-form-meet" onSubmit={(e) => { e.preventDefault(); handleJoinMeeting(); }}>
+              <Form.Group className="mb-4">
+                <Form.Control
+                  type="text"
+                  placeholder="Enter your name"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="meet-input name-input"
+                  required
+                />
+              </Form.Group>
+
+              <div className="meet-id-section mb-4">
+                <div className="input-with-button">
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter Meeting ID"
+                    value={meetingId}
+                    onChange={(e) => setMeetingId(e.target.value)}
+                    className="meet-input id-input"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline-primary"
+                    onClick={handleCreateRoom}
+                    disabled={loading}
+                    className="meet-create-btn"
+                  >
+                    {loading ? <Spinner size="sm" /> : "New code"}
+                  </Button>
+                </div>
+              </div>
+
+              {roomCreated && (
+                <div className="new-room-display mb-4">
+                  <span className="small text-muted">Created meeting code:</span>
+                  <div className="code-box">
+                    <span className="code-text">{meetingId}</span>
+                    <button type="button" className="code-copy-btn" onClick={copyMeetingId}>
+                      <FiCopy /> Copy
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="join-buttons-group">
+                <Button
+                  variant="primary"
+                  type="submit"
+                  disabled={!meetingId || !username || loading}
+                  className="meet-join-btn primary-btn"
+                >
+                  Join now
+                </Button>
+              </div>
+            </Form>
+          </div>
+        </div>
       </div>
     </div>
   );
