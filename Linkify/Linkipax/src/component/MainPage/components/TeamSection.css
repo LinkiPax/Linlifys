@@ -1,0 +1,94 @@
+/* ==========================================================================
+   TeamSection.css - Dedicated Stylesheet for TeamSection Component
+   Supports: Light Aesthetic (Default) & Black & White (B&W Noir) Mode
+   ========================================================================== */
+
+.team-section {
+  position: relative;
+  padding: 5.5rem 1.5rem;
+}
+
+.team-container {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* --------------------------------------------------------------------------
+   Team Avatars Row
+   -------------------------------------------------------------------------- */
+.team-avatars-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 3.5rem;
+  width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   3 Core Values Grid
+   -------------------------------------------------------------------------- */
+.values-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.75rem;
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .values-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+.value-card {
+  background: var(--lp-bg-card);
+  backdrop-filter: var(--lp-glass-blur);
+  -webkit-backdrop-filter: var(--lp-glass-blur);
+  border: 1px solid var(--lp-border-subtle);
+  border-radius: var(--lp-radius-lg);
+  padding: 2.2rem 2rem;
+  box-shadow: var(--lp-shadow-card);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.value-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--lp-border-focus);
+  box-shadow: var(--lp-shadow-card-hover);
+  background: var(--lp-bg-card-hover);
+}
+
+.value-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--lp-badge-bg);
+  border: 1px solid var(--lp-badge-border);
+  color: var(--lp-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  margin-bottom: 1.35rem;
+}
+
+.value-card h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--lp-text-heading);
+  letter-spacing: -0.02em;
+  margin-bottom: 0.75rem;
+}
+
+.value-card p {
+  font-size: 0.92rem;
+  color: var(--lp-text-body);
+  line-height: 1.62;
+  margin: 0;
+}

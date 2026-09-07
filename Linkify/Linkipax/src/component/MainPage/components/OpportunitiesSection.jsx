@@ -9,6 +9,7 @@ import {
   FaCheck,
   FaFire,
 } from "react-icons/fa";
+import "./OpportunitiesSection.css";
 
 const sampleOpportunities = [
   {

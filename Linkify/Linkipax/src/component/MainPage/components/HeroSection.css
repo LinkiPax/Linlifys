@@ -1,0 +1,401 @@
+/* ==========================================================================
+   HeroSection.css - Dedicated Stylesheet for HeroSection Component
+   Supports: Light Aesthetic (Default) & Black & White (B&W Noir) Mode
+   ========================================================================== */
+
+.hero-section {
+  position: relative;
+  min-height: 88vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4.5rem 1.5rem 3.5rem;
+  overflow: hidden;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* --------------------------------------------------------------------------
+   Top Feature Pill Badge
+   -------------------------------------------------------------------------- */
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.45rem 1.15rem;
+  background: var(--lp-bg-card);
+  border: 1px solid var(--lp-border-subtle);
+  border-radius: var(--lp-radius-full);
+  margin-bottom: 2rem;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--lp-text-heading);
+  backdrop-filter: var(--lp-glass-blur);
+  -webkit-backdrop-filter: var(--lp-glass-blur);
+  box-shadow: var(--lp-shadow-sm);
+  transition: all 0.3s ease;
+}
+
+.hero-badge:hover {
+  transform: translateY(-1px);
+  border-color: var(--lp-border-focus);
+}
+
+.badge-sparkle {
+  color: var(--lp-primary);
+  font-size: 0.95rem;
+  animation: heroSparkle 2.4s infinite ease-in-out;
+}
+
+.badge-pill {
+  padding: 0.12rem 0.5rem;
+  border-radius: var(--lp-radius-full);
+  background: var(--lp-badge-bg);
+  border: 1px solid var(--lp-badge-border);
+  color: var(--lp-badge-text);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+@keyframes heroSparkle {
+  0%, 100% { transform: scale(1); opacity: 0.75; }
+  50% { transform: scale(1.25); opacity: 1; }
+}
+
+/* --------------------------------------------------------------------------
+   Hero Headline & Subtitle
+   -------------------------------------------------------------------------- */
+.hero-main-title {
+  font-size: clamp(2.4rem, 5.8vw, 4.25rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1.12;
+  margin-bottom: 1.25rem;
+  max-width: 920px;
+}
+
+.shiny-metallic-title {
+  background: var(--lp-heading-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+.hero-subtitle {
+  font-size: clamp(1.05rem, 2vw, 1.22rem);
+  color: var(--lp-text-body);
+  line-height: 1.62;
+  max-width: 680px;
+  margin: 0 auto 2.25rem;
+  font-weight: 400;
+}
+
+/* --------------------------------------------------------------------------
+   Interactive Mode Switcher Pills
+   -------------------------------------------------------------------------- */
+.hero-mode-pills {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem;
+  background: var(--lp-bg-subtle);
+  border: 1px solid var(--lp-border-subtle);
+  border-radius: var(--lp-radius-full);
+  margin-bottom: 2rem;
+  box-shadow: var(--lp-shadow-sm);
+}
+
+.mode-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.25rem;
+  border: none;
+  background: transparent;
+  color: var(--lp-text-muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+  border-radius: var(--lp-radius-full);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mode-pill:hover {
+  color: var(--lp-text-heading);
+}
+
+.mode-pill.active {
+  background: var(--lp-bg-surface);
+  color: var(--lp-text-heading);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] .mode-pill.active,
+[data-theme="bw"] .mode-pill.active,
+body.dark-theme .mode-pill.active {
+  background: #ffffff;
+  color: #060608;
+  box-shadow: 0 2px 12px rgba(255, 255, 255, 0.2);
+}
+
+/* --------------------------------------------------------------------------
+   Dynamic Mode Card Banner
+   -------------------------------------------------------------------------- */
+.hero-mode-preview-card {
+  width: 100%;
+  max-width: 780px;
+  background: var(--lp-bg-card);
+  backdrop-filter: var(--lp-glass-blur);
+  -webkit-backdrop-filter: var(--lp-glass-blur);
+  border: 1px solid var(--lp-border-subtle);
+  border-radius: var(--lp-radius-lg);
+  padding: 1.85rem 2.2rem;
+  margin-bottom: 2.5rem;
+  text-align: left;
+  box-shadow: var(--lp-shadow-card);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-mode-preview-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--lp-heading-gradient);
+}
+
+.preview-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.preview-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--lp-text-heading);
+}
+
+.preview-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--lp-radius-full);
+  background: var(--lp-badge-bg);
+  border: 1px solid var(--lp-badge-border);
+  color: var(--lp-badge-text);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.status-dot-active {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--lp-success);
+  box-shadow: 0 0 6px var(--lp-success);
+  animation: heroDotPulse 1.8s infinite;
+}
+
+@keyframes heroDotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.preview-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--lp-text-heading);
+  letter-spacing: -0.02em;
+  margin-bottom: 0.6rem;
+}
+
+.preview-desc {
+  font-size: 0.96rem;
+  color: var(--lp-text-body);
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+}
+
+.preview-feature-chips {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.feature-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.85rem;
+  background: var(--lp-bg-subtle);
+  border: 1px solid var(--lp-border-subtle);
+  border-radius: var(--lp-radius-sm);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--lp-text-body);
+  transition: all 0.2s ease;
+}
+
+.feature-chip:hover {
+  border-color: var(--lp-border-medium);
+  color: var(--lp-text-heading);
+}
+
+.chip-check {
+  font-size: 0.75rem;
+  color: var(--lp-primary);
+}
+
+/* --------------------------------------------------------------------------
+   CTA Actions Group
+   -------------------------------------------------------------------------- */
+.hero-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  margin-bottom: 2.75rem;
+  flex-wrap: wrap;
+}
+
+.hero-primary-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.95rem 2.2rem;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--lp-cta-text);
+  background: var(--lp-cta-bg);
+  border: 1px solid var(--lp-border-subtle);
+  border-radius: var(--lp-radius-full);
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: var(--lp-cta-shadow);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+  position: relative;
+}
+
+.hero-primary-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px -4px rgba(15, 23, 42, 0.35);
+  color: var(--lp-cta-text);
+}
+
+.hero-secondary-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.95rem 2rem;
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--lp-text-heading);
+  background: var(--lp-bg-card);
+  border: 1px solid var(--lp-border-medium);
+  border-radius: var(--lp-radius-full);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  backdrop-filter: var(--lp-glass-blur);
+  -webkit-backdrop-filter: var(--lp-glass-blur);
+}
+
+.hero-secondary-cta:hover {
+  background: var(--lp-bg-subtle);
+  border-color: var(--lp-border-focus);
+  transform: translateY(-2px);
+}
+
+/* --------------------------------------------------------------------------
+   Trust Highlights Bar
+   -------------------------------------------------------------------------- */
+.hero-trust-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  color: var(--lp-text-body);
+  font-size: 0.88rem;
+  font-weight: 500;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.trust-icon {
+  color: var(--lp-primary);
+  font-size: 0.95rem;
+}
+
+.trust-dot {
+  color: var(--lp-border-medium);
+}
+
+/* --------------------------------------------------------------------------
+   Scroll Down Indicator
+   -------------------------------------------------------------------------- */
+.hero-scroll-indicator {
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.hero-scroll-indicator:hover {
+  transform: translateY(3px);
+}
+
+.scroll-mouse-icon {
+  width: 22px;
+  height: 36px;
+  border: 2px solid var(--lp-text-muted);
+  border-radius: 12px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding-top: 6px;
+}
+
+.scroll-wheel {
+  width: 4px;
+  height: 7px;
+  background: var(--lp-text-heading);
+  border-radius: 2px;
+  animation: heroScrollWheel 1.6s infinite;
+}
+
+@keyframes heroScrollWheel {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(10px); opacity: 0; }
+}

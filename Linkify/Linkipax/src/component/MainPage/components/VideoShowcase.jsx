@@ -11,6 +11,7 @@ import {
   FaRedo,
   FaSparkles,
 } from "react-icons/fa";
+import "./VideoShowcase.css";
 
 const featureTabs = [
   {

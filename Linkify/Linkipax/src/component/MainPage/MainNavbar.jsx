@@ -7,8 +7,10 @@ import {
   FaTimes,
   FaArrowRight,
   FaCheck,
-  FaBolt,
+  FaSun,
+  FaMoon,
 } from "react-icons/fa";
+import { useThemeContext } from "../../context/ThemeContext";
 import "./MainNavbar.css";
 
 const languages = [
@@ -32,10 +34,12 @@ export default function MainNavbar() {
   const langDropdownRef = useRef(null);
   const navigate = useNavigate();
 
+  const { isDarkMode, toggleTheme } = useThemeContext();
+
   // Scroll detection for frosted glass navbar
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      setScrolled(window.scrollY > 15);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -130,8 +134,24 @@ export default function MainNavbar() {
           </li>
         </ul>
 
-        {/* Right: Actions, Language Selector, Auth */}
+        {/* Right: Actions (Theme Switcher, Language, Auth) */}
         <div className="navbar-actions">
+          {/* Theme Switcher Toggle (Light vs B&W Noir) */}
+          <button
+            type="button"
+            className="navbar-theme-toggle"
+            onClick={toggleTheme}
+            aria-label={isDarkMode ? "Switch to Light Aesthetic Mode" : "Switch to Black & White Mode"}
+            title={isDarkMode ? "Switch to Light Aesthetic Mode" : "Switch to Black & White Mode"}
+          >
+            <span className="theme-toggle-icon">
+              {isDarkMode ? <FaSun style={{ color: "#f59e0b" }} /> : <FaMoon style={{ color: "#475569" }} />}
+            </span>
+            <span className="theme-toggle-label">
+              {isDarkMode ? "Light" : "B&W Mode"}
+            </span>
+          </button>
+
           {/* Language Selector Dropdown */}
           <div className="language-selector" ref={langDropdownRef}>
             <button
@@ -182,12 +202,12 @@ export default function MainNavbar() {
             )}
           </div>
 
-          {/* Login Button */}
+          {/* Sign In Ghost Button */}
           <Link to="/login" className="nav-btn nav-btn-ghost">
             Sign In
           </Link>
 
-          {/* Sign Up CTA Button */}
+          {/* Get Started Primary CTA */}
           <Link to="/Signup" className="nav-btn nav-btn-primary">
             <span>Get Started</span>
             <FaArrowRight className="btn-arrow" />
@@ -259,6 +279,16 @@ export default function MainNavbar() {
           </ul>
 
           <div className="mobile-nav-footer">
+            {/* Mobile Theme Switcher */}
+            <button
+              type="button"
+              className="mobile-btn mobile-btn-ghost"
+              onClick={toggleTheme}
+            >
+              {isDarkMode ? <FaSun style={{ color: "#f59e0b" }} /> : <FaMoon />}
+              <span>{isDarkMode ? "Switch to Light Aesthetic" : "Switch to Black & White Mode"}</span>
+            </button>
+
             <Link
               to="/login"
               className="mobile-btn mobile-btn-ghost"

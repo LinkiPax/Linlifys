@@ -1,0 +1,226 @@
+/* ==========================================================================
+   MeetingRoomSection.css - Dedicated Stylesheet for MeetingRoomSection
+   Supports: Light Aesthetic (Default) & Black & White (B&W Noir) Mode
+   ========================================================================== */
+
+.meeting-room-section {
+  position: relative;
+  padding: 5.5rem 1.5rem;
+  overflow: hidden;
+}
+
+.meeting-room-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* --------------------------------------------------------------------------
+   Layout: Globe + 4 Feature Cards
+   -------------------------------------------------------------------------- */
+.meeting-room-layout {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+  align-items: center;
+  margin-bottom: 3.5rem;
+}
+
+@media (max-width: 1024px) {
+  .meeting-room-layout {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+}
+
+/* 3D Interactive Globe Box */
+.globe-frame-box {
+  width: 100%;
+  height: 480px;
+  border-radius: var(--lp-radius-xl);
+  background: var(--lp-bg-card);
+  border: 1px solid var(--lp-border-subtle);
+  box-shadow: var(--lp-shadow-card);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .globe-frame-box {
+    height: 360px;
+  }
+}
+
+/* Features Grid (4 Cards) */
+.meeting-features-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+@media (max-width: 640px) {
+  .meeting-features-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.feature-glass-card {
+  background: var(--lp-bg-card);
+  backdrop-filter: var(--lp-glass-blur);
+  -webkit-backdrop-filter: var(--lp-glass-blur);
+  border: 1px solid var(--lp-border-subtle);
+  border-radius: var(--lp-radius-md);
+  padding: 1.5rem;
+  box-shadow: var(--lp-shadow-sm);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.feature-glass-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--lp-border-focus);
+  box-shadow: var(--lp-shadow-card-hover);
+  background: var(--lp-bg-card-hover);
+}
+
+.feature-card-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: var(--lp-badge-bg);
+  border: 1px solid var(--lp-badge-border);
+  color: var(--lp-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  margin-bottom: 1rem;
+}
+
+.feature-glass-card h3 {
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: var(--lp-text-heading);
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+
+.feature-glass-card p {
+  font-size: 0.88rem;
+  color: var(--lp-text-body);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Early Access Waitlist Box
+   -------------------------------------------------------------------------- */
+.waitlist-card {
+  width: 100%;
+  max-width: 780px;
+  background: var(--lp-bg-card);
+  backdrop-filter: var(--lp-glass-blur);
+  -webkit-backdrop-filter: var(--lp-glass-blur);
+  border: 1px solid var(--lp-border-medium);
+  border-radius: var(--lp-radius-lg);
+  padding: 2.2rem 2.5rem;
+  text-align: center;
+  box-shadow: var(--lp-shadow-card);
+  position: relative;
+  overflow: hidden;
+}
+
+.waitlist-tag {
+  display: inline-block;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--lp-primary);
+  margin-bottom: 0.75rem;
+}
+
+.waitlist-card h3 {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--lp-text-heading);
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+
+.waitlist-card p {
+  font-size: 0.94rem;
+  color: var(--lp-text-body);
+  line-height: 1.6;
+  max-width: 580px;
+  margin: 0 auto 1.5rem;
+}
+
+.waitlist-form {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  max-width: 500px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+}
+
+.waitlist-input {
+  flex: 1;
+  min-width: 240px;
+  padding: 0.82rem 1.25rem;
+  background: var(--lp-bg-surface);
+  border: 1px solid var(--lp-border-medium);
+  border-radius: var(--lp-radius-full);
+  font-size: 0.92rem;
+  color: var(--lp-text-heading);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.waitlist-input:focus {
+  border-color: var(--lp-border-focus);
+  box-shadow: 0 0 0 3px var(--lp-border-glow);
+}
+
+.waitlist-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.82rem 1.65rem;
+  border-radius: var(--lp-radius-full);
+  border: 1px solid var(--lp-border-subtle);
+  background: var(--lp-cta-bg);
+  color: var(--lp-cta-text);
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--lp-cta-shadow);
+  transition: all 0.2s ease;
+}
+
+.waitlist-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px -4px rgba(15, 23, 42, 0.35);
+}
+
+.waitlist-success-msg {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.85rem 1.5rem;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: var(--lp-radius-full);
+  color: var(--lp-success);
+  font-size: 0.92rem;
+  font-weight: 600;
+}

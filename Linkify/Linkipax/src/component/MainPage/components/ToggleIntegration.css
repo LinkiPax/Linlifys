@@ -1,0 +1,415 @@
+/* ==========================================================================
+   ToggleIntegration.css - Dedicated Stylesheet for ToggleIntegration Component
+   Supports: Light Aesthetic (Default) & Black & White (B&W Noir) Mode
+   ========================================================================== */
+
+.dual-identity-section {
+  position: relative;
+  padding: 5.5rem 1.5rem;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.dual-identity-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .dual-identity-grid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Workspace Toggle Box
+   -------------------------------------------------------------------------- */
+.workspace-toggle-box {
+  background: var(--lp-bg-card);
+  backdrop-filter: var(--lp-glass-blur);
+  -webkit-backdrop-filter: var(--lp-glass-blur);
+  border: 1px solid var(--lp-border-subtle);
+  border-radius: var(--lp-radius-lg);
+  padding: 1.75rem 2rem;
+  margin-bottom: 1.75rem;
+  box-shadow: var(--lp-shadow-card);
+  transition: all 0.3s ease;
+}
+
+.switch-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  margin-bottom: 1.15rem;
+  flex-wrap: wrap;
+}
+
+.switch-label-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.mode-icon-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.mode-icon-badge.pro {
+  background: var(--lp-badge-bg);
+  color: var(--lp-primary);
+  border: 1px solid var(--lp-badge-border);
+}
+
+.mode-icon-badge.personal {
+  background: rgba(236, 72, 153, 0.12);
+  color: #ec4899;
+  border: 1px solid rgba(236, 72, 153, 0.25);
+}
+
+[data-theme="dark"] .mode-icon-badge.pro,
+[data-theme="dark"] .mode-icon-badge.personal,
+[data-theme="bw"] .mode-icon-badge.pro,
+[data-theme="bw"] .mode-icon-badge.personal {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.switch-titles h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--lp-text-heading);
+  letter-spacing: -0.02em;
+  margin: 0 0 0.25rem;
+}
+
+.switch-titles p {
+  font-size: 0.88rem;
+  color: var(--lp-text-muted);
+  margin: 0;
+}
+
+/* iOS Style Smooth Toggle Switch */
+.ios-toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.ios-toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.ios-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: var(--lp-bg-subtle);
+  border: 1px solid var(--lp-border-medium);
+  border-radius: 34px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ios-slider::before {
+  position: absolute;
+  content: "";
+  height: 24px;
+  width: 24px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .ios-slider::before,
+[data-theme="bw"] .ios-slider::before {
+  background-color: #ffffff;
+}
+
+.ios-toggle-switch input:checked + .ios-slider {
+  background: var(--lp-cta-bg);
+  border-color: var(--lp-border-focus);
+}
+
+.ios-toggle-switch input:checked + .ios-slider::before {
+  transform: translateX(28px);
+}
+
+.workspace-desc-text {
+  font-size: 0.94rem;
+  color: var(--lp-text-body);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Live AI Translation Chat Demo Card
+   -------------------------------------------------------------------------- */
+.chat-demo-card {
+  background: var(--lp-bg-card);
+  backdrop-filter: var(--lp-glass-blur);
+  -webkit-backdrop-filter: var(--lp-glass-blur);
+  border: 1px solid var(--lp-border-subtle);
+  border-radius: var(--lp-radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--lp-shadow-card);
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-demo-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--lp-border-subtle);
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chat-demo-header h4 {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--lp-text-heading);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.chat-badge-live {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--lp-success);
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  padding: 0.2rem 0.65rem;
+  border-radius: var(--lp-radius-full);
+}
+
+.chat-messages-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 0.5rem 0.2rem;
+  margin-bottom: 1rem;
+}
+
+.chat-bubble-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-width: 82%;
+}
+
+.chat-bubble-wrapper.sent {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.chat-bubble-wrapper.received {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+
+.chat-bubble-main {
+  padding: 0.75rem 1.15rem;
+  border-radius: var(--lp-radius-md);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  box-shadow: var(--lp-shadow-sm);
+}
+
+.chat-bubble-wrapper.sent .chat-bubble-main {
+  background: var(--lp-cta-bg);
+  color: var(--lp-cta-text);
+  border-bottom-right-radius: 4px;
+}
+
+.chat-bubble-wrapper.received .chat-bubble-main {
+  background: var(--lp-bg-subtle);
+  color: var(--lp-text-heading);
+  border: 1px solid var(--lp-border-subtle);
+  border-bottom-left-radius: 4px;
+}
+
+.chat-translation-subbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--lp-text-muted);
+}
+
+.translation-lang-pill {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  background: var(--lp-badge-bg);
+  border: 1px solid var(--lp-badge-border);
+  color: var(--lp-badge-text);
+  border-radius: 4px;
+}
+
+/* Prompt Chips */
+.chat-prompt-chips {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.85rem;
+}
+
+.prompt-chip-btn {
+  padding: 0.3rem 0.75rem;
+  background: var(--lp-bg-subtle);
+  border: 1px solid var(--lp-border-subtle);
+  border-radius: var(--lp-radius-full);
+  font-size: 0.76rem;
+  color: var(--lp-text-body);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.prompt-chip-btn:hover {
+  border-color: var(--lp-border-focus);
+  color: var(--lp-text-heading);
+  background: var(--lp-badge-bg);
+}
+
+/* Chat Input Bar */
+.chat-input-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: var(--lp-bg-surface);
+  border: 1px solid var(--lp-border-medium);
+  border-radius: var(--lp-radius-full);
+  padding: 0.35rem 0.5rem 0.35rem 1.15rem;
+  box-shadow: var(--lp-shadow-sm);
+  transition: border-color 0.2s ease;
+}
+
+.chat-input-bar:focus-within {
+  border-color: var(--lp-border-focus);
+}
+
+.chat-input-field {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 0.88rem;
+  color: var(--lp-text-heading);
+  outline: none;
+}
+
+.chat-input-field::placeholder {
+  color: var(--lp-text-subtle);
+}
+
+.chat-send-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: var(--lp-cta-bg);
+  color: var(--lp-cta-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.chat-send-btn:hover {
+  transform: scale(1.08);
+}
+
+/* --------------------------------------------------------------------------
+   Right Column: Media Persona Preview
+   -------------------------------------------------------------------------- */
+.preview-media-card {
+  position: relative;
+  width: 100%;
+  height: 520px;
+  border-radius: var(--lp-radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--lp-border-medium);
+  box-shadow: var(--lp-shadow-card-hover);
+}
+
+@media (max-width: 1024px) {
+  .preview-media-card {
+    height: 380px;
+  }
+}
+
+.media-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.preview-media-card:hover .media-image {
+  transform: scale(1.03);
+}
+
+.media-overlay-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(0, 0, 0, 0.85) 100%);
+}
+
+.media-quote-box {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1.75rem;
+  z-index: 2;
+}
+
+.opp-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--lp-radius-full);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.media-quote-text {
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: #ffffff;
+  line-height: 1.55;
+  margin: 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}

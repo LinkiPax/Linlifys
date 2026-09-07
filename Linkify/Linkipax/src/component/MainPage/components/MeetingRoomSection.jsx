@@ -10,6 +10,7 @@ import {
   FaMicrophone,
 } from "react-icons/fa";
 import { World } from "../../../components/ui/globe";
+import "./MeetingRoomSection.css";
 
 export default function MeetingRoomSection() {
   const [email, setEmail] = useState("");

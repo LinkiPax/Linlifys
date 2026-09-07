@@ -11,6 +11,7 @@ import {
   FaGlobeAmericas,
   FaCheckCircle,
 } from "react-icons/fa";
+import "./HeroSection.css";
 
 export default function HeroSection() {
   const navigate = useNavigate();

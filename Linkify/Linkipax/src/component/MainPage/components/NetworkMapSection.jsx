@@ -1,6 +1,7 @@
 import React from "react";
 import { WorldMap } from "../../../components/ui/world-map";
 import { FaGlobe, FaWifi, FaServer, FaShieldAlt } from "react-icons/fa";
+import "./NetworkMapSection.css";
 
 export default function NetworkMapSection() {
   const mapConnections = [

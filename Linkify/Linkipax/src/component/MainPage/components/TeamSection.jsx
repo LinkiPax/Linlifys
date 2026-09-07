@@ -1,6 +1,7 @@
 import React from "react";
 import { AnimatedTooltip } from "../../../components/ui/animated-tooltip";
 import { FaLightbulb, FaShieldAlt, FaHeart } from "react-icons/fa";
+import "./TeamSection.css";
 
 export default function TeamSection() {
   const teamMembers = [

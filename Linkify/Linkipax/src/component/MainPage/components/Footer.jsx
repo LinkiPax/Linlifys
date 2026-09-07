@@ -10,6 +10,7 @@ import {
   FaGlobe,
   FaPaperPlane,
 } from "react-icons/fa";
+import "./Footer.css";
 
 export default function Footer() {
   const [newsletterEmail, setNewsletterEmail] = useState("");

@@ -9,6 +9,7 @@ import {
   FaShieldAlt,
   FaUserCheck,
 } from "react-icons/fa";
+import "./ToggleIntegration.css";
 
 export default function ToggleIntegration() {
   const [isProfessional, setIsProfessional] = useState(true);
