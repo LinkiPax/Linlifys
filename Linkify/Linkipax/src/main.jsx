@@ -25,7 +25,6 @@ import StatusEditorPage from "./component/Status/StatusEditor";
 import Short from "./component/Shorts/Short";
 import ShortUpload from "./component/Shorts/ShortsUpload";
 import Setting from "./component/Setting/Setting";
-import MainPage from "./component/MainPage/MainPage";
 import Jobs from "./component/Jobs/Jobs";
 import Startup from "./component/Jobs/Startup";
 import Hackathons from "./component/Jobs/Hackathons";
@@ -45,7 +44,6 @@ createRoot(document.getElementById("root")).render(
           <Router>
             <GlobalThemeToggle />
             <Routes>
-              <Route path="/" element={<MainPage />} />
               <Route path="/Signup" element={<Signup />} />
               <Route
                 path="/personal-details/:userId"
