@@ -16,7 +16,7 @@ import {
   FiPhoneOff,
   FiSmile,
   FiArrowLeft,
-  FiCheckCheck,
+  FiCheck,
   FiMusic,
   FiTrash2,
   FiShield,
@@ -499,7 +499,7 @@ const ChatPage = () => {
                               className="bubble-check-icon"
                               title="Delivered"
                             >
-                              <FiCheckCheck size={14} />
+                              <FiCheck size={14} />
                             </span>
                           )}
                         </div>
