@@ -3,7 +3,7 @@
   position: relative;
   height: 100vh;
   overflow: hidden;
-  background-color: rgb(10, 11, 34);
+  background-color: #ffffff;
 }
 
 /* Navbar - Fixed at top */
@@ -14,7 +14,11 @@ nav {
   width: 100%;
   height: 64px;
   z-index: 1000;
-  background: rgba(10, 11, 34, 0.9);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
 }
 
 /* Content Sections Container */
@@ -40,35 +44,7 @@ nav {
   position: relative;
 }
 
-/* Hero Section */
-.hero-section {
- 
-  background-size: cover;
-  background-position: center;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding-top: 80px;
-}
 
-.titleMainpage {
-  text-align: center;
-  color: white;
-  max-width: 90%;
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  font-weight: 700;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-}
-
-.titleMainpage p {
-  font-size: clamp(1rem, 2vw, 1.2rem);
-  font-weight: 400;
-  margin-top: 1.5rem;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.9);
-  max-width: 600px;
-  margin: auto;
-}
 
 /* 🎨 RGB Animated Video Showcase Section */
 @keyframes rgbBackgroundShift {
@@ -1146,386 +1122,417 @@ input:checked + .slider:before {
   .footer-locale {
     justify-content: center;
   }
-}/* Hero Section Styles */
+}
+
+/* =========================================================
+   Standard Modern Hero Section (Clean White & Black Shiny Text)
+   ========================================================= */
 .hero-section {
   position: relative;
-  height: 100vh;
+  min-height: 100vh;
   width: 100%;
   overflow: hidden;
-  background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
-  color: white;
+  background: #ffffff;
+  background-image: 
+    radial-gradient(100% 55% at 50% 0%, rgba(241, 245, 249, 0.85) 0%, rgba(255, 255, 255, 0) 100%),
+    radial-gradient(70% 40% at 90% 90%, rgba(248, 250, 252, 0.9) 0%, rgba(255, 255, 255, 0) 100%);
+  color: #0f172a;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1;
-}
-
-.hero-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  padding: 100px 1.5rem 60px;
   z-index: 1;
 }
 
 .hero-content {
   position: relative;
   z-index: 2;
-  width: 90%;
-  max-width: 1200px;
+  width: 100%;
+  max-width: 1000px;
   margin: 0 auto;
   text-align: center;
-  padding: 2rem;
 }
 
-.titleMainpage h1 {
-  font-size: clamp(2.5rem, 8vw, 5rem);
-  margin: 0;
-  line-height: 1.2;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+/* Feature Badge */
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1.1rem;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 50px;
+  margin-bottom: 1.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #334155;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
 }
 
-/* Smoke Text Effect */
-.smoke-text {
-  position: relative;
-  display: inline-block;
+.badge-sparkle {
+  color: #2563eb;
+  font-size: 0.95rem;
+  animation: sparklePulse 2.2s infinite ease-in-out;
 }
 
-.smoke-text::before {
-  content: attr(data-text);
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  color: transparent;
-  background: linear-gradient(
-    90deg,
-    hsl(var(--hue, 260deg), 100%, 70%),
-    hsl(calc(var(--hue, 260deg) + 40deg, 100%, 70%)),
-    hsl(calc(var(--hue, 260deg) + 80deg, 100%, 70%)
-  ));
-  background-clip: text;
-  -webkit-background-clip: text;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-  filter: blur(2px);
-  z-index: -1;
-  animation: smoke 6s ease-in-out infinite alternate;
-}
-
-@keyframes smoke {
+@keyframes sparklePulse {
   0%, 100% {
-    transform: translateY(0) translateX(0);
+    transform: scale(1);
     opacity: 0.8;
   }
-  25% {
-    transform: translateY(-5px) translateX(-5px);
-    opacity: 0.6;
+  50% {
+    transform: scale(1.25);
+    opacity: 1;
+    color: #3b82f6;
+  }
+}
+
+.badge-pill {
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+}
+
+/* =========================================================
+   Shiny Black Title (Luxury Obsidian Metallic Shimmer)
+   ========================================================= */
+.titleMainpage {
+  text-align: center;
+  margin: 0 auto;
+}
+
+.shiny-black-title {
+  font-size: clamp(2.6rem, 6vw, 4.75rem);
+  font-weight: 850;
+  letter-spacing: -0.04em;
+  line-height: 1.12;
+  margin: 0 auto 1.35rem;
+  max-width: 900px;
+
+  /* Black shiny metallic text with animated reflection */
+  background: linear-gradient(
+    115deg,
+    #050505 0%,
+    #18181b 20%,
+    #52525b 42%,
+    #ffffff 50%,
+    #52525b 58%,
+    #18181b 80%,
+    #050505 100%
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shinyBlackSweep 4.5s ease-in-out infinite;
+  filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.06));
+}
+
+.title-break {
+  display: inline;
+}
+
+@keyframes shinyBlackSweep {
+  0% {
+    background-position: 100% 50%;
   }
   50% {
-    transform: translateY(5px) translateX(5px);
-    opacity: 0.9;
+    background-position: 0% 50%;
   }
-  75% {
-    transform: translateY(-3px) translateX(3px);
-    opacity: 0.7;
+  100% {
+    background-position: 100% 50%;
   }
 }
 
-/* Neon Subtitle */
-.neon-text {
-  font-size: clamp(1rem, 2.5vw, 1.5rem);
-  margin: 1.5rem 0 2.5rem;
-  color: rgba(255, 255, 255, 0.9);
-  text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #0073e6, 0 0 20px #0073e6;
-  animation: flicker 1.5s infinite alternate;
+/* Clean Subtitle */
+.hero-subtitle {
+  font-size: clamp(1.05rem, 2vw, 1.25rem);
+  color: #475569;
+  font-weight: 400;
+  max-width: 660px;
+  margin: 0 auto 2.25rem;
+  line-height: 1.6;
 }
 
-@keyframes flicker {
-  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
-    text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #0073e6, 0 0 20px #0073e6;
-  }
-  20%, 24%, 55% {
-    text-shadow: none;
-  }
+/* Interactive Mode Pills */
+.hero-mode-pills {
+  display: inline-flex;
+  align-items: center;
+  background: #f1f5f9;
+  padding: 5px;
+  border-radius: 40px;
+  gap: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
+  margin-bottom: 1.25rem;
 }
 
-/* Enhanced Cosmic Button */
-.button-container {
-  position: relative;
-  display: inline-block;
-  margin-bottom: 2rem;
-}
-
-.cosmic-button {
-  position: relative;
-  padding: 1.2rem 3rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: white;
-  background: linear-gradient(135deg, #6e00ff 0%, #3a47d5 100%);
+.mode-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.25rem;
+  border-radius: 30px;
   border: none;
+  background: transparent;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mode-pill:hover {
+  color: #0f172a;
+}
+
+.mode-pill.active {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.pill-icon {
+  font-size: 1.1rem;
+}
+
+/* Dynamic Mode Banner */
+.hero-mode-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  max-width: 680px;
+  margin: 0 auto 2.25rem;
+  padding: 0.8rem 1.4rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  color: #334155;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s ease;
+}
+
+.preview-badge {
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.preview-text {
+  text-align: left;
+  line-height: 1.45;
+}
+
+/* =========================================================
+   Shiny CTA Button & Actions
+   ========================================================= */
+.hero-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  margin-bottom: 2.25rem;
+  flex-wrap: wrap;
+}
+
+.hero-shiny-cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1rem 2.6rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 50px;
   cursor: pointer;
   overflow: hidden;
-  transition: all 0.3s ease;
-  z-index: 1;
-  box-shadow: 0 10px 30px rgba(110, 0, 255, 0.4);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.22);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.cosmic-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 15px 35px rgba(110, 0, 255, 0.6);
+.hero-shiny-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 35px rgba(15, 23, 42, 0.32);
+  background: #1e293b;
 }
 
-.cosmic-button .button-text {
-  position: relative;
-  z-index: 2;
+.cta-arrow {
+  font-size: 1.15rem;
+  transition: transform 0.25s ease;
 }
 
-.cosmic-button .button-glow {
+.hero-shiny-cta:hover .cta-arrow {
+  transform: translateX(4px);
+}
+
+/* Diagonal specular light sweep across button */
+.cta-shine-effect {
   position: absolute;
   top: 0;
-  left: 0;
-  width: 100%;
+  left: -100%;
+  width: 50%;
   height: 100%;
-  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.8) 0%, transparent 70%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.cosmic-button:hover .button-glow {
-  opacity: 0.3;
-}
-
-.cosmic-button .button-particles {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 100%
+  );
+  transform: skewX(-25deg);
+  animation: shinySweep 3.6s infinite;
   pointer-events: none;
 }
 
-.cosmic-button .particle {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  background: white;
-  border-radius: 50%;
-  opacity: 0;
-  transform: translate(-50%, -50%);
-}
-
-.cosmic-button:hover .particle {
-  animation: particle-float 2s ease-out forwards;
-}
-
-@keyframes particle-float {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0);
-  }
-  20% {
-    opacity: 1;
+@keyframes shinySweep {
+  0%, 65% {
+    left: -100%;
   }
   100% {
-    opacity: 0;
-    transform: translate(
-      calc(-50% + (var(--random-x) * 100px)),
-      calc(-50% + (var(--random-y) * 100px))
-    ) scale(1);
+    left: 220%;
   }
 }
 
-/* Hover Effect Elements */
-.hover-effect {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 120px;
-  opacity: 0;
-  transition: all 0.3s ease;
-  pointer-events: none;
-  z-index: 3;
+.hero-secondary-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.95rem 2.1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #334155;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  transition: all 0.25s ease;
 }
 
-.personal-hover {
-  left: -130px;
-  text-align: right;
+.hero-secondary-cta:hover {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #cbd5e1;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
 }
 
-.professional-hover {
-  right: -130px;
-  text-align: left;
+.secondary-icon {
+  font-size: 1rem;
+  transition: transform 0.2s ease;
 }
 
-.hover-text {
-  display: block;
-  font-size: 0.9rem;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-  color: #fff;
-  text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+.hero-secondary-cta:hover .secondary-icon {
+  transform: translateY(2px);
 }
 
-.hover-emoji {
-  font-size: 1.5rem;
-  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.7));
-}
-
-.cosmic-button:hover .personal-hover {
-  left: -150px;
-  opacity: 1;
-}
-
-.cosmic-button:hover .professional-hover {
-  right: -150px;
-  opacity: 1;
-}
-
-/* Mode Indicators */
-.mode-indicators {
+/* Trust Bar */
+.hero-trust-bar {
   display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 2rem;
-  margin-top: 1rem;
+  gap: 1rem;
+  color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
 }
 
-.indicator {
+.trust-item {
   display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.trust-icon {
+  font-size: 1rem;
+}
+
+.trust-dot {
+  color: #cbd5e1;
+}
+
+/* Clean Scroll Indicator */
+.hero-scroll-indicator {
+  margin-top: 2.25rem;
+  display: inline-flex;
   flex-direction: column;
   align-items: center;
   cursor: pointer;
-  transition: all 0.3s ease;
   opacity: 0.7;
+  transition: opacity 0.2s ease;
 }
 
-.indicator:hover, .indicator.active {
+.hero-scroll-indicator:hover {
   opacity: 1;
-  transform: translateY(-3px);
-}
-
-.indicator-icon {
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.indicator-text {
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.pulse-text {
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% {
-    opacity: 0.7;
-    text-shadow: 0 0 0 rgba(255, 255, 255, 0);
-  }
-  50% {
-    opacity: 1;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-  }
-  100% {
-    opacity: 0.7;
-    text-shadow: 0 0 0 rgba(255, 255, 255, 0);
-  }
-}
-
-/* Scroll Indicator */
-.hero-scroll-indicator {
-  position: absolute;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  z-index: 10;
 }
 
 .scroll-line {
-  width: 1px;
-  height: 50px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.8), transparent);
-  margin-bottom: 0.5rem;
+  width: 2px;
+  height: 32px;
+  background: linear-gradient(to bottom, #0f172a, transparent);
   animation: scroll-line 2s infinite;
+  border-radius: 2px;
 }
 
 @keyframes scroll-line {
   0% {
-    height: 50px;
-    opacity: 1;
+    height: 24px;
+    opacity: 0.9;
+    transform: translateY(0);
+  }
+  50% {
+    height: 38px;
+    opacity: 0.4;
   }
   100% {
-    height: 80px;
-    opacity: 0;
+    height: 24px;
+    opacity: 0.9;
+    transform: translateY(6px);
   }
 }
 
 .flicker-text {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.7);
-  animation: flicker 2s infinite alternate;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-top: 0.4rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
-/* Background Grid */
-.hero-background-grid {
+/* Overlay for ToggleIntegration section without Three.js canvas */
+.toggle-section-bg-overlay {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
-  z-index: -1;
-  opacity: 0.5;
-}
-
-/* Floating Particles */
-.floating-particles {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
   z-index: 0;
+  pointer-events: none;
+  transition: background 0.6s ease;
 }
 
-.floating-particles .particle {
-  position: absolute;
-  width: var(--size);
-  height: var(--size);
-  background: rgba(255, 255, 255, 0.6);
-  border-radius: 50%;
-  left: var(--x);
-  top: var(--y);
-  animation: float var(--duration) var(--delay) infinite linear;
-  filter: blur(1px);
+.toggle-section-bg-overlay.mode-pro {
+  background: radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 60%);
 }
 
-@keyframes float {
-  0% {
-    transform: translate(0, 0);
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    transform: translate(calc(var(--random-x) * 100px), calc(var(--random-y) * 100px));
-    opacity: 0;
-  }
+.toggle-section-bg-overlay.mode-pers {
+  background: radial-gradient(circle at 80% 20%, rgba(249, 115, 22, 0.1) 0%, transparent 60%);
 }
 /* Add these styles to your MainPage.css file */
 
@@ -1756,4 +1763,27 @@ input:checked + .slider:before {
 .video-controls input:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Lazy-load section placeholder */
+.section-loader {
+  width: 100%;
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(10, 11, 34);
+}
+
+.loader-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #818cf8;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

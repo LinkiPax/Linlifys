@@ -1,16 +1,25 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import "./MainPage.css";
 import MainNavbar from "./MainNavbar";
 
-// Import modular section components
+// Eagerly load lightweight sections
 import HeroSection from "./components/HeroSection";
-import VideoShowcase from "./components/VideoShowcase";
-import ToggleIntegration from "./components/ToggleIntegration";
-import MeetingRoomSection from "./components/MeetingRoomSection";
-import OpportunitiesSection from "./components/OpportunitiesSection";
-import TeamSection from "./components/TeamSection";
-import NetworkMapSection from "./components/NetworkMapSection";
 import Footer from "./components/Footer";
+
+// Lazy-load heavy sections (Three.js, video, globe)
+const VideoShowcase = lazy(() => import("./components/VideoShowcase"));
+const ToggleIntegration = lazy(() => import("./components/ToggleIntegration"));
+const MeetingRoomSection = lazy(() => import("./components/MeetingRoomSection"));
+const OpportunitiesSection = lazy(() => import("./components/OpportunitiesSection"));
+const TeamSection = lazy(() => import("./components/TeamSection"));
+const NetworkMapSection = lazy(() => import("./components/NetworkMapSection"));
+
+/* Minimal placeholder while lazy chunks load */
+const SectionLoader = () => (
+  <div className="section-loader">
+    <div className="loader-spinner" />
+  </div>
+);
 
 const MainPage = () => {
   return (
@@ -18,28 +27,35 @@ const MainPage = () => {
       <MainNavbar />
 
       <div className="content-sections">
-        {/* Particle Hero Section */}
+        {/* Standard Hero Section (Lightweight, No Canvas) — loaded eagerly (above the fold) */}
         <HeroSection />
 
-        {/* Video Showcase Section */}
-        <VideoShowcase />
+        {/* Everything below the fold is lazy-loaded */}
+        <Suspense fallback={<SectionLoader />}>
+          <VideoShowcase />
+        </Suspense>
 
-        {/* Professional vs Personal Switch Section */}
-        <ToggleIntegration />
+        <Suspense fallback={<SectionLoader />}>
+          <ToggleIntegration />
+        </Suspense>
 
-        {/* Globe Meeting Room Section */}
-        <MeetingRoomSection />
+        <Suspense fallback={<SectionLoader />}>
+          <MeetingRoomSection />
+        </Suspense>
 
-        {/* AI Suggested Opportunities Section */}
-        <OpportunitiesSection />
+        <Suspense fallback={<SectionLoader />}>
+          <OpportunitiesSection />
+        </Suspense>
 
-        {/* Team Members & Corporate Values Section */}
-        <TeamSection />
+        <Suspense fallback={<SectionLoader />}>
+          <TeamSection />
+        </Suspense>
 
-        {/* Global Connectivity Map Section */}
-        <NetworkMapSection />
+        <Suspense fallback={<SectionLoader />}>
+          <NetworkMapSection />
+        </Suspense>
 
-        {/* Brand footer */}
+        {/* Footer — lightweight, loaded eagerly */}
         <Footer />
       </div>
     </div>
