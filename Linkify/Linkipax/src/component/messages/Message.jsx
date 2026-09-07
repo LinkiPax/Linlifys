@@ -25,6 +25,7 @@ import {
   Progress,
 } from "antd";
 import {
+  ArrowLeftOutlined,
   AudioOutlined,
   PaperClipOutlined,
   PhoneOutlined,
@@ -1916,6 +1917,14 @@ const ProfessionalChat = () => {
           <>
             <div className="chat-header">
               <div className="contact-info">
+                <Button
+                  type="text"
+                  shape="circle"
+                  icon={<ArrowLeftOutlined />}
+                  className="mobile-back-btn"
+                  onClick={() => setActiveContact(null)}
+                  title="Back to conversations"
+                />
                 <Badge
                   dot
                   status={
