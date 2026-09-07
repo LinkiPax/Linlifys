@@ -1,153 +1,189 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  FaArrowRight,
+  FaChevronDown,
+  FaUserFriends,
+  FaBriefcase,
+  FaLayerGroup,
+  FaBolt,
+  FaLock,
+  FaGlobeAmericas,
+  FaCheckCircle,
+} from "react-icons/fa";
 
 export default function HeroSection() {
   const navigate = useNavigate();
-  const [heroMode, setHeroMode] = useState("merged");
+  const [heroMode, setHeroMode] = useState("unified");
 
-  const modeDescriptions = {
+  const modeData = {
     personal: {
-      title: "Personal Space",
-      desc: "Connect privately with friends, share genuine moments, and manage your personal circles with zero workplace clutter.",
-      icon: "👨‍💻",
-      highlight: "Private & Social",
+      tag: "Personal Identity",
+      title: "Your Private Social Sanctuary",
+      desc: "Connect genuinely with friends and inner circles. Share memories, custom media, and real-time moments without workplace pressure or resume anxiety.",
+      chips: ["Private Moments", "End-to-End Encrypted", "No Workplace Noise", "Custom Themes"],
+      status: "Personal Mode Active",
+      icon: <FaUserFriends />,
+    },
+    unified: {
+      tag: "Unified Architecture",
+      title: "One Fluid Interface. Two Distinct Worlds.",
+      desc: "Effortlessly toggle between personal and professional personas with zero context-switching fatigue. One login, complete identity isolation.",
+      chips: ["Instant 1-Click Toggle", "Zero Context Fatigue", "Dual Profiles", "Smart Routing"],
+      status: "Unified Mode Active",
+      icon: <FaLayerGroup />,
     },
     professional: {
-      title: "Professional Workspace",
-      desc: "Present your verified credentials, expand your business network, join meeting rooms, and discover top career opportunities.",
-      icon: "💼",
-      highlight: "Career & Network",
-    },
-    merged: {
-      title: "Unified Experience",
-      desc: "Seamlessly balance your daily life and career in one unified dashboard — toggle between identities anytime with one click.",
-      icon: "✨",
-      highlight: "All-in-One",
+      tag: "Professional Presence",
+      title: "Accelerate Your Career & Business Network",
+      desc: "Showcase verified credentials, connect with top industry peers, collaborate in 3D meeting rooms, and unlock tailored high-impact opportunities.",
+      chips: ["Verified Credentials", "AI Job Match (98%)", "3D Meeting Rooms", "Global Peer Network"],
+      status: "Professional Mode Active",
+      icon: <FaBriefcase />,
     },
   };
 
-  const handleScrollDown = () => {
-    const nextSection = document.querySelector(".video-showcase-section, .toggle-section, .meeting-room-section");
-    if (nextSection) {
-      nextSection.scrollIntoView({ behavior: "smooth" });
-    } else {
-      window.scrollBy({ top: window.innerHeight, behavior: "smooth" });
+  const handleScrollToFeatures = () => {
+    const target = document.getElementById("features");
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
+  const activeMode = modeData[heroMode];
+
   return (
-    <section className="hero-section" aria-labelledby="hero-title">
+    <div className="hero-section">
       <div className="hero-content">
-        {/* Top Feature Badge */}
+        {/* Top Feature Pill Badge */}
         <div className="hero-badge">
           <span className="badge-sparkle">✦</span>
-          <span className="badge-text">The All-in-One Dual Workspace</span>
-          <span className="badge-pill">v2.0</span>
+          <span>The Next-Generation Dual Identity Network</span>
+          <span className="badge-pill">v2.4</span>
         </div>
 
-        {/* Shiny Black Hero Title */}
-        <div className="titleMainpage">
-          <h1 id="hero-title" className="shiny-black-title">
-            One Platform,
-            <span className="title-break"> Two Worlds</span>
-          </h1>
+        {/* Shiny Metallic Title */}
+        <h1 className="hero-main-title">
+          <span className="shiny-metallic-title">One Platform. Two Worlds.</span>
+        </h1>
 
-          <p className="hero-subtitle">
-            Linkipax blends your personal life and professional presence.
-            Switch contexts instantly with a single toggle — no context-switching fatigue.
-          </p>
+        {/* Subtitle */}
+        <p className="hero-subtitle">
+          Linkipax bridges your authentic personal life with your verified professional career.
+          Switch contexts instantly with zero identity overlap.
+        </p>
 
-          {/* Interactive Mode Pills */}
-          <div className="hero-mode-pills" role="tablist" aria-label="Identity Mode Selector">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={heroMode === "personal"}
-              className={`mode-pill ${heroMode === "personal" ? "active" : ""}`}
-              onClick={() => setHeroMode("personal")}
-            >
-              <span className="pill-icon">👨‍💻</span>
-              <span className="pill-label">Personal</span>
-            </button>
+        {/* Interactive Mode Pills */}
+        <div className="hero-mode-pills" role="tablist" aria-label="Workspace Mode Switcher">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={heroMode === "personal"}
+            className={`mode-pill ${heroMode === "personal" ? "active" : ""}`}
+            onClick={() => setHeroMode("personal")}
+          >
+            <FaUserFriends />
+            <span>Personal</span>
+          </button>
 
-            <button
-              type="button"
-              role="tab"
-              aria-selected={heroMode === "merged"}
-              className={`mode-pill ${heroMode === "merged" ? "active" : ""}`}
-              onClick={() => setHeroMode("merged")}
-            >
-              <span className="pill-icon">✨</span>
-              <span className="pill-label">Unified</span>
-            </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={heroMode === "unified"}
+            className={`mode-pill ${heroMode === "unified" ? "active" : ""}`}
+            onClick={() => setHeroMode("unified")}
+          >
+            <FaLayerGroup />
+            <span>Unified</span>
+          </button>
 
-            <button
-              type="button"
-              role="tab"
-              aria-selected={heroMode === "professional"}
-              className={`mode-pill ${heroMode === "professional" ? "active" : ""}`}
-              onClick={() => setHeroMode("professional")}
-            >
-              <span className="pill-icon">💼</span>
-              <span className="pill-label">Professional</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={heroMode === "professional"}
+            className={`mode-pill ${heroMode === "professional" ? "active" : ""}`}
+            onClick={() => setHeroMode("professional")}
+          >
+            <FaBriefcase />
+            <span>Professional</span>
+          </button>
+        </div>
 
-          {/* Dynamic Mode Card Banner */}
-          <div className="hero-mode-preview">
-            <div className="preview-badge">{modeDescriptions[heroMode].highlight}</div>
-            <div className="preview-text">
-              <strong>{modeDescriptions[heroMode].title}:</strong> {modeDescriptions[heroMode].desc}
+        {/* Dynamic Mode Card Banner */}
+        <div className="hero-mode-preview-card" role="region" aria-live="polite">
+          <div className="preview-card-header">
+            <span className="preview-tag">
+              {activeMode.icon}
+              <span>{activeMode.tag}</span>
+            </span>
+            <div className="preview-status-pill">
+              <span className="status-dot-active" />
+              <span>{activeMode.status}</span>
             </div>
           </div>
 
-          {/* CTA Buttons */}
-          <div className="hero-actions">
-            <button
-              className="hero-shiny-cta"
-              onClick={() => navigate("/signup")}
-              aria-label="Get started with Linkipax"
-            >
-              <span className="cta-text">Get Started</span>
-              <span className="cta-arrow">→</span>
-              <span className="cta-shine-effect" />
-            </button>
+          <h2 className="preview-title">{activeMode.title}</h2>
+          <p className="preview-desc">{activeMode.desc}</p>
 
-            <button
-              className="hero-secondary-cta"
-              onClick={handleScrollDown}
-              aria-label="Explore features"
-            >
-              <span>Explore Features</span>
-              <span className="secondary-icon">↓</span>
-            </button>
-          </div>
-
-          {/* Trust Highlights */}
-          <div className="hero-trust-bar">
-            <div className="trust-item">
-              <span className="trust-icon">⚡</span>
-              <span>Zero-lag Performance</span>
-            </div>
-            <div className="trust-dot">•</div>
-            <div className="trust-item">
-              <span className="trust-icon">🔄</span>
-              <span>1-Click Switch</span>
-            </div>
-            <div className="trust-dot">•</div>
-            <div className="trust-item">
-              <span className="trust-icon">🔒</span>
-              <span>Encrypted & Private</span>
-            </div>
+          <div className="preview-feature-chips">
+            {activeMode.chips.map((chip, idx) => (
+              <span key={idx} className="feature-chip">
+                <FaCheckCircle className="chip-check" />
+                <span>{chip}</span>
+              </span>
+            ))}
           </div>
         </div>
 
-        {/* Bottom Scroll Indicator */}
-        <div className="hero-scroll-indicator" onClick={handleScrollDown} role="button" tabIndex={0}>
-          <div className="scroll-line"></div>
-          <span className="flicker-text">Scroll to explore</span>
+        {/* CTA Buttons */}
+        <div className="hero-actions">
+          <Link to="/Signup" className="hero-primary-cta">
+            <span>Get Started Free</span>
+            <FaArrowRight />
+            <span className="btn-shine" />
+          </Link>
+
+          <button
+            type="button"
+            className="hero-secondary-cta"
+            onClick={handleScrollToFeatures}
+          >
+            <span>Explore Ecosystem</span>
+            <FaChevronDown />
+          </button>
+        </div>
+
+        {/* Trust Highlights */}
+        <div className="hero-trust-bar">
+          <div className="trust-item">
+            <FaBolt className="trust-icon" />
+            <span>Sub-millisecond Switch</span>
+          </div>
+          <span className="trust-dot">•</span>
+          <div className="trust-item">
+            <FaLock className="trust-icon" />
+            <span>100% Identity Isolation</span>
+          </div>
+          <span className="trust-dot">•</span>
+          <div className="trust-item">
+            <FaGlobeAmericas className="trust-icon" />
+            <span>50+ Countries Connected</span>
+          </div>
+        </div>
+
+        {/* Scroll down indicator */}
+        <div
+          className="hero-scroll-indicator"
+          onClick={handleScrollToFeatures}
+          role="button"
+          tabIndex={0}
+          aria-label="Scroll down to explore features"
+        >
+          <div className="scroll-mouse-icon">
+            <div className="scroll-wheel" />
+          </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }

@@ -4,240 +4,295 @@ import {
   FaPause,
   FaVolumeUp,
   FaVolumeMute,
+  FaExpand,
+  FaTachometerAlt,
   FaVideo,
+  FaCompress,
+  FaRedo,
+  FaSparkles,
 } from "react-icons/fa";
 
-const aroraImage = "/aurora.d2a6947c3dcfb777c25f.webp";
-const dashboardvideo = "/videos/Dashboard.mp4";
+const featureTabs = [
+  {
+    id: "dashboard",
+    name: "Unified Dashboard",
+    icon: <FaTachometerAlt />,
+    video: "/videos/Dashboard.mp4",
+    tagline: "Live dual-mode interface with instant context switching",
+  },
+  {
+    id: "collaboration",
+    name: "Meeting & Video Hub",
+    icon: <FaVideo />,
+    video: "/252736_large.mp4",
+    tagline: "Next-generation video collaboration with real-time translation",
+  },
+  {
+    id: "intelligence",
+    name: "AI Opportunities",
+    icon: <FaSparkles />,
+    video: "/videos/Dashboard.mp4",
+    tagline: "Automated profile optimization, job alerts, and hackathons",
+  },
+];
 
 export default function VideoShowcase() {
-  const features = [
-    { name: "Dashboard", video: dashboardvideo },
-    { name: "Team", video: "/videos/demo2.mp4" },
-    { name: "Features", video: "/videos/demo3.mp4" },
-  ];
-
-  const [videoSrc, setVideoSrc] = useState(features[0].video);
+  const [activeTab, setActiveTab] = useState(featureTabs[0]);
   const [isPlaying, setIsPlaying] = useState(true);
-  const [volume, setVolume] = useState(0.5);
+  const [volume, setVolume] = useState(0.6);
+  const [isMuted, setIsMuted] = useState(true); // default muted for autoplay compatibility
   const [progress, setProgress] = useState(0);
-  const [videoError, setVideoError] = useState(false);
+  const [currentTime, setCurrentTime] = useState("0:00");
+  const [duration, setDuration] = useState("0:00");
+  const [hasError, setHasError] = useState(false);
   const videoRef = useRef(null);
+  const frameRef = useRef(null);
 
+  // Format seconds to mm:ss
+  const formatTime = (secs) => {
+    if (isNaN(secs) || secs === 0) return "0:00";
+    const minutes = Math.floor(secs / 60);
+    const seconds = Math.floor(secs % 60);
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+  };
+
+  // Video source change
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    const handleVideoError = () => {
-      console.error("Video failed to load:", videoSrc);
-      if (videoSrc !== dashboardvideo) {
-        console.log("Falling back to default dashboard video.");
-        setVideoSrc(dashboardvideo);
-      } else {
-        setIsPlaying(false);
-        setVideoError(true);
-      }
-    };
+    setHasError(false);
+    setProgress(0);
 
-    const handleVideoLoad = () => {
-      console.log("Video loaded successfully:", videoSrc);
-      if (isPlaying) {
-        video.play().catch(err => {
-          console.error("Video play failed:", err);
-          setIsPlaying(false);
+    const playPromise = video.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => setIsPlaying(true))
+        .catch(() => {
+          // Autoplay policy prevented playback, keep muted
+          video.muted = true;
+          setIsMuted(true);
+          video.play().catch(() => setIsPlaying(false));
         });
-      }
-    };
-
-    video.addEventListener('error', handleVideoError);
-    video.addEventListener('loadeddata', handleVideoLoad);
-    video.addEventListener('canplay', handleVideoLoad);
-
-    if (video.readyState >= 3 && isPlaying) {
-      video.play().catch(err => {
-        console.error("Video play failed:", err);
-        setIsPlaying(false);
-      });
     }
+  }, [activeTab]);
 
-    return () => {
-      video.removeEventListener('error', handleVideoError);
-      video.removeEventListener('loadeddata', handleVideoLoad);
-      video.removeEventListener('canplay', handleVideoLoad);
-    };
-  }, [videoSrc, isPlaying]);
+  // Video event handlers
+  const handleTimeUpdate = () => {
+    const video = videoRef.current;
+    if (!video || !video.duration) return;
+    setProgress((video.currentTime / video.duration) * 100);
+    setCurrentTime(formatTime(video.currentTime));
+  };
+
+  const handleLoadedMetadata = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    setDuration(formatTime(video.duration));
+  };
 
   const handlePlayPause = () => {
     const video = videoRef.current;
     if (!video) return;
-    
+
     if (video.paused) {
-      video.play().then(() => {
-        setIsPlaying(true);
-      }).catch(err => {
-        console.error("Play failed:", err);
-        setIsPlaying(false);
-      });
+      video.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
     } else {
       video.pause();
       setIsPlaying(false);
     }
   };
 
-  const handleVolumeChange = (e) => {
-    const newVolume = parseFloat(e.target.value);
-    setVolume(newVolume);
-    if (videoRef.current) {
-      videoRef.current.volume = newVolume;
-      if (newVolume > 0) {
-        videoRef.current.muted = false;
+  const handleSeek = (e) => {
+    const video = videoRef.current;
+    if (!video || !video.duration) return;
+    const seekPercentage = parseFloat(e.target.value);
+    video.currentTime = (seekPercentage / 100) * video.duration;
+    setProgress(seekPercentage);
+  };
+
+  const toggleMute = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    const newMuted = !isMuted;
+    video.muted = newMuted;
+    setIsMuted(newMuted);
+    if (!newMuted && volume === 0) {
+      setVolume(0.5);
+      video.volume = 0.5;
+    }
+  };
+
+  const handleVolumeSlider = (e) => {
+    const newVol = parseFloat(e.target.value);
+    setVolume(newVol);
+    const video = videoRef.current;
+    if (video) {
+      video.volume = newVol;
+      if (newVol > 0 && isMuted) {
+        video.muted = false;
+        setIsMuted(false);
+      } else if (newVol === 0) {
+        video.muted = true;
+        setIsMuted(true);
       }
     }
   };
 
-  const handleProgress = () => {
-    const video = videoRef.current;
-    if (!video || !video.duration) return;
-    setProgress((video.currentTime / video.duration) * 100);
+  const toggleFullscreen = () => {
+    if (!frameRef.current) return;
+    if (!document.fullscreenElement) {
+      frameRef.current.requestFullscreen().catch((err) => console.log(err));
+    } else {
+      document.exitFullscreen();
+    }
   };
-
-  const handleSeek = (e) => {
-    const video = videoRef.current;
-    if (!video || !video.duration) return;
-    const seekTime = (e.target.value / 100) * video.duration;
-    video.currentTime = seekTime;
-    setProgress(e.target.value);
-  };
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    
-    video.volume = volume;
-    video.addEventListener("timeupdate", handleProgress);
-    
-    return () => {
-      video.removeEventListener("timeupdate", handleProgress);
-    };
-  }, [volume]);
 
   return (
-    <section className="video-showcase-section" aria-labelledby="video-showcase-title">
-      <img
-        src={aroraImage}
-        alt="Aurora Background"
-        className="video-bg-image"
-        loading="lazy"
-      />
-      <div className="video-content">
-        <div className="feature-header">
-          <h2 id="video-showcase-title">
-            One platform. Infinite possibilities
+    <div className="video-showcase-section">
+      <div className="video-content-container">
+        {/* Section Header */}
+        <div className="section-header-block">
+          <span className="section-pill-badge">
+            ✦ Dynamic Experience
+          </span>
+          <h2 className="section-main-heading">
+            Engineered for <span className="heading-gradient-accent">Effortless Flow</span>
           </h2>
-          <p>
-            Build your brand, share your world, and connect deeper — all in
-            one place.
+          <p className="section-subtext">
+            Explore the interface designed to unify your communications, video conferencing, and career growth in one fluid system.
           </p>
         </div>
 
-        <div className="tablet-wrapper">
-          <div className="tablet-normal">
-            <video
-              id="feature-video"
-              ref={videoRef}
-              src={videoSrc}
-              autoPlay
-              muted={volume === 0}
-              loop
-              playsInline
-              preload="auto"
-              aria-label="Feature demonstration video"
-            />
-            
-            {videoError && (
-              <div className="video-error-state">
-                <div className="error-content">
-                  <FaVideo size={32} />
-                  <h4>Video Not Available</h4>
-                  <p>This demo video cannot be loaded.</p>
-                  <div className="error-actions">
-                    <button 
-                      onClick={() => window.open(videoSrc, '_blank')}
-                      className="error-btn"
-                    >
-                      Try Direct Link
-                    </button>
-                    <button 
-                      onClick={() => {
-                        if (videoRef.current) {
-                          videoRef.current.load();
-                          setVideoError(false);
-                        }
-                      }}
-                      className="error-btn secondary"
-                    >
-                      Retry Loading
-                    </button>
-                  </div>
-                </div>
+        {/* Device Mockup */}
+        <div className="device-frame-wrapper" ref={frameRef}>
+          <div className="device-inner-screen">
+            {/* Header bar */}
+            <div className="device-header-bar">
+              <div className="window-dots">
+                <span className="window-dot dot-red" />
+                <span className="window-dot dot-yellow" />
+                <span className="window-dot dot-green" />
               </div>
-            )}
+              <div className="window-url-bar">
+                <span>https://app.linkipax.com/{activeTab.id}</span>
+              </div>
+            </div>
 
-            <div className="video-controls">
-              <button
-                className="play-pause-icon"
-                onClick={handlePlayPause}
-                aria-label={isPlaying ? "Pause video" : "Play video"}
-              >
-                {isPlaying ? <FaPause /> : <FaPlay />}
-              </button>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={progress}
-                onChange={handleSeek}
-                className="video-progress"
-                aria-label="Video progress"
+            {/* Video Viewport */}
+            <div className="device-viewport">
+              <video
+                ref={videoRef}
+                src={activeTab.video}
+                loop
+                playsInline
+                autoPlay
+                muted={isMuted}
+                onTimeUpdate={handleTimeUpdate}
+                onLoadedMetadata={handleLoadedMetadata}
+                onError={() => setHasError(true)}
+                className="feature-video-element"
+                aria-label={activeTab.name}
               />
-              <div className="volume-control">
+
+              {hasError && (
+                <div className="video-fallback-banner">
+                  <h4>Video Preview Loading</h4>
+                  <p>Stream buffer initializing. Click below to retry.</p>
+                  <button
+                    type="button"
+                    className="nav-btn nav-btn-primary"
+                    onClick={() => {
+                      if (videoRef.current) {
+                        videoRef.current.load();
+                        setHasError(false);
+                      }
+                    }}
+                  >
+                    <FaRedo /> Retry Video Stream
+                  </button>
+                </div>
+              )}
+
+              {/* Custom Player Controls */}
+              <div className="video-player-controls">
                 <button
-                  onClick={() => setVolume(volume > 0 ? 0 : 0.5)}
-                  aria-label={volume > 0 ? "Mute" : "Unmute"}
+                  type="button"
+                  className="control-btn"
+                  onClick={handlePlayPause}
+                  aria-label={isPlaying ? "Pause video" : "Play video"}
                 >
-                  {volume > 0 ? <FaVolumeUp /> : <FaVolumeMute />}
+                  {isPlaying ? <FaPause /> : <FaPlay />}
                 </button>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.01"
-                  value={volume}
-                  onChange={handleVolumeChange}
-                  className="volume-slider"
-                  aria-label="Volume control"
-                />
+
+                <div className="progress-track-container">
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    value={progress}
+                    onChange={handleSeek}
+                    className="video-progress-slider"
+                    aria-label="Video scrubber"
+                  />
+                </div>
+
+                <span style={{ fontSize: "0.78rem", color: "#cbd5e1", minWidth: "75px" }}>
+                  {currentTime} / {duration}
+                </span>
+
+                <div className="volume-group">
+                  <button
+                    type="button"
+                    className="control-btn"
+                    onClick={toggleMute}
+                    aria-label={isMuted ? "Unmute" : "Mute"}
+                  >
+                    {isMuted || volume === 0 ? <FaVolumeMute /> : <FaVolumeUp />}
+                  </button>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value={isMuted ? 0 : volume}
+                    onChange={handleVolumeSlider}
+                    className="volume-slider"
+                    aria-label="Volume controller"
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  className="control-btn"
+                  onClick={toggleFullscreen}
+                  aria-label="Toggle Fullscreen"
+                >
+                  <FaExpand />
+                </button>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="feature-navbar" role="navigation" aria-label="Feature selection">
-          {features.map((feature, idx) => (
+        {/* Feature Tab Selector */}
+        <div className="showcase-tab-bar" role="tablist">
+          {featureTabs.map((tab) => (
             <button
-              key={idx}
-              onClick={() => {
-                setVideoSrc(feature.video);
-                setIsPlaying(true);
-              }}
-              className={videoSrc === feature.video ? "active" : ""}
-              aria-current={videoSrc === feature.video ? "true" : "false"}
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={activeTab.id === tab.id}
+              className={`showcase-tab-btn ${activeTab.id === tab.id ? "active" : ""}`}
+              onClick={() => setActiveTab(tab)}
             >
-              {feature.name}
+              {tab.icon}
+              <span>{tab.name}</span>
             </button>
           ))}
         </div>
       </div>
-    </section>
+    </div>
   );
 }

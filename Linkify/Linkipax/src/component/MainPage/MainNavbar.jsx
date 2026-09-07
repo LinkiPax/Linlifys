@@ -1,130 +1,282 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  FaGlobe,
+  FaChevronDown,
+  FaBars,
+  FaTimes,
+  FaArrowRight,
+  FaCheck,
+  FaBolt,
+} from "react-icons/fa";
 import "./MainNavbar.css";
 
-const MainNavbar = () => {
+const languages = [
+  { code: "EN", name: "English", flag: "🇺🇸", country: "United States" },
+  { code: "ES", name: "Español", flag: "🇪🇸", country: "Spain" },
+  { code: "FR", name: "Français", flag: "🇫🇷", country: "France" },
+  { code: "DE", name: "Deutsch", flag: "🇩🇪", country: "Germany" },
+  { code: "JA", name: "日本語", flag: "🇯🇵", country: "Japan" },
+  { code: "ZH", name: "中文", flag: "🇨🇳", country: "China" },
+  { code: "HI", name: "हिन्दी", flag: "🇮🇳", country: "India" },
+  { code: "PT", name: "Português", flag: "🇵🇹", country: "Portugal" },
+  { code: "IT", name: "Italiano", flag: "🇮🇹", country: "Italy" },
+  { code: "AR", name: "العربية", flag: "🇸🇦", country: "Saudi Arabia" },
+];
+
+export default function MainNavbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [language, setLanguage] = useState("EN");
   const [scrolled, setScrolled] = useState(false);
-  const [showLanguageModal, setShowLanguageModal] = useState(false);
+  const [selectedLang, setSelectedLang] = useState(languages[0]);
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const langDropdownRef = useRef(null);
+  const navigate = useNavigate();
 
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
-
+  // Scroll detection for frosted glass navbar
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
+      setScrolled(window.scrollY > 20);
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const languages = [
-    { code: "EN", name: "English", country: "United States" },
-    { code: "FR", name: "Français", country: "France" },
-    { code: "ES", name: "Español", country: "Spain" },
-    { code: "DE", name: "Deutsch", country: "Germany" },
-    { code: "IT", name: "Italiano", country: "Italy" },
-    { code: "PT", name: "Português", country: "Portugal" },
-    { code: "RU", name: "Русский", country: "Russia" },
-    { code: "JA", name: "日本語", country: "Japan" },
-    { code: "ZH", name: "中文", country: "China" },
-    { code: "AR", name: "العربية", country: "Saudi Arabia" },
-    { code: "HI", name: "हिन्दी", country: "India" },
-  ];
+  // Click outside to close language dropdown
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        langDropdownRef.current &&
+        !langDropdownRef.current.contains(e.target)
+      ) {
+        setLangDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-  const selectLanguage = (langCode) => {
-    setLanguage(langCode);
-    setShowLanguageModal(false);
+  // Smooth scroll to sections on the landing page
+  const scrollToSection = (id) => {
+    setIsOpen(false);
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
 
   return (
-    <nav className={`navbars ${scrolled ? "scrolled" : ""}`}>
-      <div className="navbar-container">
-        {/* Left - Logo */}
-        <div className="navbar-left">
-          <Link to="/" className="navbar-logo">
-            Linkipax
+    <header className={`main-navbar-wrapper ${scrolled ? "scrolled" : ""}`}>
+      <nav className="main-navbar" aria-label="Main Navigation">
+        {/* Left: Brand Logo */}
+        <div className="navbar-brand">
+          <Link to="/" className="brand-logo" aria-label="Linkipax Homepage">
+            <div className="brand-icon-wrapper">
+              <span className="brand-icon-symbol">LP</span>
+              <span className="brand-icon-glow" />
+            </div>
+            <span className="brand-name">
+              Linki<span className="brand-highlight">pax</span>
+            </span>
+            <span className="brand-badge">PRO</span>
           </Link>
         </div>
 
-        {/* Center - Navigation links */}
-        <ul className={`navbar-center navbar-menu ${isOpen ? "active" : ""}`}>
-          <li className="navbar-item">
-            <Link to="/about" className="navbar-link">
-              About
-            </Link>
+        {/* Center: Desktop Navigation Links */}
+        <ul className="navbar-nav-links">
+          <li>
+            <button
+              type="button"
+              className="nav-link-btn"
+              onClick={() => scrollToSection("features")}
+            >
+              Features
+            </button>
           </li>
-          <li className="navbar-item">
-            <Link to="/help" className="navbar-link">
-              Help
-            </Link>
+          <li>
+            <button
+              type="button"
+              className="nav-link-btn"
+              onClick={() => scrollToSection("dual-identity")}
+            >
+              Dual Identity
+            </button>
           </li>
-          <li className="navbar-item">
-            <Link to="/pricing" className="navbar-link">
-              Pricing
-            </Link>
+          <li>
+            <button
+              type="button"
+              className="nav-link-btn"
+              onClick={() => scrollToSection("meeting-room")}
+            >
+              Meeting Room
+            </button>
           </li>
-          <li className="navbar-item">
-            <Link to="/community" className="navbar-link">
-              Community
-            </Link>
+          <li>
+            <button
+              type="button"
+              className="nav-link-btn"
+              onClick={() => scrollToSection("opportunities")}
+            >
+              Opportunities
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              className="nav-link-btn"
+              onClick={() => scrollToSection("global-network")}
+            >
+              Network
+            </button>
           </li>
         </ul>
 
-        {/* Right - Auth buttons & language toggle */}
-        <div className="navbar-right">
-          <div
-            className="language-toggle-container"
-            onMouseEnter={() => setShowLanguageModal(true)}
-            onMouseLeave={() => setShowLanguageModal(false)}
-          >
+        {/* Right: Actions, Language Selector, Auth */}
+        <div className="navbar-actions">
+          {/* Language Selector Dropdown */}
+          <div className="language-selector" ref={langDropdownRef}>
             <button
-              className="language-toggle"
-              onClick={() => setShowLanguageModal(!showLanguageModal)}
+              type="button"
+              className={`lang-pill-btn ${langDropdownOpen ? "active" : ""}`}
+              onClick={() => setLangDropdownOpen((prev) => !prev)}
+              aria-expanded={langDropdownOpen}
+              aria-label="Select Language"
             >
-              {language}
-              <span className="language-arrow">▼</span>
+              <span className="lang-flag">{selectedLang.flag}</span>
+              <span className="lang-code">{selectedLang.code}</span>
+              <FaChevronDown
+                className={`lang-chevron ${langDropdownOpen ? "open" : ""}`}
+              />
             </button>
 
-            {showLanguageModal && (
-              <div className="language-modal">
-                <div className="language-modal-content">
-                  <h4>Select Language</h4>
-                  <ul className="language-list">
-                    {languages.map((lang) => (
-                      <li
-                        key={lang.code}
-                        className={`language-option ${
-                          language === lang.code ? "selected" : ""
-                        }`}
-                        onClick={() => selectLanguage(lang.code)}
-                      >
-                        <span className="language-flag">{lang.code}</span>
-                        <span className="language-name">{lang.name}</span>
-                        <span className="language-country">{lang.country}</span>
-                      </li>
-                    ))}
-                  </ul>
+            {langDropdownOpen && (
+              <div className="lang-dropdown-menu" role="menu">
+                <div className="lang-dropdown-header">
+                  <span>Select Regional Language</span>
+                </div>
+                <div className="lang-list">
+                  {languages.map((lang) => (
+                    <button
+                      key={lang.code}
+                      type="button"
+                      className={`lang-option ${
+                        selectedLang.code === lang.code ? "selected" : ""
+                      }`}
+                      onClick={() => {
+                        setSelectedLang(lang);
+                        setLangDropdownOpen(false);
+                      }}
+                      role="menuitem"
+                    >
+                      <span className="option-flag">{lang.flag}</span>
+                      <div className="option-meta">
+                        <span className="option-name">{lang.name}</span>
+                        <span className="option-country">{lang.country}</span>
+                      </div>
+                      {selectedLang.code === lang.code && (
+                        <FaCheck className="option-check" />
+                      )}
+                    </button>
+                  ))}
                 </div>
               </div>
             )}
           </div>
 
-          <Link to="/login" className="navbar-link login-btn">
-            Login
+          {/* Login Button */}
+          <Link to="/login" className="nav-btn nav-btn-ghost">
+            Sign In
           </Link>
-          <Link to="/signup" className="navbar-link signup-btn">
-            Sign Up
+
+          {/* Sign Up CTA Button */}
+          <Link to="/Signup" className="nav-btn nav-btn-primary">
+            <span>Get Started</span>
+            <FaArrowRight className="btn-arrow" />
+            <span className="btn-shine" />
           </Link>
-          <button className="navbar-toggle" onClick={toggleMenu}>
-            <span className={`hamburger ${isOpen ? "open" : ""}`}></span>
+
+          {/* Mobile Hamburger Button */}
+          <button
+            type="button"
+            className="mobile-menu-toggle"
+            onClick={() => setIsOpen((prev) => !prev)}
+            aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={isOpen}
+          >
+            {isOpen ? <FaTimes /> : <FaBars />}
           </button>
         </div>
-      </div>
-    </nav>
-  );
-};
+      </nav>
 
-export default MainNavbar;
+      {/* Mobile Navigation Drawer */}
+      <div className={`mobile-nav-drawer ${isOpen ? "open" : ""}`}>
+        <div className="mobile-nav-content">
+          <ul className="mobile-nav-links">
+            <li>
+              <button
+                type="button"
+                className="mobile-link-btn"
+                onClick={() => scrollToSection("features")}
+              >
+                Features
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                className="mobile-link-btn"
+                onClick={() => scrollToSection("dual-identity")}
+              >
+                Dual Identity Workspace
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                className="mobile-link-btn"
+                onClick={() => scrollToSection("meeting-room")}
+              >
+                3D Meeting Room
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                className="mobile-link-btn"
+                onClick={() => scrollToSection("opportunities")}
+              >
+                AI Opportunities
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                className="mobile-link-btn"
+                onClick={() => scrollToSection("global-network")}
+              >
+                Global Network
+              </button>
+            </li>
+          </ul>
+
+          <div className="mobile-nav-footer">
+            <Link
+              to="/login"
+              className="mobile-btn mobile-btn-ghost"
+              onClick={() => setIsOpen(false)}
+            >
+              Sign In
+            </Link>
+            <Link
+              to="/Signup"
+              className="mobile-btn mobile-btn-primary"
+              onClick={() => setIsOpen(false)}
+            >
+              <span>Get Started Free</span>
+              <FaArrowRight />
+            </Link>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
